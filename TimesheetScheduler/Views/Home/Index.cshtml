@@ -1,0 +1,373 @@
+﻿@*@model TimesheetScheduler*@
+@{
+    ViewData["Title"] = "Timesheet Scheduler";
+}
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+@*<script src="./src/bootstrap-input-spinner.js"></script>*@
+<body>
+    <div class="container">
+        <br />
+        <div class="row">
+            <div class="form-group col-xs-4">
+                <h2>Timesheet Scheduler</h2>
+            </div>
+            <div class="form-group col-xs-4">
+                <h2>
+                    <button class="btn btn-success">SAVE</button>
+                    <button class="btn btn-primary">UPDATE</button>
+                    <button class="btn btn-warning">ACTION</button>
+                    <button id="btnInfo" class="btn btn-danger">INFO</button>
+                </h2>
+            </div>
+            <div class="form-group col-xs-2">
+                <div class="form-group">
+                    <label for="monthTimesheet">Month</label>
+                    <select class="form-control" id="monthTimesheet"></select>
+                </div>
+            </div>
+            <div class="form-group col-xs-2">
+                <div class="form-group">
+                    <label for="yearTimesheet">Year</label>
+                    <select class="form-control" id="yearTimesheet"></select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-xs-2">
+                <div class="form-group">
+                    <label for="workItemTimesheet">Work Item</label>
+                    <input class="form-control" id="workItemTimesheet" />
+                </div>
+            </div>
+            <div class="form-group col-xs-3">
+                <div class="form-group">
+                    <label for="descriptionTimesheet">Description</label>
+                    <input class="form-control" id="descriptionTimesheet" />
+                </div>
+            </div>
+            <div class="form-group col-xs-2">
+                <div class="form-group">
+                    <label for="chargeableTimesheet">Chargeable Hours</label>
+                    <input type="number" value="7.5" min="0" max="7.5" step="0.5" class="form-control" id="chargeableTimesheet" />
+                </div>
+            </div>
+            <div class="form-group col-xs-2">
+                <div class="form-group">
+                    <label for="nonchargeableTimesheet">Non Chargeable Hours</label>
+                    <input type="number" value="0.0" min="0" max="7.5" step="0.5" class="form-control" id="nonchargeableTimesheet" />
+                </div>
+            </div>
+            <div class="form-group col-xs-3">
+                <div class="form-group">
+                    <label for="commentsTimesheet">Comments</label>
+                    <input class="form-control" id="commentsTimesheet" />
+                </div>
+            </div>
+        </div>
+        <table id="timesheetTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Day</th>
+                    <th>Work Item</th>
+                    <th>Description</th>
+                    <th>Chargeable Hours</th>
+                    <th>Non Chargeable Hours</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="infoModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">INFO</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label id="dayWorkedInfoLbl" class="modalLbl" for="dayWorkedInfoTxt">Days Worked: </label>
+                            <label id="dayWorkedInfoTxt"></label>
+                        </div>
+                    </form>
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label id="chargeableHoursInfoLbl" class="modalLbl" for="chargeableHoursInfoTxt">Chargeable Hours: </label>
+                            <label id="chargeableHoursInfoTxt"></label>
+                        </div>
+                    </form>
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label id="nonchargeableHoursInfoLbl" class="modalLbl" for="nonchargeableHoursInfoTxt">Non-Chargeable Hours: </label>
+                            <label id="nonchargeableHoursInfoTxt"></label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+
+<style>
+
+    .row-active {
+        border: 5px solid green !important;
+    }
+
+    .row-inactive *:not(.radioTd) {
+        color: #b9b9b9;
+    }
+
+    .weekendRow {
+        background-color: #4c4949 !important;
+        color: #b9b9b9;
+    }
+
+    table th, td {
+        margin: auto !important;
+        text-align: center;
+    }
+
+    tr {
+        line-height: 0.5px !important;
+        min-height: 10px !important;
+        height: 10px !important;
+    }
+
+    .modal-body * {
+        /*text-align: center;*/
+    }
+
+    .modalLbl {
+        min-width: 200px !important;
+    }
+</style>
+
+<script>
+
+    $(document).ready(function () {
+        LoadMonths();
+        LoadYears();
+        createTable();
+        bindMonthDropdown();
+        Info();
+    });
+
+    function LoadMonths() {
+        var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        var options = "";
+        for (i = 0; i < 12; i++) {
+            options += "<option value='" + (i + 1) + "'>" + months[i] + "</option>";
+        }
+        $("#monthTimesheet").append(options);
+        $('#monthTimesheet option[value="' + getCurrentMonth() + '"]').prop('selected', true);
+    }
+
+    function LoadYears() {
+        var _currentYear = getCurrentYear();
+        if (getCurrentMonth() == 12) {
+            $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
+        }
+        $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
+        $('#yearTimesheet option[value="' + _currentYear + '"]').prop('selected', true);
+    }
+
+    //return int e.g.: January = 12 / December = 12
+    function getCurrentMonth() {
+        return new Date().getMonth() + 1;
+    }
+
+    function getCurrentYear() {
+        return (new Date).getFullYear();
+    }
+
+    function RowSelected() {
+        $(".chk-day").click(function () {
+            $(".chk-day").each(function (index, value) {
+                $(value).closest("tr").addClass("row-inactive");
+                $(this).closest("tr").removeClass("row-active");
+            });
+            $(this).closest("tr").removeClass("row-inactive");
+            $(this).closest("tr").addClass("row-active");
+            ChangeWorkItem($(this).attr("id"));
+        });
+    }
+
+    function ChangeWorkItem(dataId) {
+        $("#workItemTimesheet").val($("#workitem" + dataId).text());
+        $("#descriptionTimesheet").val($("#description" + dataId).text());
+        $("#chargeableTimesheet").val($("#chargeablehours" + dataId).text());
+        $("#nonchargeableTimesheet").val($("#nonchargeablehours" + dataId).text());
+        $("#commentsTimesheet").val($("#comments" + dataId).text());
+    }
+
+    function getMonthFromPage() {
+        return ($("#monthTimesheet").val() - 1);
+    }
+
+    function getYearFromPage() {
+        return $("#yearTimesheet").val();
+    }
+
+    function bindMonthDropdown() {
+        $("#monthTimesheet").on("change", function () {
+            createTable();
+        });
+    }
+
+    function getFirstDayMonth(year, month) {
+        var date = new Date(year, month);
+        var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        return firstDay;
+    }
+
+    function getLastDayMonth(year, month) {
+        var date = new Date(year, month);
+        var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        return lastDay.getDate();
+    }
+
+    function getLastDayMonthFullDate(year, month) {
+        var date = new Date(year, month);
+        var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        return lastDay;
+    }
+
+    function getFirstDayMonthFromPage() {
+        var date = new Date($("#yearTimesheet").val(), ($("#monthTimesheet").val() - 1));
+        var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        return firstDay;
+    }
+
+    function getLastDayMonthFullDateFromPage() {
+        var date = new Date($("#yearTimesheet").val(), ($("#monthTimesheet").val() - 1));
+        var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        return lastDay;
+    }
+
+    function getLastDayMonthFromPage() {
+        var date = new Date($("#yearTimesheet").val(), ($("#monthTimesheet").val() - 1));
+        var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        return lastDay.getDate();
+    }
+
+    function formatDate(date) {
+        return (date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear());
+    }
+
+    function fakeData() {
+        var values = [];
+        for (i = 0; i < getLastDayMonthFromPage(); i++) {
+            values.push({
+                Id: (i + 1),
+                Day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i),
+                WorkItem: "34500" + (i + 1),
+                Description: "title description",
+                ChargeableHours: "7.0",
+                NonChargeableHours: "2.0",
+                Comments: "Comments..."
+            }
+            );
+        }
+        return values;
+    }
+
+    function rowWorkItemHTML(obj) {
+        var _html = "";
+        var _isWeekend;
+        for (i = 0; i < obj.length; i++) {
+            _isWeekend = false;
+            if (IsWeekend(obj[i].Day)) {
+                _isWeekend = true;
+            }
+            _html += (_isWeekend == true ? "<tr data-toggle='tooltip' title='WEEKEND' class='weekendRow' data>" : "<tr>");
+            //first column
+            _html += "<td class='radioTd'>";
+            _html += "<div class='radio'>";
+            _html += "<label><input type='radio' name='optradio' class='chk-day' id=" + obj[i].Id + " " + (_isWeekend == true ? "disabled" : "") + "></label>";
+            _html += "</div>";
+            _html += "</td>";
+            //second column - Day
+            _html += "<td>";
+            _html += "<div><label data-toggle='tooltip' title='" + obj[i].Day.toDateString() + "' id='dayTimesheet" + obj[i].Id + "'>" + formatDate(obj[i].Day) + "</label></div>";
+            _html += "</td>";
+            //third column - WorkItem
+            _html += "<td>";
+            _html += "<label id='workitem" + obj[i].Id + "'>" + obj[i].WorkItem + "</label>";
+            _html += "</td>";
+            //columns - Description
+            _html += "<td>";
+            _html += "<label id='description" + obj[i].Id + "'>" + obj[i].Description + "</label>";
+            _html += "</td>";
+            //columns - Chargeable Hours
+            _html += "<td>";
+            _html += "<label class='chargeablehoursCls' id='chargeablehours" + obj[i].Id + "'>" + obj[i].ChargeableHours + "</label>";
+            _html += "</td>";
+            //columns - Non-Chargeable Hours
+            _html += "<td>";
+            _html += "<label class='nonchargeablehoursCls' id='nonchargeablehours" + obj[i].Id + "'>" + obj[i].NonChargeableHours + "</label>";
+            _html += "</td>";
+            //columns - Comments
+            _html += "<td>";
+            _html += "<label id='comments" + obj[i].Id + "'>" + obj[i].Comments + "</label>";
+            _html += "</td>";
+            _html += "</tr>";
+        }
+        return _html;
+    }
+
+    function createTable() {
+        $("#timesheetTable tbody").html(rowWorkItemHTML(fakeData()));
+        RowSelected();
+    }
+
+    function IsWeekend(date) {
+        var day = date.getDay();
+        return (day === 6) || (day === 0);
+    }
+
+    //BUTTONS
+    function Info() {
+        $("#btnInfo").click(function () {
+            $("#infoModal").modal();
+            $("#dayWorkedInfoTxt").text(calculateDaysWorked());
+            $("#chargeableHoursInfoTxt").text(getChargeableHours());
+            $("#nonchargeableHoursInfoTxt").text(getNonChargeableHours());
+        });
+    }
+
+    function getChargeableHours() {
+        var chargeableHours = 0;
+        $(".chargeablehoursCls").each(function () {
+            if (!$(this).closest("tr").hasClass("weekendRow")) {
+                chargeableHours += parseInt($(this).text());
+            }
+        });
+        return chargeableHours;
+    }
+
+    function getNonChargeableHours() {
+        var nonchargeableHours = 0;
+        $(".nonchargeablehoursCls").each(function () {
+            if (!$(this).closest("tr").hasClass("weekendRow")) {
+                nonchargeableHours += parseInt($(this).text());
+            }
+        });
+        return nonchargeableHours;
+    }
+
+    function calculateDaysWorked() {
+        return (getChargeableHours() / (7.5)).toFixed(2);
+    }
+</script>
