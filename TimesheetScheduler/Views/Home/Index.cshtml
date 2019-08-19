@@ -14,7 +14,7 @@
                 <h2>
                     <button class="btn btn-success">SAVE</button>
                     <button class="btn btn-primary">UPDATE</button>
-                    <button class="btn btn-warning">ACTION</button>
+                    <button id="btnAction" class="btn btn-warning">ACTION</button>
                     <button id="btnInfo" class="btn btn-danger">INFO</button>
                 </h2>
             </div>
@@ -34,11 +34,17 @@
         <div class="row">
             <div class="form-group col-xs-2">
                 <div class="form-group">
+                    <label for="dayTimesheet">Day</label>
+                    <input class="form-control" id="dayTimesheet" />
+                </div>
+            </div>
+            <div class="form-group col-xs-2">
+                <div class="form-group">
                     <label for="workItemTimesheet">Work Item</label>
                     <input class="form-control" id="workItemTimesheet" />
                 </div>
             </div>
-            <div class="form-group col-xs-3">
+            <div class="form-group col-xs-4">
                 <div class="form-group">
                     <label for="descriptionTimesheet">Description</label>
                     <input class="form-control" id="descriptionTimesheet" />
@@ -56,27 +62,17 @@
                     <input type="number" value="0.0" min="0" max="7.5" step="0.5" class="form-control" id="nonchargeableTimesheet" />
                 </div>
             </div>
-            <div class="form-group col-xs-3">
+        </div>
+        <div class="row">
+            <div class="form-group col-xs-12">
                 <div class="form-group">
                     <label for="commentsTimesheet">Comments</label>
                     <input class="form-control" id="commentsTimesheet" />
                 </div>
             </div>
         </div>
-        <table id="timesheetTable" class="table table-striped">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Day</th>
-                    <th>Work Item</th>
-                    <th>Description</th>
-                    <th>Chargeable Hours</th>
-                    <th>Non Chargeable Hours</th>
-                    <th>Comment</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <br />
+        <div id="targetTable"></div>
     </div>
 
     <!-- Modal -->
@@ -114,11 +110,26 @@
             </div>
         </div>
     </div>
-
 </body>
 
-
 <style>
+
+    .form-group {
+        margin-bottom: 5px !important;
+    }
+
+    input {
+        max-width: none !important;
+    }
+
+    .tableHighlighted {
+        border: 13px solid yellow;
+    }
+
+    .row-intial {
+        border: none !important;
+        color: black;
+    }
 
     .row-active {
         border: 5px solid green !important;
@@ -153,16 +164,115 @@
     }
 </style>
 
+<script id="templateTimesheetTable" type="x-tmpl-mustache">
+    <table id="timesheetTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Day</th>
+                <th>Work Item</th>
+                <th>Description</th>
+                <th>Chargeable Hours</th>
+                <th>Non Chargeable Hours</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#rows}}            
+            <tr data-toggle='tooltip' id="row{{Id}}" title='{{tooltipDay}}' class='{{classRow}}' data>
+
+                @*RADIOBUTTON*@
+                <td class='radioTd'>
+                    <div class='radio'>
+                        <label><input type='radio' name='optradio' class='chk-day' id='{{Id}}' {{disableFlag}}></label>
+                    </div>
+                </td>
+
+                @*DAY*@
+                <td>
+                    <div><label data-toggle='tooltip' title='{{day}}' id='dayTimesheet{{Id}}'>{{dayShortFormat}}</label></div>
+                </td>
+
+                @*WORKITEM*@
+                <td>
+                    <div><label id='workitem{{Id}}'>{{workItem}}</label></div>
+                </td>
+
+                @*DESCRIPTION*@
+                <td>
+                    <div><label id='description{{Id}}'>{{description}}</label></div>
+                </td>
+
+                @*CHARGEABLE HOURS*@
+                <td>
+                    <div><label id='chargeablehours{{Id}}'>{{chargeableHours}}</label></div>
+                </td>
+
+                @*NON-CHARGEABLE HOURS*@
+                <td>
+                    <div><label id='nonchargeablehours{{Id}}'>{{nonchargeableHours}}</label></div>
+                </td>
+
+                @*COMMENTS*@
+                <td>
+                    <div><label id='comments{{Id}}'>{{comments}}</label></div>
+                </td>
+            </tr>
+        {{/rows}}
+        </tbody>
+    </table>
+</script>
+
 <script>
 
     $(document).ready(function () {
         LoadMonths();
         LoadYears();
-        createTable();
+        //createTable();
         bindMonthDropdown();
         Info();
+        UnselecRadio();
+        renderMustacheTableTemplate();
+        RowSelected();
     });
 
+    function renderMustacheTableTemplate() {
+        var template = $('#templateTimesheetTable').html();
+        Mustache.parse(template);   // optional, speeds up future uses
+        var rendered = Mustache.render(template, fakeDataMustache());
+        $('#targetTable').html(rendered);
+    }
+
+    function fakeDataMustache() {
+        var _date;
+        var _isWeekend;
+        var values =
+        {
+            rows: [],
+            name: function () {
+                return this.tooltipDay + " " + this.classRow;
+            }
+        }
+        for (i = 0; i < getLastDayMonthFromPage(); i++) {
+            _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
+            _isWeekend = IsWeekend(_date);
+            values.rows.push({                
+                Id: (i+1),
+                tooltipDay: _isWeekend ? "WEEKEND" : "",
+                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+                disableFlag: _isWeekend ? "disabled" :"",
+                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+                workItem: "34500" + (i + 1),
+                description: "description... " + (i + 1),
+                chargeableHours:"7.0",
+                nonchargeableHours:"2.0",
+                comments: "comments... " + (i + 1)
+            });
+        }       
+        return values;
+    }
+    
     function LoadMonths() {
         var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         var options = "";
@@ -200,10 +310,20 @@
             $(this).closest("tr").removeClass("row-inactive");
             $(this).closest("tr").addClass("row-active");
             ChangeWorkItem($(this).attr("id"));
+            returnTopPage();
+            //highlightRecordOnTopTape($(this).attr("id"));
+            $("#dayTimesheet").prop('disabled', true);
         });
     }
 
+    function getDayFromPage() {
+        var strDate = $("#dayTimesheet" + dataId).text().split("/");
+        var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
+        return dateBase;
+    }
+
     function ChangeWorkItem(dataId) {
+        $("#dayTimesheet").val($("#dayTimesheet" + dataId).text());
         $("#workItemTimesheet").val($("#workitem" + dataId).text());
         $("#descriptionTimesheet").val($("#description" + dataId).text());
         $("#chargeableTimesheet").val($("#chargeablehours" + dataId).text());
@@ -265,71 +385,115 @@
         return (date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear());
     }
 
-    function fakeData() {
-        var values = [];
-        for (i = 0; i < getLastDayMonthFromPage(); i++) {
-            values.push({
-                Id: (i + 1),
-                Day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i),
-                WorkItem: "34500" + (i + 1),
-                Description: "title description",
-                ChargeableHours: "7.0",
-                NonChargeableHours: "2.0",
-                Comments: "Comments..."
-            }
-            );
-        }
-        return values;
-    }
+    //function fakeData() {
+    //    var values = [];
+    //    for (i = 0; i < getLastDayMonthFromPage(); i++) {
+    //        values.push({
+    //            Id: (i + 1),
+    //            Day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i),
+    //            WorkItem: "34500" + (i + 1),
+    //            Description: "title description " + (i + 1),
+    //            ChargeableHours: "7.0",
+    //            NonChargeableHours: "2.0",
+    //            Comments: "Comments... " + (i + 1)
+    //        }
+    //        );
+    //    }
+    //    return values;
+    //}
 
-    function rowWorkItemHTML(obj) {
-        var _html = "";
-        var _isWeekend;
-        for (i = 0; i < obj.length; i++) {
-            _isWeekend = false;
-            if (IsWeekend(obj[i].Day)) {
-                _isWeekend = true;
-            }
-            _html += (_isWeekend == true ? "<tr data-toggle='tooltip' title='WEEKEND' class='weekendRow' data>" : "<tr>");
-            //first column
-            _html += "<td class='radioTd'>";
-            _html += "<div class='radio'>";
-            _html += "<label><input type='radio' name='optradio' class='chk-day' id=" + obj[i].Id + " " + (_isWeekend == true ? "disabled" : "") + "></label>";
-            _html += "</div>";
-            _html += "</td>";
-            //second column - Day
-            _html += "<td>";
-            _html += "<div><label data-toggle='tooltip' title='" + obj[i].Day.toDateString() + "' id='dayTimesheet" + obj[i].Id + "'>" + formatDate(obj[i].Day) + "</label></div>";
-            _html += "</td>";
-            //third column - WorkItem
-            _html += "<td>";
-            _html += "<label id='workitem" + obj[i].Id + "'>" + obj[i].WorkItem + "</label>";
-            _html += "</td>";
-            //columns - Description
-            _html += "<td>";
-            _html += "<label id='description" + obj[i].Id + "'>" + obj[i].Description + "</label>";
-            _html += "</td>";
-            //columns - Chargeable Hours
-            _html += "<td>";
-            _html += "<label class='chargeablehoursCls' id='chargeablehours" + obj[i].Id + "'>" + obj[i].ChargeableHours + "</label>";
-            _html += "</td>";
-            //columns - Non-Chargeable Hours
-            _html += "<td>";
-            _html += "<label class='nonchargeablehoursCls' id='nonchargeablehours" + obj[i].Id + "'>" + obj[i].NonChargeableHours + "</label>";
-            _html += "</td>";
-            //columns - Comments
-            _html += "<td>";
-            _html += "<label id='comments" + obj[i].Id + "'>" + obj[i].Comments + "</label>";
-            _html += "</td>";
-            _html += "</tr>";
-        }
-        return _html;
-    }
+    //function rowWorkItemHTML(obj, highlighted) {
+    //    var _html = "";
+    //    var _isWeekend;
+    //    for (i = 0; i < obj.length; i++) {
+    //        _isWeekend = false;
+    //        if (IsWeekend(obj[i].Day)) {
+    //            _isWeekend = true;
+    //        }
+    //        _html += (_isWeekend == true ? "<tr data-toggle='tooltip' title='WEEKEND' class='weekendRow' data>" : "<tr>");
+    //        //first column
 
-    function createTable() {
-        $("#timesheetTable tbody").html(rowWorkItemHTML(fakeData()));
-        RowSelected();
-    }
+    //        _html += "<td class='radioTd'>";
+    //        if (!highlighted) {
+    //            _html += "<div class='radio'>";
+    //            _html += "<label><input type='radio' name='optradio' class='chk-day' id=" + obj[i].Id + " " + (_isWeekend == true ? "disabled" : "") + "></label>";
+    //            _html += "</div>";
+    //        }
+    //        _html += "</td>";
+
+    //        //second column - Day
+    //        _html += "<td>";
+    //        _html += "<div><label data-toggle='tooltip' title='" + obj[i].Day.toDateString() + "' id='dayTimesheet" + obj[i].Id + "'>" + formatDate(obj[i].Day) + "</label></div>";
+    //        _html += "</td>";
+    //        //third column - WorkItem
+    //        _html += "<td>";
+    //        _html += "<label id='workitem" + obj[i].Id + "'>" + obj[i].WorkItem + "</label>";
+    //        _html += "</td>";
+    //        //columns - Description
+    //        _html += "<td>";
+    //        _html += "<label id='description" + obj[i].Id + "'>" + obj[i].Description + "</label>";
+    //        _html += "</td>";
+    //        //columns - Chargeable Hours
+    //        _html += "<td>";
+    //        _html += "<label class='chargeablehoursCls' id='chargeablehours" + obj[i].Id + "'>" + obj[i].ChargeableHours + "</label>";
+    //        _html += "</td>";
+    //        //columns - Non-Chargeable Hours
+    //        _html += "<td>";
+    //        _html += "<label class='nonchargeablehoursCls' id='nonchargeablehours" + obj[i].Id + "'>" + obj[i].NonChargeableHours + "</label>";
+    //        _html += "</td>";
+    //        //columns - Comments
+    //        _html += "<td>";
+    //        _html += "<label id='comments" + obj[i].Id + "'>" + obj[i].Comments + "</label>";
+    //        _html += "</td>";
+    //        _html += "</tr>";
+    //    }
+    //    return _html;
+    //}
+
+    //function dropDownButtonActions() {
+        //return "<div class='dropdown'>"
+        //    + "<button class='btn btn-secondary dropdown-toggle' type='button' id='dropdownMenuButton' data-toggle='dropdown' "
+        //    + "aria-haspopup='true' aria-expanded='false'>"
+        //    + "Actions </button>"
+        //    + "<div class='dropdown-menu' aria-labelledby='dropdownMenuButton'>"
+        //    + "<button class='dropdown-item' type='button'>Action</button>"
+        //    + "<button class='dropdown-item' type='button'>Another action</button>"
+        //    + "<button class='dropdown-item' type='button'>Something else here</button>"
+        //    + "</div>"
+        //    + "</div>";
+        //return "<div class='dropdown'>"
+        //    + "<button class='btn btn-default dropdown-toggle' type='button' data-toggle='dropdown'>Actions"
+        //    + "<span class='caret'></span></button>"
+        //    + "<ul class='dropdown-menu'>"
+        //    + "<li><a href='#'>Add Work Item</a></li>"
+        //    + "<li><a href='#'>Edit</a></li>"
+        //    + "<li><a href='#'>Delete</a></li>"
+        //    + "</ul>"
+        //    + "</div>"
+    //}
+
+    //function createTable() {
+    //    $("#timesheetTable tbody").html(rowWorkItemHTML(fakeData(), false));
+    //    RowSelected();
+    //}
+
+    //function highlightRecordOnTopTape(id) {
+        //var strDate = $("#dayTimesheet" + id).text().split("/");
+        //var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
+        ////alert(dateBase);
+        //var objHighlighted = [];
+        ////console.log("data: "+dateBase);
+        //objHighlighted.push({
+        //    Id: id,
+        //    Day: dateBase,
+        //    WorkItem: $("#workitem" + id).text(),
+        //    Description: $("#description" + id).text(),
+        //    ChargeableHours: $("#chargeablehours" + id).text(),
+        //    NonChargeableHours: $("#nonchargeablehours" + id).text(),
+        //    Comments: $("#comments" + id).text()
+        //});
+        //$("#highlightedRecord tbody").html(rowWorkItemHTML(objHighlighted, true));
+    //}
 
     function IsWeekend(date) {
         var day = date.getDay();
@@ -368,5 +532,26 @@
 
     function calculateDaysWorked() {
         return (getChargeableHours() / (7.5)).toFixed(2);
+    }
+
+    function UnselecRadio() {
+        $("#btnAction").on("click", function () {
+            $(".chk-day").prop("checked", false);
+            $("tr").addClass("row-intial ");
+            $("tr").removeClass("row-inactive");
+            $("tr").removeClass("row-active");
+
+            $("#dayTimesheet").prop('disabled', false);
+            $("#dayTimesheet").val("");
+            $("#workItemTimesheet").val("");
+            $("#descriptionTimesheet").val("");
+            $("#chargeableTimesheet").val("");
+            $("#nonchargeableTimesheet").val("");
+            $("#commentsTimesheet").val("");
+        });
+    }
+
+    function returnTopPage() {
+        window.scrollTo(0, 0);
     }
 </script>

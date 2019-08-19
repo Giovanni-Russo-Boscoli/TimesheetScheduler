@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using TimesheetScheduler.Models;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -10,6 +11,8 @@ namespace TimesheetScheduler.Controllers
     {
         public ActionResult Index()
         {
+            ExcelExport excelFileExport = new ExcelExport();
+            excelFileExport.ExcelFileExport();
             return View();
         }
 
@@ -26,5 +29,7 @@ namespace TimesheetScheduler.Controllers
 
             return View();
         }
+    
+         
     }
 }
