@@ -182,14 +182,15 @@
         min-width: 200px !important;
     }
 
-    .fc-other-month .fc-day-number {
+    /*.fc-other-month .fc-day-number {
         display: none;
-    }
+    }*/
 
-    .fc-day-top.fc-other-month {
+    /*.fc-day-top.fc-other-month {
         display: none;
-    }
+    }*/
 
+    /*.fc-other-month,*/
     .fc-time {
         display: none;
     }
@@ -277,7 +278,7 @@
     }
 
     function eventsCalendar(_events, dateCalendar) {
-        alert(JSON.stringify(_events));
+        //alert(JSON.stringify(_events));
 
         ////remove old data
         //$('#calendar').fullCalendar('removeEvents');
@@ -315,9 +316,18 @@
             eventLimit: 4, // for all non-TimeGrid views
  
         });
-        
+        //toggleClass(".fc-other-month");
+
+        $(".fc-other-month").each(function () {
+            $(this).html("");
+            //$(this).toggle();
+        });
         
         //$('#calendar').fullCalendar("refetchEvents");
+    }
+
+    function toggleClass(_class) {
+        $(_class).toggle();
     }
 
     function renderMustacheTableTemplate(dateCalendar) {
