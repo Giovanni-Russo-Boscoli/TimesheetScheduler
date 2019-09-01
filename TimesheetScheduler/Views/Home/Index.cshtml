@@ -2,7 +2,11 @@
 @{
     ViewData["Title"] = "Timesheet Scheduler";
 }
+
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="~/Content/progressBarAnimation.less" />
+
 <body>
     <div class="container">
         <br />
@@ -13,7 +17,7 @@
             <div class="form-group col-xs-4">
                 <h2>
                     <button class="btn btn-success">SAVE</button>
-                    <button class="btn btn-primary">UPDATE</button>
+                    <button id="btnUpdate" class="btn btn-primary">UPDATE</button>
                     <button id="btnAction" class="btn btn-warning">ACTION</button>
                     <button id="btnInfo" class="btn btn-danger">INFO</button>
                 </h2>
@@ -31,47 +35,50 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="form-group col-xs-2">
-                <div class="form-group">
-                    <label for="dayTimesheet">Day</label>
-                    <input class="form-control" id="dayTimesheet" />
+        @*<div class="row">
+                <div class="form-group col-xs-2">
+                    <div class="form-group">
+                        <label for="dayTimesheet">Day</label>
+                        <input class="form-control" id="dayTimesheet" />
+                    </div>
+                </div>
+                <div class="form-group col-xs-2">
+                    <div class="form-group">
+                        <label for="workItemTimesheet">Work Item</label>
+                        <input class="form-control" id="workItemTimesheet" />
+                    </div>
+                </div>
+                <div class="form-group col-xs-4">
+                    <div class="form-group">
+                        <label for="descriptionTimesheet">Description</label>
+                        <input class="form-control" id="descriptionTimesheet" />
+                    </div>
+                </div>
+                <div class="form-group col-xs-2">
+                    <div class="form-group">
+                        <label for="chargeableTimesheet">Chargeable Hours</label>
+                        <input type="number" value="7.5" min="0" max="7.5" step="0.5" class="form-control" id="chargeableTimesheet" />
+                    </div>
+                </div>
+                <div class="form-group col-xs-2">
+                    <div class="form-group">
+                        <label for="nonchargeableTimesheet">Non Chargeable Hours</label>
+                        <input type="number" value="0.0" min="0" max="7.5" step="0.5" class="form-control" id="nonchargeableTimesheet" />
+                    </div>
                 </div>
             </div>
-            <div class="form-group col-xs-2">
-                <div class="form-group">
-                    <label for="workItemTimesheet">Work Item</label>
-                    <input class="form-control" id="workItemTimesheet" />
+            <div class="row">
+                <div class="form-group col-xs-12">
+                    <div class="form-group">
+                        <label for="commentsTimesheet">Comments</label>
+                        <input class="form-control" id="commentsTimesheet" />
+                    </div>
                 </div>
-            </div>
-            <div class="form-group col-xs-4">
-                <div class="form-group">
-                    <label for="descriptionTimesheet">Description</label>
-                    <input class="form-control" id="descriptionTimesheet" />
-                </div>
-            </div>
-            <div class="form-group col-xs-2">
-                <div class="form-group">
-                    <label for="chargeableTimesheet">Chargeable Hours</label>
-                    <input type="number" value="7.5" min="0" max="7.5" step="0.5" class="form-control" id="chargeableTimesheet" />
-                </div>
-            </div>
-            <div class="form-group col-xs-2">
-                <div class="form-group">
-                    <label for="nonchargeableTimesheet">Non Chargeable Hours</label>
-                    <input type="number" value="0.0" min="0" max="7.5" step="0.5" class="form-control" id="nonchargeableTimesheet" />
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="form-group col-xs-12">
-                <div class="form-group">
-                    <label for="commentsTimesheet">Comments</label>
-                    <input class="form-control" id="commentsTimesheet" />
-                </div>
-            </div>
-        </div>
+            </div>*@
         <br />
+        <div class="row timesheetCalendarView">
+            <div id="calendar"></div>
+        </div>
         <div id="targetTable"></div>
     </div>
 
@@ -113,6 +120,18 @@
 </body>
 
 <style>
+
+    #calendar {
+        display: none;
+        /*height: 100% !important;*/
+        /*height: 500px !important;
+        max-height: 500px !important;*/
+        width: 100% !important;
+    }
+
+    .timesheetCalendarView tr {
+        line-height: normal !important;
+    }
 
     .form-group {
         margin-bottom: 5px !important;
@@ -162,6 +181,19 @@
     .modalLbl {
         min-width: 200px !important;
     }
+
+    .fc-other-month .fc-day-number {
+        display: none;
+    }
+
+    .fc-day-top.fc-other-month {
+        display: none;
+    }
+
+    .fc-time {
+        display: none;
+    }
+
 </style>
 
 <script id="templateTimesheetTable" type="x-tmpl-mustache">
@@ -178,7 +210,7 @@
             </tr>
         </thead>
         <tbody>
-            {{#rows}}            
+            {{#rows}}
             <tr data-toggle='tooltip' id="row{{Id}}" title='{{tooltipDay}}' class='{{classRow}}' data>
 
                 @*RADIOBUTTON*@
@@ -205,12 +237,12 @@
 
                 @*CHARGEABLE HOURS*@
                 <td>
-                    <div><label id='chargeablehours{{Id}}'>{{chargeableHours}}</label></div>
+                    <div><label class="chargeablehoursCls" id='chargeablehours{{Id}}'>{{chargeableHours}}</label></div>
                 </td>
 
                 @*NON-CHARGEABLE HOURS*@
                 <td>
-                    <div><label id='nonchargeablehours{{Id}}'>{{nonchargeableHours}}</label></div>
+                    <div><label class="nonchargeablehoursCls" id='nonchargeablehours{{Id}}'>{{nonchargeableHours}}</label></div>
                 </td>
 
                 @*COMMENTS*@
@@ -218,7 +250,7 @@
                     <div><label id='comments{{Id}}'>{{comments}}</label></div>
                 </td>
             </tr>
-        {{/rows}}
+            {{/rows}}
         </tbody>
     </table>
 </script>
@@ -228,19 +260,85 @@
     $(document).ready(function () {
         LoadMonths();
         LoadYears();
-        //createTable();
         bindMonthDropdown();
         Info();
         UnselecRadio();
-        renderMustacheTableTemplate();
+        renderMustacheTableTemplate(new Date());
         RowSelected();
+        ShowHiddenTimesheetCalendarView();
+        calculateBackgroundColor();
     });
 
-    function renderMustacheTableTemplate() {
+    function ShowHiddenTimesheetCalendarView() {
+        $("#btnUpdate").on("click", function () {
+            $("#calendar").toggle();
+            $("#targetTable").toggle();
+        });
+    }
+
+    function eventsCalendar(_events, dateCalendar) {
+        alert(JSON.stringify(_events));
+
+        ////remove old data
+        //$('#calendar').fullCalendar('removeEvents');
+
+        ////Getting new event json data
+        //$("#calendar").fullCalendar('addEventSource', _events);
+        ////Updating new events
+        //$('#calendar').fullCalendar('rerenderEvents');
+        ////getting latest Events
+        //$('#calendar').fullCalendar('refetchEvents');
+        ////getting latest Resources
+        //$('#calendar').fullCalendar('refetchResources');
+        $('#calendar').fullCalendar('destroy');
+        //$('#calendar').fullCalendar('addEventSource', _events);
+        $('#calendar').fullCalendar({
+            defaultView: 'month',
+            firstDay: 1,
+            height: 500,
+            weekMode: 'liquid',
+            weekends: false,
+            fixedWeekCount: true,
+            //header: {
+            //    left: 'prev,next today',
+            //    center: 'title',
+            //    right: 'month,agendaWeek,agendaDay,listWeek'
+            //},
+            header: { left: 'title', center: ' ', right: 'month, listMonth' },
+            defaultDate: _formatDate(dateCalendar), //'2019-09-16',
+            //navLinks: true,
+            //eventLimitClick: function () {
+            //    $('[data-toggle="tooltip"]').tooltip({ container: 'body', html: true }); // re-init tooltips
+            //    return "popover";
+            //},
+            events: _events,
+            eventLimit: 4, // for all non-TimeGrid views
+ 
+        });
+        
+        
+        //$('#calendar').fullCalendar("refetchEvents");
+    }
+
+    function renderMustacheTableTemplate(dateCalendar) {
         var template = $('#templateTimesheetTable').html();
         Mustache.parse(template);   // optional, speeds up future uses
-        var rendered = Mustache.render(template, fakeDataMustache());
+        var obj = fakeDataMustache();
+        eventsCalendar(formatForCalendarEvents(obj), dateCalendar);
+        var rendered = Mustache.render(template, obj);
         $('#targetTable').html(rendered);
+    }
+
+    function _formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return year + "-" + month + "-" + day;
     }
 
     function fakeDataMustache() {
@@ -253,26 +351,48 @@
                 return this.tooltipDay + " " + this.classRow;
             }
         }
+
         for (i = 0; i < getLastDayMonthFromPage(); i++) {
             _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
             _isWeekend = IsWeekend(_date);
-            values.rows.push({                
-                Id: (i+1),
+            values.rows.push({
+                Id: (i + 1),
                 tooltipDay: _isWeekend ? "WEEKEND" : "",
                 classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-                disableFlag: _isWeekend ? "disabled" :"",
+                disableFlag: _isWeekend ? "disabled" : "",
                 dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
                 day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
                 workItem: "34500" + (i + 1),
                 description: "description... " + (i + 1),
-                chargeableHours:"7.0",
-                nonchargeableHours:"2.0",
+                chargeableHours: "7.0",
+                nonchargeableHours: "2.0",
                 comments: "comments... " + (i + 1)
             });
-        }       
+        }
         return values;
     }
-    
+
+    function formatForCalendarEvents(_obj) {
+        var _calendarEvents = [];
+        for (i = 0; i < _obj.rows.length; i++) {
+            _calendarEvents.push({ title: _obj.rows[i].workItem, start: _obj.rows[i].day, end: _obj.rows[i].day, allDay: false });
+        }
+        return _calendarEvents;
+    }
+
+    function calculateBackgroundColor() {
+        $(".fc-day-top.fc-future").each(function (index, value) {
+            var _loadBar = "<div class='loadBarContainer'>    " +
+                "  <div class='progress progress-striped'>" +
+                "    <div class='progress-bar'>" +
+                "    </div>                      " +
+                "  </div> " +
+                "</div>";
+
+            $(this).append(_loadBar);
+        });
+    }
+
     function LoadMonths() {
         var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         var options = "";
@@ -317,18 +437,18 @@
     }
 
     function getDayFromPage() {
-        var strDate = $("#dayTimesheet" + dataId).text().split("/");
-        var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
-        return dateBase;
+        //var strDate = $("#dayTimesheet" + dataId).text().split("/");
+        //var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
+        //return dateBase;
     }
 
     function ChangeWorkItem(dataId) {
-        $("#dayTimesheet").val($("#dayTimesheet" + dataId).text());
-        $("#workItemTimesheet").val($("#workitem" + dataId).text());
-        $("#descriptionTimesheet").val($("#description" + dataId).text());
-        $("#chargeableTimesheet").val($("#chargeablehours" + dataId).text());
-        $("#nonchargeableTimesheet").val($("#nonchargeablehours" + dataId).text());
-        $("#commentsTimesheet").val($("#comments" + dataId).text());
+        //$("#dayTimesheet").val($("#dayTimesheet" + dataId).text());
+        //$("#workItemTimesheet").val($("#workitem" + dataId).text());
+        //$("#descriptionTimesheet").val($("#description" + dataId).text());
+        //$("#chargeableTimesheet").val($("#chargeablehours" + dataId).text());
+        //$("#nonchargeableTimesheet").val($("#nonchargeablehours" + dataId).text());
+        //$("#commentsTimesheet").val($("#comments" + dataId).text());
     }
 
     function getMonthFromPage() {
@@ -341,7 +461,8 @@
 
     function bindMonthDropdown() {
         $("#monthTimesheet").on("change", function () {
-            createTable();
+            renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 01));
+            //$('#calendar').fullCalendar('addEventSource', events);
         });
     }
 
@@ -384,116 +505,6 @@
     function formatDate(date) {
         return (date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear());
     }
-
-    //function fakeData() {
-    //    var values = [];
-    //    for (i = 0; i < getLastDayMonthFromPage(); i++) {
-    //        values.push({
-    //            Id: (i + 1),
-    //            Day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i),
-    //            WorkItem: "34500" + (i + 1),
-    //            Description: "title description " + (i + 1),
-    //            ChargeableHours: "7.0",
-    //            NonChargeableHours: "2.0",
-    //            Comments: "Comments... " + (i + 1)
-    //        }
-    //        );
-    //    }
-    //    return values;
-    //}
-
-    //function rowWorkItemHTML(obj, highlighted) {
-    //    var _html = "";
-    //    var _isWeekend;
-    //    for (i = 0; i < obj.length; i++) {
-    //        _isWeekend = false;
-    //        if (IsWeekend(obj[i].Day)) {
-    //            _isWeekend = true;
-    //        }
-    //        _html += (_isWeekend == true ? "<tr data-toggle='tooltip' title='WEEKEND' class='weekendRow' data>" : "<tr>");
-    //        //first column
-
-    //        _html += "<td class='radioTd'>";
-    //        if (!highlighted) {
-    //            _html += "<div class='radio'>";
-    //            _html += "<label><input type='radio' name='optradio' class='chk-day' id=" + obj[i].Id + " " + (_isWeekend == true ? "disabled" : "") + "></label>";
-    //            _html += "</div>";
-    //        }
-    //        _html += "</td>";
-
-    //        //second column - Day
-    //        _html += "<td>";
-    //        _html += "<div><label data-toggle='tooltip' title='" + obj[i].Day.toDateString() + "' id='dayTimesheet" + obj[i].Id + "'>" + formatDate(obj[i].Day) + "</label></div>";
-    //        _html += "</td>";
-    //        //third column - WorkItem
-    //        _html += "<td>";
-    //        _html += "<label id='workitem" + obj[i].Id + "'>" + obj[i].WorkItem + "</label>";
-    //        _html += "</td>";
-    //        //columns - Description
-    //        _html += "<td>";
-    //        _html += "<label id='description" + obj[i].Id + "'>" + obj[i].Description + "</label>";
-    //        _html += "</td>";
-    //        //columns - Chargeable Hours
-    //        _html += "<td>";
-    //        _html += "<label class='chargeablehoursCls' id='chargeablehours" + obj[i].Id + "'>" + obj[i].ChargeableHours + "</label>";
-    //        _html += "</td>";
-    //        //columns - Non-Chargeable Hours
-    //        _html += "<td>";
-    //        _html += "<label class='nonchargeablehoursCls' id='nonchargeablehours" + obj[i].Id + "'>" + obj[i].NonChargeableHours + "</label>";
-    //        _html += "</td>";
-    //        //columns - Comments
-    //        _html += "<td>";
-    //        _html += "<label id='comments" + obj[i].Id + "'>" + obj[i].Comments + "</label>";
-    //        _html += "</td>";
-    //        _html += "</tr>";
-    //    }
-    //    return _html;
-    //}
-
-    //function dropDownButtonActions() {
-        //return "<div class='dropdown'>"
-        //    + "<button class='btn btn-secondary dropdown-toggle' type='button' id='dropdownMenuButton' data-toggle='dropdown' "
-        //    + "aria-haspopup='true' aria-expanded='false'>"
-        //    + "Actions </button>"
-        //    + "<div class='dropdown-menu' aria-labelledby='dropdownMenuButton'>"
-        //    + "<button class='dropdown-item' type='button'>Action</button>"
-        //    + "<button class='dropdown-item' type='button'>Another action</button>"
-        //    + "<button class='dropdown-item' type='button'>Something else here</button>"
-        //    + "</div>"
-        //    + "</div>";
-        //return "<div class='dropdown'>"
-        //    + "<button class='btn btn-default dropdown-toggle' type='button' data-toggle='dropdown'>Actions"
-        //    + "<span class='caret'></span></button>"
-        //    + "<ul class='dropdown-menu'>"
-        //    + "<li><a href='#'>Add Work Item</a></li>"
-        //    + "<li><a href='#'>Edit</a></li>"
-        //    + "<li><a href='#'>Delete</a></li>"
-        //    + "</ul>"
-        //    + "</div>"
-    //}
-
-    //function createTable() {
-    //    $("#timesheetTable tbody").html(rowWorkItemHTML(fakeData(), false));
-    //    RowSelected();
-    //}
-
-    //function highlightRecordOnTopTape(id) {
-        //var strDate = $("#dayTimesheet" + id).text().split("/");
-        //var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
-        ////alert(dateBase);
-        //var objHighlighted = [];
-        ////console.log("data: "+dateBase);
-        //objHighlighted.push({
-        //    Id: id,
-        //    Day: dateBase,
-        //    WorkItem: $("#workitem" + id).text(),
-        //    Description: $("#description" + id).text(),
-        //    ChargeableHours: $("#chargeablehours" + id).text(),
-        //    NonChargeableHours: $("#nonchargeablehours" + id).text(),
-        //    Comments: $("#comments" + id).text()
-        //});
-        //$("#highlightedRecord tbody").html(rowWorkItemHTML(objHighlighted, true));
-    //}
 
     function IsWeekend(date) {
         var day = date.getDay();
@@ -541,13 +552,13 @@
             $("tr").removeClass("row-inactive");
             $("tr").removeClass("row-active");
 
-            $("#dayTimesheet").prop('disabled', false);
-            $("#dayTimesheet").val("");
-            $("#workItemTimesheet").val("");
-            $("#descriptionTimesheet").val("");
-            $("#chargeableTimesheet").val("");
-            $("#nonchargeableTimesheet").val("");
-            $("#commentsTimesheet").val("");
+            //$("#dayTimesheet").prop('disabled', false);
+            //$("#dayTimesheet").val("");
+            //$("#workItemTimesheet").val("");
+            //$("#descriptionTimesheet").val("");
+            //$("#chargeableTimesheet").val("");
+            //$("#nonchargeableTimesheet").val("");
+            //$("#commentsTimesheet").val("");
         });
     }
 
@@ -555,3 +566,8 @@
         window.scrollTo(0, 0);
     }
 </script>
+
+
+
+
+
