@@ -267,7 +267,7 @@
         renderMustacheTableTemplate(new Date());
         RowSelected();
         ShowHiddenTimesheetCalendarView();
-        calculateBackgroundColor();
+        
     });
 
     function ShowHiddenTimesheetCalendarView() {
@@ -322,6 +322,8 @@
             $(this).html("");
             //$(this).toggle();
         });
+
+        calculateBackgroundColor();
         
         //$('#calendar').fullCalendar("refetchEvents");
     }
@@ -391,7 +393,7 @@
     }
 
     function calculateBackgroundColor() {
-        $(".fc-day-top.fc-future").each(function (index, value) {
+        $(".fc-day-top:not(.fc-other-month)").each(function (index, value) {
             var _loadBar = "<div class='loadBarContainer'>    " +
                 "  <div class='progress progress-striped'>" +
                 "    <div class='progress-bar'>" +
