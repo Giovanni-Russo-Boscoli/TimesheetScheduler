@@ -404,6 +404,7 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Content\progressBarAnimation.less" />
+    <Content Include="Content\TimesheetScheduler.less" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\fullcalendar.js" />
     <Content Include="Scripts\fullcalendar.min.js" />
@@ -515,6 +516,7 @@
     <Content Include="Scripts\moment.js" />
     <Content Include="Scripts\moment.min.js" />
     <Content Include="Scripts\mustache.js" />
+    <Content Include="Scripts\TimesheetSchedulerCalendar.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

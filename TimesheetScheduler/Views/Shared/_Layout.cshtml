@@ -22,10 +22,17 @@
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Admin", "About", "Home")</li>
                     <li>@Html.ActionLink("Report", "Contact", "Home")</li>
+
+                </ul>
+            </div>
+            <div class="userLogged">
+                <ul class="">
+                    <li>@System.Security.Principal.WindowsIdentity.GetCurrent().Name</li>
                 </ul>
             </div>
         </div>
     </div>
+
     <div class="container body-content">
         @RenderBody()
         <hr />
