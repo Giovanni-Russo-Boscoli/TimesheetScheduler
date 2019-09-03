@@ -9,14 +9,20 @@ $(document).ready(function () {
     renderMustacheTableTemplate(new Date());
     RowSelected();
     ShowHiddenTimesheetCalendarView();
-
+    toggleView();
+    saveEvent();
 });
 
 function ShowHiddenTimesheetCalendarView() {
-    $("#btnUpdate").on("click", function () {
-        $("#calendar").toggle();
-        $("#targetTable").toggle();
+    $("#btnInputColor").on("click", function () {
+        $("#inputColor").click();
     });
+
+    $("#inputColor").change(
+        function (e) {
+            $(".fc-day-grid-event").css("background-color", e.target.value);
+        }
+    );
 }
 
 function eventsCalendar(_events, dateCalendar) {
@@ -44,10 +50,23 @@ function eventsCalendar(_events, dateCalendar) {
         events: _events,
         eventLimit: 4, // for all non-TimeGrid views
         eventClick: function (event) {
-            if (event.url) {
-                window.open(event.url, "_blank");
-                return false;
-            }
+            //if (event.url) {
+            //    window.open(event.url, "_blank");
+            //    return false;
+            //}
+            ModalEvent(event);
+            //alert(event.chargeableHours);
+        },
+        eventMouseover: function (event) {
+
+        },
+        eventRender: function (event, element) {
+            $(element).attr("data-html", "true");
+            $(element).attr("data-container","body");
+            $(element).tooltip({
+                title: "ChargeableHours: " + event.chargeableHours + " <br> Non-ChargeableHours:" + event.nonchargeableHours + "<br> Description: " + event.description,
+                placement: "bottom",
+            });
         }
 
     });
@@ -118,7 +137,19 @@ function fakeDataMustache() {
 function formatForCalendarEvents(_obj) {
     var _calendarEvents = [];
     for (i = 0; i < _obj.rows.length; i++) {
-        _calendarEvents.push({ title: _obj.rows[i].workItem, start: _obj.rows[i].day, end: _obj.rows[i].day, allDay: false, url: 'http://google.com/' });
+        _calendarEvents.push({
+            title: _obj.rows[i].workItem + " - " + _obj.rows[i].description,
+            start: _obj.rows[i].day,
+            end: _obj.rows[i].day,
+            allDay: false,
+            day: _obj.rows[i].day,
+            workItem: _obj.rows[i].workItem,
+            description: _obj.rows[i].description,
+            chargeableHours: _obj.rows[i].chargeableHours,
+            nonchargeableHours: _obj.rows[i].nonchargeableHours,
+            comments: _obj.rows[i].comments
+            //url: 'http://google.com/'
+        }); 
     }
     return _calendarEvents;
 }
@@ -264,6 +295,25 @@ function Info() {
     });
 }
 
+function ModalEvent(event) {
+    $("#eventModal").modal();
+    $("#dayTimesheet").val($.format.date(new Date(event.day), "dd/MM/yyyy")), //_formatDate(event.day);
+    $("#workItemTimesheet").val(event.workItem);
+    $("#descriptionTimesheet").val(event.description);
+    $("#chargeableTimesheet").val(event.chargeableHours);
+    $("#nonchargeableTimesheet").val(event.nonchargeableHours);
+    $("#commentsTimesheet").val(event.comments);
+       //title: _obj.rows[i].workItem + " - " + _obj.rows[i].description,
+       //     start: _obj.rows[i].day,
+       //     end: _obj.rows[i].day,
+       //     allDay: false,
+       //     workItem: _obj.rows[i].workItem,
+       //     description: _obj.rows[i].description,
+       //     chargeableHours: _obj.rows[i].chargeableHours,
+       //     nonchargeableHours: _obj.rows[i].nonchargeableHours,
+       //     comments: _obj.rows[i].comments
+}
+
 function getChargeableHours() {
     var chargeableHours = 0;
     $(".chargeablehoursCls").each(function () {
@@ -307,4 +357,74 @@ function UnselecRadio() {
 
 function returnTopPage() {
     window.scrollTo(0, 0);
+}
+
+function toggleView() {
+    var listUrl = "/Images/list.png";
+    var calendarUrl = "/Images/calendarView.png";
+    
+    $("#btnView").on("click", function () {
+        if ($(this).attr("src") == listUrl) {
+            $(this).attr("src", calendarUrl);
+            $(this).attr("title", "Change for Calendar View");
+        } else {
+            $(this).attr("src", listUrl);
+            $(this).attr("title", "Change for List View");
+        }
+        $("#calendar").toggle();
+        $("#targetTable").toggle();
+    });
+}
+
+function saveEvent() {
+    $("#btnSaveEvent").on("click", function () {
+        toastrMessage("Saved", "success");
+    });
+}
+
+function toastrMessage(msg, typeMessage) {
+    toastr.options = {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-bottom-right", //"toast-bottom-full-width",
+        "preventDuplicates": true,
+        "onclick": null,
+        "showDuration": "100",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "show",
+        "hideMethod": "hide"
+    };
+
+    switch (typeMessage) {
+        case "info": {
+            toastr.info(msg);
+            break;
+        }
+        case "warning": {
+            toastr.warning(msg);
+            break;
+        }
+        case "success": {
+            toastr.success(msg);
+            break;
+        }
+        case "error": {
+            toastr.error(msg);
+            break;
+        }
+        default: {
+            toastr.info(msg);
+            break;
+        }
+    }
+}
+
+function changeColor() {
+    $("#inputColor").change(function (e) { alert(e.target.value); });
 }

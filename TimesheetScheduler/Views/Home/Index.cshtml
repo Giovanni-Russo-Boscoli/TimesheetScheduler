@@ -16,14 +16,21 @@
             <div class="form-group col-xs-4">
                 <h2>Timesheet Scheduler</h2>
             </div>
-            <div class="form-group col-xs-4">
+            <div class="form-group col-xs-4 customBtn">
                 <h2>
-                    <button class="btn btn-success">SAVE</button>
-                    <button id="btnUpdate" class="btn btn-primary">UPDATE</button>
-                    <button id="btnAction" class="btn btn-warning">ACTION</button>
+                    @*<button class="btn btn-success">SAVE</button>*@
+                    <button id="btnInputColor" class="btn btn-primary">COLOR</button>
+                    <input id="inputColor" type="color" style='opacity:0;width:100px;position:absolute;' />
+                    <button id="btnAction" class="btn btn-warning" title="Export to a Excel file">EXCEL</button>
                     <button id="btnInfo" class="btn btn-danger">INFO</button>
                 </h2>
+                <h2>
+                    <input id="btnView" type="image" title="Change for Calendar View" src="~/Images/calendarView.png" />
+                </h2>
             </div>
+            @*<div class="form-group col-xs-1">
+                    <input id="btnView" type="image" src="~/Images/list.png" />
+                </div>*@
             <div class="form-group col-xs-2">
                 <div class="form-group">
                     <label for="monthTimesheet">Month</label>
@@ -42,7 +49,7 @@
         <div id="targetTable"></div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal Info -->
     <div class="modal fade" id="infoModal" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
@@ -78,6 +85,73 @@
         </div>
     </div>
 </body>
+
+<!-- Modal Event -->
+<div class="modal fade" id="eventModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Event Info</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="dayTimesheet">Day</label>
+                            <input class="form-control" id="dayTimesheet" disabled />
+                        </div>
+                    </div>
+                </form>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="workItemTimesheet">Work Item</label>
+                            <input class="form-control" id="workItemTimesheet" disabled/>
+                        </div>
+                    </div>
+                </form>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="descriptionTimesheet">Description</label>
+                            <input class="form-control" id="descriptionTimesheet" />
+                        </div>
+                    </div>
+                </form>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="chargeableTimesheet">Chargeable Hours</label>
+                            <input type="number" value="7.5" min="0" max="7.5" step="0.5" class="form-control" id="chargeableTimesheet" />
+                        </div>
+                    </div>
+                </form>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="nonchargeableTimesheet">Non Chargeable Hours</label>
+                            <input type="number" value="0.0" min="0" max="7.5" step="0.5" class="form-control" id="nonchargeableTimesheet" />
+                        </div>
+                    </div>
+                </form>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="commentsTimesheet">Comments</label>
+                            <input class="form-control" id="commentsTimesheet" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="btnSaveEvent" type="button" class="btn btn-success" data-dismiss="modal">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script id="templateTimesheetTable" type="x-tmpl-mustache">
     <table id="timesheetTable" class="table table-striped">
