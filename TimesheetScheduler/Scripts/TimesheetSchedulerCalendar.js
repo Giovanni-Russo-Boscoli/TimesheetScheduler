@@ -75,7 +75,7 @@ function eventsCalendar(_events, dateCalendar) {
         $(this).html("");
     });
 
-    calculateLoadBarEvents();
+    calculateLoadBarEvents(_events);
 }
 
 function toggleClass(_class) {
@@ -117,19 +117,49 @@ function fakeDataMustache() {
     for (i = 0; i < getLastDayMonthFromPage(); i++) {
         _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
         _isWeekend = IsWeekend(_date);
-        values.rows.push({
-            Id: (i + 1),
-            tooltipDay: _isWeekend ? "WEEKEND" : "",
-            classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-            disableFlag: _isWeekend ? "disabled" : "",
-            dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-            day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-            workItem: "34500" + (i + 1),
-            description: "description... " + (i + 1),
-            chargeableHours: "7.0",
-            nonchargeableHours: "2.0",
-            comments: "comments... " + (i + 1)
-        });
+        if (i % 2 == 0) {
+            values.rows.push({
+                Id: (i + 1),
+                tooltipDay: _isWeekend ? "WEEKEND" : "",
+                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+                disableFlag: _isWeekend ? "disabled" : "",
+                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+                workItem: "34500" + (i + 1),
+                description: "description... " + (i + 1),
+                chargeableHours: i % 2 == 0 ? "8.0" : "6.4",
+                nonchargeableHours: "2.0",
+                comments: "comments... " + (i + 1)
+            });
+            values.rows.push({
+                Id: (i + 1),
+                tooltipDay: _isWeekend ? "WEEKEND" : "",
+                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+                disableFlag: _isWeekend ? "disabled" : "",
+                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+                workItem: "34500" + (i + 1),
+                description: "description... " + (i + 1),
+                chargeableHours: i % 2 == 0 ? "8.0" : "6.4",
+                nonchargeableHours: "2.0",
+                comments: "comments... " + (i + 1)
+            });
+        }
+        else {
+            values.rows.push({
+                Id: (i + 1),
+                tooltipDay: _isWeekend ? "WEEKEND" : "",
+                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+                disableFlag: _isWeekend ? "disabled" : "",
+                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+                workItem: "34500" + (i + 1),
+                description: "description... " + (i + 1),
+                chargeableHours: i % 2 == 0 ? "8.0" : "6.4",
+                nonchargeableHours: "2.0",
+                comments: "comments... " + (i + 1)
+            });
+        }
     }
     return values;
 }
@@ -154,16 +184,50 @@ function formatForCalendarEvents(_obj) {
     return _calendarEvents;
 }
 
-function calculateLoadBarEvents() {
+function calculateLoadBarEvents(calendarEvents) {
+
+    var days = [];
+    var _chargeableHours = [];
+
+    $(calendarEvents).each(function (index, value) {
+        days.push($.format.date(new Date(value.day), "yyyy-MM-dd"));
+        _chargeableHours.push((value.chargeableHours / 7.5) * 100); //percentage worked (7.5 = 100%)
+    });
+
+    var percentageIndex = 0, lastIndex = 0, countChargeableHours = 0;
+
     $(".fc-day-top:not(.fc-other-month)").each(function (index, value) {
+        countChargeableHours = 0;
+        percentageIndex = jQuery.inArray($(this).attr("data-date"), days);
+        if ((percentageIndex - lastIndex) > 1) {//more then one event in the same day
+            for (i = percentageIndex; i > lastIndex; i--) {
+                countChargeableHours += _chargeableHours[i-1];
+            }
+        }
+        else {
+            countChargeableHours = _chargeableHours[percentageIndex-1];
+        }
+
+        lastIndex = percentageIndex;
+        //TODO: sum all chargeableHours for each event in the same day
+        var _class = "";
+        if (countChargeableHours > 100) {
+            _class = "overloadedLoadBar";
+        }
         var _loadBar = "<div class='loadBarContainer'>    " +
-            "  <div class='progress progress-striped'>" +
-            "    <div class='progress-bar'>" +
+            "  <div class='progress progress-striped' style='--loadbar-percent:" + countChargeableHours + "%'>" +
+            "    <div class='progress-bar " + _class + "'>" +
             "    </div>                      " +
             "  </div> " +
             "</div>";
 
+
         $(this).append(_loadBar);
+        $(this).find(".progress-bar")
+            .tooltip({
+                title: parseFloat(countChargeableHours).toFixed(2) + "%",
+            placement: "bottom",
+        });
     });
 }
 
@@ -428,3 +492,4 @@ function toastrMessage(msg, typeMessage) {
 function changeColor() {
     $("#inputColor").change(function (e) { alert(e.target.value); });
 }
+
