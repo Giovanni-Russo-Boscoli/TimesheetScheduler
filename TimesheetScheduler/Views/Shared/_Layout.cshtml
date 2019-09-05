@@ -27,7 +27,7 @@
             </div>
             <div class="userLogged">
                 <ul class="">
-                    <li title=@System.Security.Principal.WindowsIdentity.GetCurrent().Name>@Html.Action("UserLogged","Home")</li>
+                    <li title=@Html.Action("GetDomainUserName", "Home")>@Html.Action("GetUserName", "Home")</li>
                 </ul>
             </div>
         </div>

@@ -36,18 +36,8 @@ function eventsCalendar(_events, dateCalendar) {
         weekMode: 'liquid',
         weekends: false,
         fixedWeekCount: true,
-        //header: {
-        //    left: 'prev,next today',
-        //    center: 'title',
-        //    right: 'month,agendaWeek,agendaDay,listWeek'
-        //},
         header: { left: 'title', center: ' ', right: 'month, listMonth' },
-        defaultDate: _formatDate(dateCalendar), //'2019-09-16',
-        //navLinks: true,
-        //eventLimitClick: function () {
-        //    $('[data-toggle="tooltip"]').tooltip({ container: 'body', html: true }); // re-init tooltips
-        //    return "popover";
-        //},
+        defaultDate: _formatDate(dateCalendar, "yyyymmdd", "-"), //'2019-09-16',
         events: _events,
         eventLimit: 4, // for all non-TimeGrid views
         eventClick: function (event) {
@@ -55,8 +45,7 @@ function eventsCalendar(_events, dateCalendar) {
             //    window.open(event.url, "_blank");
             //    return false;
             //}
-            ModalEvent(event);
-            //alert(event.chargeableHours);
+            ModalEvent(event, false);
         },
         eventMouseover: function (event) {
 
@@ -65,9 +54,23 @@ function eventsCalendar(_events, dateCalendar) {
             $(element).attr("data-html", "true");
             $(element).attr("data-container","body");
             $(element).tooltip({
-                title: "ChargeableHours: " + event.chargeableHours + " <br> Non-ChargeableHours:" + event.nonchargeableHours + "<br> Description: " + event.description,
+                title: "Chargeable Hours: " + event.chargeableHours + " <br> Non-Chargeable Hours:" + event.nonchargeableHours + "<br> Description: " + event.description,
                 placement: "bottom",
             });
+        },
+        dayClick: function (date, jsEvent, view) {
+            prevTime = typeof currentTime === 'undefined' || currentTime === null
+                ? new Date().getTime() - 1000000
+                : currentTime;
+            currentTime = new Date().getTime();
+
+            if (currentTime - prevTime < 500) {
+                //DOUBLE CLICK
+                ModalEvent(date, true);
+            }
+        },
+        viewRender: function (view, element) {
+            calculateLoadBarEvents(_events);        
         }
 
     });
@@ -75,8 +78,6 @@ function eventsCalendar(_events, dateCalendar) {
     $(".fc-other-month").each(function () {
         $(this).html("");
     });
-
-    calculateLoadBarEvents(_events);
 }
 
 function toggleClass(_class) {
@@ -87,13 +88,31 @@ function renderMustacheTableTemplate(dateCalendar) {
     var template = $('#templateTimesheetTable').html();
     Mustache.parse(template);   // optional, speeds up future uses
     var obj = fakeDataMustache();
-    var workItems = connectToTFS();
-    eventsCalendar(formatForCalendarEvents(obj), dateCalendar);
+    //var workItems = connectToTFS();
+    var workItems = fakeTFSObj();
+    var eventsFormatted = formatForCalendarEvents(obj);
+    eventsCalendar(eventsFormatted, dateCalendar);
     var rendered = Mustache.render(template, obj);
     $('#targetTable').html(rendered);
+    calculateLoadBarEventsForListView(eventsFormatted);
+    tooltipDaysListView();
 }
 
-function _formatDate(date) {
+function tooltipDaysListView() {
+    $(".dayListView").each(function (index, value) {
+        $(value).tooltip({
+            title: $(value).attr("--title"),
+            placement: "bottom",
+        });
+    });    
+}
+
+function _formatDate(date, format, separator) {
+
+    if (!separator) {
+        separator = "/"
+    }
+
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
         day = '' + d.getDate(),
@@ -102,7 +121,20 @@ function _formatDate(date) {
     if (month.length < 2) month = '0' + month;
     if (day.length < 2) day = '0' + day;
 
-    return year + "-" + month + "-" + day;
+    switch (format) {
+        case "yyyymmdd": {
+            return year + separator + month + separator + day;
+            break;
+        }
+        case "ddmmyyyy": {
+            return day + separator + month + separator + year;
+            break;
+        }
+        default: {
+            return day + separator + month + separator + year;
+            break;
+        }
+    }    
 }
 
 function fakeDataMustache() {
@@ -111,9 +143,9 @@ function fakeDataMustache() {
     var values =
     {
         rows: [],
-        name: function () {
-            return this.tooltipDay + " " + this.classRow;
-        }
+        //name: function () {
+        //    return this.tooltipDay + " " + this.classRow;
+        //}
     }
 
     for (i = 0; i < getLastDayMonthFromPage(); i++) {
@@ -129,7 +161,8 @@ function fakeDataMustache() {
                 day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
                 workItem: "34500" + (i + 1),
                 description: "description... " + (i + 1),
-                chargeableHours:"6.4",
+                //chargeableHours: "6.4",
+                chargeableHours: "7.5",
                 nonchargeableHours: "2.0",
                 comments: "comments... " + (i + 1)
             });
@@ -145,7 +178,8 @@ function fakeDataMustache() {
                 day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
                 workItem: "34500" + (i + 1),
                 description: "description... " + (i + 1),
-                chargeableHours:"8.0",
+                //chargeableHours:"8.0",
+                chargeableHours:"3.75",
                 nonchargeableHours: "2.0",
                 comments: "comments... " + (i + 1)
             });
@@ -158,7 +192,8 @@ function fakeDataMustache() {
                 day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
                 workItem: "34500" + (i + 1),
                 description: "description... " + (i + 1),
-                chargeableHours:"8.0",
+                //chargeableHours:"8.0",
+                chargeableHours: "3.75",
                 nonchargeableHours: "2.0",
                 comments: "comments... " + (i + 1)
             });
@@ -223,6 +258,45 @@ function calculateLoadBarEvents(calendarEvents) {
                 title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
             placement: "bottom",
         });
+    });
+}
+
+function calculateLoadBarEventsForListView(calendarEvents) {
+
+    var days = [];
+    var _chargeableHours = [];
+
+    $(calendarEvents).each(function (index, value) {
+        days.push($.format.date(new Date(value.day), "yyyy-MM-dd"));
+        _chargeableHours.push(value.chargeableHours); //percentage worked (7.5 = 100%)
+    });
+
+    $("#timesheetTable tbody").each(function (index, value) {
+        countChargeableHours = 0;
+        $(days).each(function (_index, _value) {
+            var _date = $(value).find(".dayListView").text().split("/");
+            if ($.format.date(new Date(_date[2], (_date[1]-1), _date[0]), "yyyy-MM-dd") == _value) {
+                countChargeableHours += parseFloat(_chargeableHours[_index]);
+            }
+        });
+
+        var _class = "";
+        if (((countChargeableHours / 7.5) * 100) > 100) {
+            _class = "overloadedLoadBar";
+        }
+        var _loadBar = "<tr><td colspan='7' style='padding:0 !important;'><div class='loadBarContainerListView'>    " +
+            "  <div class='progress progress-striped' style='--loadbar-percent:" + ((countChargeableHours / 7.5) * 100) + "%'>" +
+            "    <div class='progress-bar " + _class + "'>" +
+            "    </div>                      " +
+            "  </div> " +
+            "</div></td></tr>";
+
+        $(this).prepend(_loadBar);
+        $(this).find(".progress-bar")
+            .tooltip({
+                title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
+                placement: "bottom",
+            });
     });
 }
 
@@ -344,7 +418,6 @@ function IsWeekend(date) {
     return (day === 6) || (day === 0);
 }
 
-//BUTTONS
 function Info() {
     $("#btnInfo").click(function () {
         $("#infoModal").modal();
@@ -354,23 +427,34 @@ function Info() {
     });
 }
 
-function ModalEvent(event) {
+function ModalEvent(event, eventCreation) {
+    cleanModal();
     $("#eventModal").modal();
-    $("#dayTimesheet").val($.format.date(new Date(event.day), "dd/MM/yyyy")), //_formatDate(event.day);
-    $("#workItemTimesheet").val(event.workItem);
-    $("#descriptionTimesheet").val(event.description);
-    $("#chargeableTimesheet").val(event.chargeableHours);
-    $("#nonchargeableTimesheet").val(event.nonchargeableHours);
-    $("#commentsTimesheet").val(event.comments);
-       //title: _obj.rows[i].workItem + " - " + _obj.rows[i].description,
-       //     start: _obj.rows[i].day,
-       //     end: _obj.rows[i].day,
-       //     allDay: false,
-       //     workItem: _obj.rows[i].workItem,
-       //     description: _obj.rows[i].description,
-       //     chargeableHours: _obj.rows[i].chargeableHours,
-       //     nonchargeableHours: _obj.rows[i].nonchargeableHours,
-       //     comments: _obj.rows[i].comments
+    if (!eventCreation) {
+        $("#dayTimesheet").val(_formatDate(event.day, "ddmmyyyy", "/")), 
+        $("#workItemTimesheet").val(event.workItem);
+        $("#descriptionTimesheet").val(event.description);
+        $("#chargeableTimesheet").val(event.chargeableHours);
+        $("#nonchargeableTimesheet").val(event.nonchargeableHours);
+        $("#commentsTimesheet").val(event.comments);
+        setModalTitle("Event Info");
+    } else {
+        $("#dayTimesheet").val(_formatDate(event, "ddmmyyyy", "/")); 
+        setModalTitle("Event Creation");
+    }
+}
+
+function cleanModal() {
+    $("#dayTimesheet").val(""), 
+    $("#workItemTimesheet").val("");
+    $("#descriptionTimesheet").val("");
+    $("#chargeableTimesheet").val("");
+    $("#nonchargeableTimesheet").val("");
+    $("#commentsTimesheet").val("");
+}
+
+function setModalTitle(title) {
+    $("#eventModal .modal-title").text(title);
 }
 
 function getChargeableHours() {
@@ -507,7 +591,6 @@ function connectToTFS() {
         }
     });
 }
-
 
 function fakeTFSObj() {
     var fakeTFS = [

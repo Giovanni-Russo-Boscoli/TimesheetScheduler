@@ -3,13 +3,13 @@
   max-height: 720px !important;
   overflow: auto;
 }
+#targetTable #timesheetTable.table tbody tr td {
+  vertical-align: middle !important;
+}
 #calendar {
   height: 720px !important;
   max-height: 720px !important;
   overflow: auto;
-}
-.fc-day-grid {
-  /*height: 650px !important;*/
 }
 .fc-basic-view .fc-body .fc-row {
   min-height: 4em;
@@ -18,9 +18,6 @@
 #calendar {
   display: none;
 }
-/*#calendar tr {
-    line-height: normal !important;
-}*/
 .form-group {
   margin-bottom: 5px !important;
 }
@@ -48,14 +45,6 @@ table th,
 td {
   margin: auto !important;
   text-align: center;
-}
-/*tr {
-    line-height: 0.5px !important;
-    min-height: 10px !important;
-    height: 10px !important;
-}*/
-.modal-body * {
-  /*text-align: center;*/
 }
 .modalLbl {
   min-width: 200px !important;

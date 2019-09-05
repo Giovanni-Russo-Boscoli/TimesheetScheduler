@@ -18,6 +18,7 @@ using Microsoft.TeamFoundation.Framework.Common;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.WebApi;
+using System.Configuration;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -44,18 +45,24 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
-        public string UserLogged() {
+        public string GetUserName()
+        {
             return UserPrincipal.Current.DisplayName;
         }
 
+        public string GetDomainUserName()
+        {
+            return System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+        }
+        //@
         public JsonResult ConnectTFS()
         {
-            Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+            Uri tfsUri = new Uri(GetUrlTfs());
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
             WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
-            var projectName = "BOM_MOD24";
-            var _iterationPath = "BOM_MOD24\\Timesheets";
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
             var _userLogged = UserPrincipal.Current.DisplayName;
 
             WorkItemCollection WIC = WIS.Query(
@@ -1151,7 +1158,22 @@ namespace TimesheetScheduler.Controllers
             //var repo = gitClient.GetRepositoryAsync(c_projectName, c_repoName).Result;
         }
 
+        private static string GetUrlTfs()
+        {
+            return ConfigurationManager.AppSettings["urlTFS"].ToString();
+        }
 
+        private static string GetProjectNameTFS()
+        {
+            return ConfigurationManager.AppSettings["projectNameTFS"].ToString();
+        }
+
+        private static string GetIterationPathTFS()
+        {
+            return ConfigurationManager.AppSettings["iterationPathTFS"].ToString();
+        }
+
+       
     }
 }
 

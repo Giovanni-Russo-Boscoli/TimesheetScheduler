@@ -2,22 +2,19 @@
     ViewData["Title"] = "Timesheet Scheduler";
 }
 
-@*<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>*@
-<script src="~/Scripts/jquery-3.3.1.js" type="text/javascript"></script> @*try to load in layout.cshtml*@
-<script src="~/Scripts/TimesheetSchedulerCalendar.js" type="text/javascript"></script> @*try to load in layout.cshtml*@
+@Styles.Render("~/Content/timesheetscheduler")
+@Scripts.Render("~/bundles/jquery")
 
-@*DO NOT LOAD IN _layout.cshtml, different behaviour to use variables from attributes after compile less files*@ 
-<link rel="stylesheet" href="~/Content/progressBarAnimation.less" /> @*DO NOT REMOVE*@
-<link rel="stylesheet" href="~/Content/TimesheetScheduler.less" />@*DO NOT REMOVE*@
+<script src="~/Scripts/TimesheetSchedulerCalendar.js" type="text/javascript"></script> @*try to load in layout.cshtml*@
 
 <body>
     <div class="container">
         <br />
         <div class="row">
-            <div class="form-group col-xs-4">
+            <div class="form-group col-xs-6">
                 <h2>Timesheet Scheduler</h2>
             </div>
-            <div class="form-group col-xs-4 customBtn">
+            <div class="form-group col-xs-2 customBtn">
                 <h2>
                     @*<button class="btn btn-success">SAVE</button>*@
                     <button id="btnInputColor" class="btn btn-primary">COLOR</button>
@@ -91,7 +88,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Event Info</h4>
+                <h4 class="modal-title"></h4>
             </div>
             <div class="modal-body">
                 <form class="form-inline">
@@ -164,8 +161,9 @@
                 <th>Comment</th>
             </tr>
         </thead>
+
+        {{#rows}}
         <tbody>
-            {{#rows}}
             <tr data-toggle='tooltip' id="row{{Id}}" title='{{tooltipDay}}' class='{{classRow}}' data>
 
                 @*RADIOBUTTON*@
@@ -177,7 +175,7 @@
 
                 @*DAY*@
                 <td>
-                    <div><label data-toggle='tooltip' title='{{day}}' id='dayTimesheet{{Id}}'>{{dayShortFormat}}</label></div>
+                    <div><label class="dayListView" data-toggle='tooltip' -title='{{day}}' id='dayTimesheet{{Id}}'>{{dayShortFormat}}</label></div>
                 </td>
 
                 @*WORKITEM*@
@@ -205,8 +203,9 @@
                     <div><label id='comments{{Id}}'>{{comments}}</label></div>
                 </td>
             </tr>
-            {{/rows}}
         </tbody>
+        {{/rows}}
+
     </table>
 </script>
 

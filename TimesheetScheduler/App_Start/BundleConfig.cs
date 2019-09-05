@@ -45,6 +45,10 @@ namespace TimesheetScheduler
                       "~/Content/fullcalendar.css",
                       "~/Content/toastr.css",
                       "~/Content/site.css"));
+
+            bundles.Add(new StyleBundle("~/Content/timesheetscheduler").Include(
+                      "~/Content/progressBarAnimation.css",
+                      "~/Content/TimesheetScheduler.css"));
         }
     }
 }
