@@ -15,11 +15,9 @@
 }
 
 .progress-striped .progress-bar {
-    background-color: rgba(102, 204, 0, 0.3); /*background-image: linear-gradient(to right, #007aff, #007aff, #007aff, #007aff, #007aff, #007aff); #fcbc51;*/
-    /*width: 100%;*/
-    /*width: 75%;*/
-    width: var(--loadbar-percent);
-    /*background-image: linear-gradient(45deg, #fca311 25%, transparent 25%, transparent 50%, green 50%, green 75%, transparent 75%, transparent);*/
+    background-color: rgba(102, 204, 0, 0.3); 
+    width:  var(--loadbar-percent);
+    max-width: 100% !important;
     animation: progressAnimationStrike 6s;
 }
 
@@ -29,7 +27,6 @@
     }
 
     to {
-        /*width: 75%;*/
         width: var(--loadbar-percent);
     }
 }
@@ -38,13 +35,3 @@
 .progress-bar-striped{
     background-image:none !important;
 }
-
-/*button::after {
-    content: var(--tooltip-string) !important;
-    color: var(--tooltip-color) !important;
-    font-size: var(--tooltip-font-size) !important;
-}*/
-
-/*.progress-striped .progress-bar {
-    width: var(--loadbar-percent) !important;
-}*/
