@@ -11,6 +11,7 @@ $(document).ready(function () {
     ShowHiddenTimesheetCalendarView();
     toggleView();
     saveEvent();
+    connectToTFS();
 });
 
 function ShowHiddenTimesheetCalendarView() {
@@ -427,4 +428,23 @@ function toastrMessage(msg, typeMessage) {
 
 function changeColor() {
     $("#inputColor").change(function (e) { alert(e.target.value); });
+}
+
+function connectToTFS() {
+    $.ajax({
+        url: "/Home/ConnectTFS", 
+        type: "GET",
+        //contentType: "application/json; charset=utf-8",
+        //dataType: "json",
+        //data: JSON.stringify({ controlData: _controlData, _form: $form, idAction: favouriteActionId }),
+        //data: JSON.stringify({ controlData: _controlData, form: _form}),
+        //data: JSON.stringify({ controlData: _controlData }),
+        success: function (data) {
+            alert("data[0]: " + JSON.stringify(data[0]));
+            alert("data[1]: " + JSON.stringify(data[1]));
+        },
+        error: function (error) {
+            alert("error: " + JSON.stringify(error));
+        }
+    });
 }

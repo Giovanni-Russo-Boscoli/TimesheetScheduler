@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -6,6 +7,7 @@
     <title>@ViewBag.Title - My ASP.NET Application</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    @Styles.Render("~/Content/timesheetschedulercss")
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -27,7 +29,7 @@
             </div>
             <div class="userLogged">
                 <ul class="">
-                    <li>@System.Security.Principal.WindowsIdentity.GetCurrent().Name</li>
+                    <li title=@System.Security.Principal.WindowsIdentity.GetCurrent().Name>@Html.Action("UserLogged","Home")</li>
                 </ul>
             </div>
         </div>

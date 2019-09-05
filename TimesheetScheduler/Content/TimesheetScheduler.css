@@ -1,0 +1,96 @@
+﻿#targetTable {
+  height: 720px !important;
+  max-height: 720px !important;
+  overflow: auto;
+}
+#calendar {
+  height: 720px !important;
+  max-height: 720px !important;
+  overflow: auto;
+}
+.fc-day-grid {
+  /*height: 650px !important;*/
+}
+.fc-basic-view .fc-body .fc-row {
+  min-height: 4em;
+  height: 100px;
+}
+#calendar {
+  display: none;
+}
+/*#calendar tr {
+    line-height: normal !important;
+}*/
+.form-group {
+  margin-bottom: 5px !important;
+}
+input {
+  max-width: none !important;
+}
+.tableHighlighted {
+  border: 13px solid yellow;
+}
+.row-intial {
+  border: none !important;
+  color: black;
+}
+.row-active {
+  border: 5px solid green !important;
+}
+.row-inactive *:not(.radioTd) {
+  color: #b9b9b9;
+}
+.weekendRow {
+  background-color: #4c4949 !important;
+  color: #b9b9b9;
+}
+table th,
+td {
+  margin: auto !important;
+  text-align: center;
+}
+/*tr {
+    line-height: 0.5px !important;
+    min-height: 10px !important;
+    height: 10px !important;
+}*/
+.modal-body * {
+  /*text-align: center;*/
+}
+.modalLbl {
+  min-width: 200px !important;
+}
+.fc-time {
+  display: none;
+}
+.userLogged {
+  color: #9d9d9d;
+  padding-top: 14px;
+  right: 50px !important;
+  position: absolute;
+}
+.userLogged li {
+  display: block !important;
+}
+.navbar .container {
+  display: flex;
+}
+.container.body-content {
+  width: 98% !important;
+}
+.container {
+  width: 98% !important;
+}
+.customBtn {
+  display: flex;
+}
+#btnView {
+  padding-top: 4px;
+  margin-left: 6px;
+}
+#eventModal label {
+  width: 160px !important;
+}
+#eventModal input {
+  width: 380px !important;
+}

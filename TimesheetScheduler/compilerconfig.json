@@ -1,0 +1,10 @@
+﻿[
+  {
+    "outputFile": "Content/progressBarAnimation.css",
+    "inputFile": "Content/progressBarAnimation.less"
+  },
+  {
+    "outputFile": "Content/TimesheetScheduler.css",
+    "inputFile": "Content/TimesheetScheduler.less"
+  }
+]
