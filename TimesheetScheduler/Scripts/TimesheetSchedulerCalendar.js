@@ -11,7 +11,7 @@ $(document).ready(function () {
     ShowHiddenTimesheetCalendarView();
     toggleView();
     saveEvent();
-    connectToTFS();
+    //connectToTFS();
 });
 
 function ShowHiddenTimesheetCalendarView() {
@@ -87,6 +87,7 @@ function renderMustacheTableTemplate(dateCalendar) {
     var template = $('#templateTimesheetTable').html();
     Mustache.parse(template);   // optional, speeds up future uses
     var obj = fakeDataMustache();
+    var workItems = connectToTFS();
     eventsCalendar(formatForCalendarEvents(obj), dateCalendar);
     var rendered = Mustache.render(template, obj);
     $('#targetTable').html(rendered);
@@ -497,11 +498,49 @@ function connectToTFS() {
         //data: JSON.stringify({ controlData: _controlData, form: _form}),
         //data: JSON.stringify({ controlData: _controlData }),
         success: function (data) {
-            //alert("data[0]: " + JSON.stringify(data[0]));
+            var teste = JSON.stringify(data[0]);
+            var teste2 = "";
             //alert("data[1]: " + JSON.stringify(data[1]));
         },
         error: function (error) {
             alert("error: " + JSON.stringify(error));
         }
     });
+}
+
+
+function fakeTFSObj() {
+    var fakeTFS = [
+        {
+            "Id": "352147",
+            "Title": "Timesheet - UI Improvements ",
+            "StartDate": "/Date(1567378800000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "352779",
+            "Title": "Timesheet - UI Improvements ",
+            "StartDate": "/Date(1567465200000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "353270",
+            "Title": "Timesheet - UI Improvements ",
+            "StartDate": "/Date(1567551600000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        }, {
+            "Id": "353573",
+            "Title": "Timesheet - UI Improvements + Live bug",
+            "StartDate": "/Date(1567638000000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        }]
+    return fakeTFS;
 }
