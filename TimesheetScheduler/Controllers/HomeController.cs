@@ -45,6 +45,13 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
+        public ActionResult StepsReports()
+        {
+            ViewBag.Message = "Tracking Process.";
+
+            return View();
+        }
+
         public string GetUserName()
         {
             return UserPrincipal.Current.DisplayName;

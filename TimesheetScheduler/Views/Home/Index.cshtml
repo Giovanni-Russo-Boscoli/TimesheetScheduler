@@ -26,13 +26,13 @@
                     <input id="btnView" type="image" title="Change for Calendar View" src="~/Images/calendarView.png" />
                 </h2>
             </div>
-            <div class="form-group col-xs-2">
+            <div class="form-group col-xs-2 floatRight">
                 <div class="form-group">
                     <label for="monthTimesheet">Month</label>
                     <select class="form-control" id="monthTimesheet"></select>
                 </div>
             </div>
-            <div class="form-group col-xs-2">
+            <div class="form-group col-xs-2 floatRight">
                 <div class="form-group">
                     <label for="yearTimesheet">Year</label>
                     <select class="form-control" id="yearTimesheet"></select>
@@ -175,7 +175,7 @@
 
                 @*DAY*@
                 <td>
-                    <div><label class="dayListView" data-toggle='tooltip' -title='{{day}}' id='dayTimesheet{{Id}}'>{{dayShortFormat}}</label></div>
+                    <div><label class="dayListView" data-toggle='tooltip' --title='{{day}}' id='dayTimesheet{{Id}}'>{{dayShortFormat}}</label></div>
                 </td>
 
                 @*WORKITEM*@

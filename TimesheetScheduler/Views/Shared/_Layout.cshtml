@@ -21,7 +21,7 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Admin", "About", "Home")</li>
-                    <li>@Html.ActionLink("Report", "Contact", "Home")</li>
+                    <li>@Html.ActionLink("Report", "StepsReports", "Home")</li>
 
                 </ul>
             </div>
@@ -53,3 +53,30 @@
 
 </body>
 </html>
+<style>
+
+    .navbar .container {
+        display: flex;
+    }
+
+    .userLogged {
+        color: #9d9d9d;
+        padding-top: 14px;
+        right: 50px !important;
+        position: absolute;
+    }
+
+        .userLogged li {
+            display: block !important;
+        }
+
+
+    .container.body-content {
+        width: 98% !important;
+    }
+
+    .container {
+        width: 98% !important;
+    }
+
+</style>
