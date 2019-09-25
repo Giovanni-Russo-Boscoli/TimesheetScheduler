@@ -95,15 +95,22 @@ namespace TimesheetScheduler.Controllers
                 if (wi["Start Date"] != null)
                 {
                     DateTime _startDate = (DateTime)wi["Start Date"];
-                    if (_startDate.Month == DateTime.Now.Month)
+                    if (_startDate.Month == DateTime.Now.Month && _startDate.Year == DateTime.Now.Year)
                     {
+                        var _workItemsLinked = "";
+                        for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                        {
+                            _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                        }
+                        
                         listWorkItems.Add(new WorkItemSerialized()
                         {
                             Id = wi["Id"].ToString(),
                             Title = wi["Title"].ToString(),
                             StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
                             Description = wi["Description"].ToString(),
-                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null
+                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                            WorkItemsLinked = _workItemsLinked
 
                             /*
                             Id: (i + 1),
