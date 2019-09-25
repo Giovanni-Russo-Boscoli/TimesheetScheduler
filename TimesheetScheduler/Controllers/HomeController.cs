@@ -104,6 +104,21 @@ namespace TimesheetScheduler.Controllers
                             StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
                             Description = wi["Description"].ToString(),
                             CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null
+
+                            /*
+                            Id: (i + 1),
+                            tooltipDay: _isWeekend ? "WEEKEND" : "",
+                            classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+                            disableFlag: _isWeekend ? "disabled" : "",
+                            dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+                            day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+                            workItem: "34500" + (i + 1),
+                            description: "description... " + (i + 1),
+                            //chargeableHours: "6.4",
+                            chargeableHours: "7.5",
+                            nonchargeableHours: "2.0",
+                            comments: "comments... " + (i + 1)
+                             */
                         });
                     }
                 }

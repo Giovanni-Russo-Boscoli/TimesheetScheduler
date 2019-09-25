@@ -11,7 +11,7 @@ $(document).ready(function () {
     ShowHiddenTimesheetCalendarView();
     toggleView();
     saveEvent();
-    //connectToTFS();
+    connectToTFS();
 });
 
 function ShowHiddenTimesheetCalendarView() {
@@ -577,13 +577,19 @@ function connectToTFS() {
         url: "/Home/ConnectTFS", 
         type: "GET",
         //contentType: "application/json; charset=utf-8",
-        //dataType: "json",
+        dataType: "json",
         //data: JSON.stringify({ controlData: _controlData, _form: $form, idAction: favouriteActionId }),
         //data: JSON.stringify({ controlData: _controlData, form: _form}),
         //data: JSON.stringify({ controlData: _controlData }),
         success: function (data) {
             var teste = JSON.stringify(data[0]);
-            var teste2 = JSON.stringify(data[1]);;
+            var teste2 = JSON.stringify(data[1]);
+            $(data[0]).each(function (index, value) {
+                var val = $(value);
+                var workItem = val[0].Id;
+                console.log(formatDate(new Date(parseInt(val[0].StartDate.substr(6)))));
+                console.log(_formatDate(new Date(parseInt(val[0].StartDate.substr(6))), "ddmmyyyy", "/"));
+            });
             //alert(teste);
             //alert(teste2);
             //alert("data[1]: " + JSON.stringify(data[1]));
@@ -720,7 +726,6 @@ function fakeTFSObj() {
     return fakeTFS;
 }
 
-
 function returnWorkItemsWithoutStartDate() {
     return [
         {
@@ -781,3 +786,24 @@ function returnWorkItemsWithoutStartDate() {
         }
     ]
 }
+
+//Id: (i + 1),
+//tooltipDay: _isWeekend ? "WEEKEND" : "",
+//classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+//disableFlag: _isWeekend ? "disabled" : "",
+//dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+//day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+//workItem: "34500" + (i + 1),
+//description: "description... " + (i + 1),
+////chargeableHours: "6.4",
+//chargeableHours: "7.5",
+//nonchargeableHours: "2.0",
+//comments: "comments... " + (i + 1)
+
+
+//"Id": "352147",
+//"Title": "Timesheet - UI Improvements ",
+//"StartDate": "/Date(1567378800000)/",
+//"Description": "",
+//"CompletedHours": 7.5,
+//"WorkItemsLinked": null
