@@ -56,9 +56,6 @@ function eventsCalendar(_events, dateCalendar) {
             $(element).tooltip({
                 title: event.title + "<br> Chargeable Hours: " + event.chargeableHours + " <br> Non-Chargeable Hours:" + event.nonchargeableHours + "<br> Description: " + event.description,
                 placement: "bottom",
-                open: function (event, ui) {
-                    ui.tooltip.css("max-width", "800px");
-                }
             });
         },
         dayClick: function (date, jsEvent, view) {
@@ -91,7 +88,6 @@ function renderMustacheTableTemplate(dateCalendar) {
     var template = $('#templateTimesheetTable').html();
     Mustache.parse(template);   // optional, speeds up future uses
     var obj = fakeDataMustache();
-    //var workItems = connectToTFS();
     var eventsTFSFormatted = formatTFSEventsForCalendar(fakeTFSObj());
     var eventsFormatted = formatForCalendarEvents(obj);
     //eventsCalendar(eventsFormatted, dateCalendar);
