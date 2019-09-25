@@ -583,7 +583,9 @@ function connectToTFS() {
         //data: JSON.stringify({ controlData: _controlData }),
         success: function (data) {
             var teste = JSON.stringify(data[0]);
-            var teste2 = "";
+            var teste2 = JSON.stringify(data[1]);;
+            //alert(teste);
+            //alert(teste2);
             //alert("data[1]: " + JSON.stringify(data[1]));
         },
         error: function (error) {
@@ -617,13 +619,165 @@ function fakeTFSObj() {
             "Description": "",
             "CompletedHours": 7.5,
             "WorkItemsLinked": null
-        }, {
+        },
+        {
             "Id": "353573",
             "Title": "Timesheet - UI Improvements + Live bug",
             "StartDate": "/Date(1567638000000)/",
             "Description": "",
             "CompletedHours": 7.5,
             "WorkItemsLinked": null
-        }]
+        },
+        {
+            "Id": "354065",
+            "Title": "Timesheet - Error when opening standalone tables - offset().top (live issue)",
+            "StartDate": "/Date(1567724400000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "354295",
+            "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
+            "StartDate": "/Date(1567983600000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "354566",
+            "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
+            "StartDate": "/Date(1568070000000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "354920",
+            "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
+            "StartDate": "/Date(1568156400000)/",
+            "Description": "",
+            "CompletedHours": null,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "355888",
+            "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
+            "StartDate": "/Date(1568674800000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "356179",
+            "Title": "Timesheet - Don't have collections minimise when dialog box is opened",
+            "StartDate": "/Date(1568156400000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "356548",
+            "Title": "Timesheet - Dropdown text overlapping icon  ",
+            "StartDate": "/Date(1568847600000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "356789",
+            "Title": "Timesheet - UI Improvements (Favourite Actions)",
+            "StartDate": "/Date(1568934000000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "357133",
+            "Title": "Timesheet - UI Improvements (Favourite Actions)",
+            "StartDate": "/Date(1569193200000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "357588",
+            "Title": "Timesheet - UI Improvements (Favourite Actions)",
+            "StartDate": "/Date(1569279600000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "357930",
+            "Title": "Timesheet - Freeze headers not working / Double scroll bars related ",
+            "StartDate": "/Date(1569366000000)/",
+            "Description": "",
+            "CompletedHours": 7.5,
+            "WorkItemsLinked": null
+        }
+    ];
     return fakeTFS;
+}
+
+
+function returnWorkItemsWithoutStartDate() {
+    return [
+        {
+            "Id": "331577",
+            "Title": "Timesheet - International Posting - Implement Contributed Actions ",
+            "StartDate": null,
+            "Description": null,
+            "CompletedHours": null,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "332683",
+            "Title": "Timesheet - Implement Articles Dropdown ",
+            "StartDate": null,
+            "Description": null,
+            "CompletedHours": null,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "333005",
+            "Title": "Timesheet - Implement Add Contact from existing top 5 ",
+            "StartDate": null,
+            "Description": null,
+            "CompletedHours": null,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "333378",
+            "Title": "Timesheet - Add actions (edit) for new properties",
+            "StartDate": null,
+            "Description": null,
+            "CompletedHours": null,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "334022",
+            "Title": "Timesheet - Record Signed Action for all decisions",
+            "StartDate": null,
+            "Description": null,
+            "CompletedHours": null,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "334291",
+            "Title": "Timesheet - Improve add contact feature",
+            "StartDate": null,
+            "Description": null,
+            "CompletedHours": null,
+            "WorkItemsLinked": null
+        },
+        {
+            "Id": "334597",
+            "Title": "Timesheet - Refactor after merge with EESSI branch",
+            "StartDate": null,
+            "Description": null,
+            "CompletedHours": null,
+            "WorkItemsLinked": null
+        }
+    ]
 }
