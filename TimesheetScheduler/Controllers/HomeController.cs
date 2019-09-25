@@ -968,7 +968,7 @@ namespace TimesheetScheduler.Controllers
 
         public void ConnectTFS2()
         {
-            NetworkCredential credential = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ07");
+            NetworkCredential credential = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ08");
             BasicAuthCredential basicCred = new BasicAuthCredential(credential);
             TfsClientCredentials tfsCred = new TfsClientCredentials(basicCred);
             tfsCred.AllowInteractive = false;

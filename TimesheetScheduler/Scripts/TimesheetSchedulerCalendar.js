@@ -11,7 +11,7 @@ $(document).ready(function () {
     ShowHiddenTimesheetCalendarView();
     toggleView();
     saveEvent();
-    connectToTFS();
+    //connectToTFS();
 });
 
 function ShowHiddenTimesheetCalendarView() {
@@ -54,8 +54,11 @@ function eventsCalendar(_events, dateCalendar) {
             $(element).attr("data-html", "true");
             $(element).attr("data-container","body");
             $(element).tooltip({
-                title: "Chargeable Hours: " + event.chargeableHours + " <br> Non-Chargeable Hours:" + event.nonchargeableHours + "<br> Description: " + event.description,
+                title: event.title + "<br> Chargeable Hours: " + event.chargeableHours + " <br> Non-Chargeable Hours:" + event.nonchargeableHours + "<br> Description: " + event.description,
                 placement: "bottom",
+                open: function (event, ui) {
+                    ui.tooltip.css("max-width", "800px");
+                }
             });
         },
         dayClick: function (date, jsEvent, view) {
@@ -89,9 +92,10 @@ function renderMustacheTableTemplate(dateCalendar) {
     Mustache.parse(template);   // optional, speeds up future uses
     var obj = fakeDataMustache();
     //var workItems = connectToTFS();
-    var workItems = fakeTFSObj();
+    var eventsTFSFormatted = formatTFSEventsForCalendar(fakeTFSObj());
     var eventsFormatted = formatForCalendarEvents(obj);
-    eventsCalendar(eventsFormatted, dateCalendar);
+    //eventsCalendar(eventsFormatted, dateCalendar);
+    eventsCalendar(eventsTFSFormatted, dateCalendar);
     var rendered = Mustache.render(template, obj);
     $('#targetTable').html(rendered);
     calculateLoadBarEventsForListView(eventsFormatted);
@@ -142,14 +146,14 @@ function fakeDataMustache() {
     var _isWeekend;
     var values =
     {
-        rows: [],
-        //name: function () {
-        //    return this.tooltipDay + " " + this.classRow;
-        //}
+        rows: []
     }
 
     for (i = 0; i < getLastDayMonthFromPage(); i++) {
         _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
+        if (formatDate(_date) == "8/9/2019" || formatDate(_date) == "7/9/2019" ) {
+            continue; //hiding weekend for listMonth view
+        }
         _isWeekend = IsWeekend(_date);
         if (i % 2 == 0) {
             values.rows.push({
@@ -161,9 +165,8 @@ function fakeDataMustache() {
                 day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
                 workItem: "34500" + (i + 1),
                 description: "description... " + (i + 1),
-                //chargeableHours: "6.4",
-                chargeableHours: "7.5",
-                nonchargeableHours: "2.0",
+                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
+                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
                 comments: "comments... " + (i + 1)
             });
           
@@ -178,9 +181,8 @@ function fakeDataMustache() {
                 day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
                 workItem: "34500" + (i + 1),
                 description: "description... " + (i + 1),
-                //chargeableHours:"8.0",
-                chargeableHours:"3.75",
-                nonchargeableHours: "2.0",
+                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
+                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
                 comments: "comments... " + (i + 1)
             });
             values.rows.push({
@@ -192,14 +194,17 @@ function fakeDataMustache() {
                 day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
                 workItem: "34500" + (i + 1),
                 description: "description... " + (i + 1),
-                //chargeableHours:"8.0",
-                chargeableHours: "3.75",
-                nonchargeableHours: "2.0",
+                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
+                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
                 comments: "comments... " + (i + 1)
             });
         }
     }
     return values;
+}
+
+function generateRandomNumber(min, max) {
+    return Math.random() * (+max - +min) + +min; 
 }
 
 function formatForCalendarEvents(_obj) {
@@ -218,6 +223,29 @@ function formatForCalendarEvents(_obj) {
             comments: _obj.rows[i].comments
             //url: 'http://google.com/'
         }); 
+    }
+    return _calendarEvents;
+}
+
+function formatTFSEventsForCalendar(_obj) {
+    var _calendarEvents = [];
+    for (i = 0; i < _obj.length; i++) {
+        //var _startDate = _formatDate(new Date(parseInt(_obj[i].StartDate.substr(6))), "ddmmyyyy", "/");
+        //var _startDate = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString();
+        var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
+        _calendarEvents.push({
+            title: _obj[i].Id + " - " + _obj[i].Title,
+            start: _startDate,
+            end: _startDate,
+            allDay: false,
+            day: _startDate,
+            workItem: _obj[i].Id,
+            description: _obj[i].Description,
+            chargeableHours: _obj[i].CompletedHours,
+            nonchargeableHours: _obj[i].CompletedHours,
+            comments: _obj[i].WorkItemsLinked
+            //url: 'http://google.com/'
+        });
     }
     return _calendarEvents;
 }
@@ -608,7 +636,7 @@ function fakeTFSObj() {
             "StartDate": "/Date(1567378800000)/",
             "Description": "",
             "CompletedHours": 7.5,
-            "WorkItemsLinked": null
+            "WorkItemsLinked": "#350973"
         },
         {
             "Id": "352779",

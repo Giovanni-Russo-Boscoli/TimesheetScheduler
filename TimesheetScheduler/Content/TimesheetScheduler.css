@@ -68,3 +68,6 @@ td {
 #eventModal input {
   width: 380px !important;
 }
+.tooltip-inner {
+  max-width: 100%;
+}
