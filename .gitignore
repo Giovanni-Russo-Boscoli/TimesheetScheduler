@@ -7,9 +7,6 @@
 /.vs/TimesheetScheduler/obj/Debug
 /.vs/
 
-/TimesheetScheduler/bin
-/TimesheetScheduler/obj
-
 # ignore all logs
 *.log
 
@@ -18,4 +15,3 @@
 _ReSharper.*
 bin
 obj
-packages
