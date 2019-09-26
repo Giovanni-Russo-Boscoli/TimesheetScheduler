@@ -5,3 +5,17 @@
 /.vs/TimesheetScheduler/v15/Server/sqlite3
 /.vs/TimesheetScheduler/v15/.suo
 /.vs/TimesheetScheduler/obj/Debug
+/.vs/
+
+/TimesheetScheduler/bin
+/TimesheetScheduler/obj
+
+# ignore all logs
+*.log
+
+*.suo
+*.user
+_ReSharper.*
+bin
+obj
+packages
