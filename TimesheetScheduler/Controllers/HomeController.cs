@@ -19,6 +19,8 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.WebApi;
 using System.Configuration;
+using System.Runtime.Serialization.Json;
+using System.Web.Script.Serialization;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -28,6 +30,7 @@ namespace TimesheetScheduler.Controllers
         {
             ExcelExport excelFileExport = new ExcelExport();
             excelFileExport.ExcelFileExport();
+            ExcelExport();
             return View();
         }
 
@@ -52,6 +55,8 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
+        #region TFS
+
         public string GetUserName()
         {
             return UserPrincipal.Current.DisplayName;
@@ -61,94 +66,141 @@ namespace TimesheetScheduler.Controllers
         {
             return System.Security.Principal.WindowsIdentity.GetCurrent().Name;
         }
-        //@
+
+        private static string GetUrlTfs()
+        {
+            return ConfigurationManager.AppSettings["urlTFS"].ToString();
+        }
+
+        private static string GetProjectNameTFS()
+        {
+            return ConfigurationManager.AppSettings["projectNameTFS"].ToString();
+        }
+
+        private static string GetIterationPathTFS()
+        {
+            return ConfigurationManager.AppSettings["iterationPathTFS"].ToString();
+        }
+
         public JsonResult ConnectTFS(bool bypassTFS)
         {
             if (!bypassTFS)
             {
-                Uri tfsUri = new Uri(GetUrlTfs());
-                TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-                var projectName = GetProjectNameTFS();
-                var _iterationPath = GetIterationPathTFS();
-                var _userLogged = UserPrincipal.Current.DisplayName;
-
-                WorkItemCollection WIC = WIS.Query(
-                    " SELECT [System.Id], " +
-                    " [System.WorkItemType], " +
-                    " [System.State], " +
-                    " [System.AssignedTo], " +
-                    " [System.Title], " +
-                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                    " [Microsoft.VSTS.Scheduling.StartDate] " +
-                    " FROM WorkItems " +
-                    " WHERE [System.TeamProject] = '" + projectName + "'" +
-                    " AND [Iteration Path] = '" + _iterationPath + "'" +
-                    " AND [Assigned To] = '" + _userLogged + "'" +
-                    " ORDER BY [System.Id], [System.WorkItemType]");
-
                 IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
                 IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
                 IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
 
-                foreach (WorkItem wi in WIC)
-                {
-                    if (wi["Start Date"] != null)
-                    {
-                        DateTime _startDate = (DateTime)wi["Start Date"];
-                        if (_startDate.Month == DateTime.Now.Month && _startDate.Year == DateTime.Now.Year)
-                        {
-                            var _workItemsLinked = "";
-                            for (int i = 0; i < wi.WorkItemLinks.Count; i++)
-                            {
-                                _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
-                            }
-
-                            listWorkItems.Add(new WorkItemSerialized()
-                            {
-                                Id = wi["Id"].ToString(),
-                                Title = wi["Title"].ToString(),
-                                StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                                Description = wi["Description"].ToString(),
-                                CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-                                WorkItemsLinked = _workItemsLinked
-
-                                /*
-                                Id: (i + 1),
-                                tooltipDay: _isWeekend ? "WEEKEND" : "",
-                                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-                                disableFlag: _isWeekend ? "disabled" : "",
-                                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-                                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-                                workItem: "34500" + (i + 1),
-                                description: "description... " + (i + 1),
-                                //chargeableHours: "6.4",
-                                chargeableHours: "7.5",
-                                nonchargeableHours: "2.0",
-                                comments: "comments... " + (i + 1)
-                                 */
-                            });
-                        }
-                    }
-                    else
-                    {
-                        listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
-                        {
-                            Id = wi["Id"].ToString(),
-                            Title = wi["Title"].ToString(),
-                        });
-
-                    }
-                }
-
-                joinWorkItemsList.Add(listWorkItems);
-                joinWorkItemsList.Add(listWorkItemsWithoutStartDate);
+                joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems());
+                joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate());
 
                 return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
             }
+
             return Json(new EmptyResult(), JsonRequestBehavior.AllowGet);
         }
+
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems()
+        {
+            Uri tfsUri = new Uri(GetUrlTfs());
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+            var _userLogged = UserPrincipal.Current.DisplayName;
+
+            WorkItemCollection WIC = WIS.Query(
+                " SELECT [System.Id], " +
+                " [System.WorkItemType], " +
+                " [System.State], " +
+                " [System.AssignedTo], " +
+                " [System.Title], " +
+                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                " [Microsoft.VSTS.Scheduling.StartDate] " +
+                " FROM WorkItems " +
+                " WHERE [System.TeamProject] = '" + projectName + "'" +
+                " AND [Iteration Path] = '" + _iterationPath + "'" +
+                " AND [Assigned To] = '" + _userLogged + "'" +
+                " ORDER BY [System.Id], [System.WorkItemType]");
+
+            IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
+            IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
+            IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
+
+            foreach (WorkItem wi in WIC)
+            {
+                if (wi["Start Date"] != null)
+                {
+                    DateTime _startDate = (DateTime)wi["Start Date"];
+                    if (_startDate.Month == DateTime.Now.Month && _startDate.Year == DateTime.Now.Year)
+                    {
+                        var _workItemsLinked = "";
+                        for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                        {
+                            _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                        }
+
+                        listWorkItems.Add(new WorkItemSerialized()
+                        {
+                            Id = wi["Id"].ToString(),
+                            Title = wi["Title"].ToString(),
+                            StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+                            Description = wi["Description"].ToString(),
+                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                            WorkItemsLinked = _workItemsLinked
+                        });
+                    }
+                }
+            }
+
+            return listWorkItems;
+        }
+
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate()
+        {
+            Uri tfsUri = new Uri(GetUrlTfs());
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+            var _userLogged = UserPrincipal.Current.DisplayName;
+
+            WorkItemCollection WIC = WIS.Query(
+                " SELECT [System.Id], " +
+                " [System.WorkItemType], " +
+                " [System.State], " +
+                " [System.AssignedTo], " +
+                " [System.Title], " +
+                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                " [Microsoft.VSTS.Scheduling.StartDate] " +
+                " FROM WorkItems " +
+                " WHERE [System.TeamProject] = '" + projectName + "'" +
+                " AND [Iteration Path] = '" + _iterationPath + "'" +
+                " AND [Assigned To] = '" + _userLogged + "'" +
+                " ORDER BY [System.Id], [System.WorkItemType]");
+
+            IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
+
+            foreach (WorkItem wi in WIC)
+            {
+               if (wi["Start Date"] == null)
+                {
+                    listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
+                    {
+                        Id = wi["Id"].ToString(),
+                        Title = wi["Title"].ToString(),
+                    });
+
+                }
+            }
+
+            return listWorkItemsWithoutStartDate;
+        }
+
+        #endregion TFS
+
+        #region EXCEL
 
         #region UTIL
 
@@ -189,6 +241,8 @@ namespace TimesheetScheduler.Controllers
         // --------------------------------------- INIT HEADER TIMESHEET -----------------------------------------
 
         //PROJECT NAME
+
+        #region CellNames
         public CellObject CellProjectNameLabel { get; set; }
         public CellObject CellProjectNameInput { get; set; }
 
@@ -240,7 +294,7 @@ namespace TimesheetScheduler.Controllers
 
         //Header Table Comments
         public CellObject CellHeaderTableComments { get; set; }
-
+        #endregion CellNames
 
         //---------------------------------------- END HEADER TABLE---------------------------------------------
 
@@ -659,8 +713,6 @@ namespace TimesheetScheduler.Controllers
             }
         }
 
-
-
         public void SetValAndFormatCell(Worksheet worksheet, CellObject cellObj)
         {
             SetCellValue(worksheet, cellObj);
@@ -689,24 +741,17 @@ namespace TimesheetScheduler.Controllers
                 CreateHeader(worksheet);
                 CreateTable(worksheet);
                 resizeColumns(worksheet);
-                excelAddButtonWithVBA(worKbooK);
-                //border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
-                //border.Weight = 2d;
-                //worksheet.Cells.Font.Size = 27;
-
+          
                 celLrangE = worksheet.Range[worksheet.Cells[5, 1], worksheet.Cells[36, 7]]; //TODO
                 Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
                 border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
                 border.Weight = 2d;
-                //WorkbookSheetChange(worKbooK);
-
-                ////welfare.irlgov.ie/shares/FRDIRWIN7_FI/giovanniboscoli/Desktop/
+     
                 protectSheet(worksheet);
                 worKbooK.SaveAs(TimesheetFileName('_'));
 
                 worKbooK.Close();
                 excel.Quit();
-
             }
             catch (Exception ex)
             {
@@ -735,96 +780,15 @@ namespace TimesheetScheduler.Controllers
 
             string changedRange = Target.get_Address(
                 XlReferenceStyle.xlA1);
-
-            //MessageBox.Show("The value of " + sheet.Name + ":" +
-            //  changedRange + " was changed.");
         }
-
-        private static void excelAddButtonWithVBA(Workbook xlBook)
-        {
-            Application xlApp = new Application();
-            // Excel.Workbook xlBook = xlApp.Workbooks.Open(@"PATH_TO_EXCEL_FILE");
-            Worksheet wrkSheet = xlBook.Worksheets[2];
-            Range range;
-
-            try
-            {
-                //set range for insert cell
-                range = wrkSheet.get_Range("A1:A1");
-
-                //insert the dropdown into the cell
-                Buttons xlButtons = wrkSheet.Buttons();
-                Button xlButton = xlButtons.Add((double)range.Left, (double)range.Top, (double)range.Width, (double)range.Height);
-
-                //set the name of the new button
-                xlButton.Name = "btnDoSomething";
-                xlButton.Text = "Click me!";
-                xlButton.OnAction = "btnDoSomething_Click";
-                //xlButton.Formula = "MsgBox teste";
-
-                //buttonMacro(xlButton.Name, xlApp, xlBook, wrkSheet);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            //xlApp.Visible = true;
-        }
-
-        //private static void buttonMacro(string buttonName, Application xlApp, Workbook wrkBook, Worksheet wrkSheet)
-        //{
-        //    StringBuilder sb;
-        //    VBIDE.VBComponent xlModule;
-        //    VBIDE.VBProject prj;
-
-        //    prj = wrkBook.VBProject;
-        //    sb = new StringBuilder();
-
-        //    // build string with module code
-        //    sb.Append("Sub " + buttonName + "_Click()" + "\n");
-        //    sb.Append("\t" + " msgbox \"" + buttonName + "\"\n"); // add your custom vba code here
-        //    sb.Append(" End Sub");
-
-        //    // set an object for the new module to create
-        //    xlModule = wrkBook.VBProject.VBComponents.Add(VBIDE.vbext_ComponentType.vbext_ct_StdModule);
-
-        //    // add the macro to the spreadsheet
-        //    xlModule.CodeModule.AddFromString(sb.ToString());
-        //}
 
         //-0------------------------------------------------------------------------------------------------------
 
         private void protectSheet(Worksheet worksheet)
         {
-            //worksheet.Range[worksheet.Cells[1, 7], worksheet.Cells[4, 7]].Style.Locked = true; //lock header
-            //worksheet.Columns[1].Style.Locked = true; //lock Id Column
-            //worksheet.Columns[2].Style.Locked = true; //lock Date Column
-            //worksheet.Protect("bom", UserInterfaceOnly: true);
-            //worksheet.Range[worksheet.Cells[1, 7], worksheet.Cells[4, 7]].Style.Locked = false; //lock header
-            //worksheet.Range.Style.Locked = false;
-            //worksheet.Range["A1:B3"].Style.Locked = true;
-            //worksheet.Protect("123", SheetProtectionType.All);
-
-            //worksheet.Columns[2].Style.Locked = false; //lock Date Column
-
-            //worksheet.Columns.Locked = false;
-            //((Microsoft.Office.Interop.Excel.Range)worksheet.get_Range((object)worksheet.Cells[1,7], (object)worksheet.Cells[4, 7])).EntireColumn.Locked = true;
-            //worksheet.EnableSelection = Microsoft.Office.Interop.Excel.XlEnableSelection.xlUnlockedCells;
-            //wks.Protect(mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv, mv);
-            //worksheet.Cells.Style.Locked = false;
-            //worksheet.Columns[1].Style.Locked = true;
-            //worksheet.Range[worksheet.Cells[1, 7], worksheet.Cells[4, 7]].Style.Locked = false;
-            //worksheet.Range[worksheet.Cells[6, 1], worksheet.Cells[36, 7]].Style.Locked = true;
-            //worksheet.Protect("bom", AllowFormattingColumns: true, AllowFormattingRows: true, UserInterfaceOnly: true);
-            //worksheet.Protect("bom", Type.Missing,true,Type.Missing, Type.Missing, Type.Missing, Type.Missing,Type.Missing, 
-            // Type.Missing, Type.Missing, Type.Missing,Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
-
             var missing = Type.Missing;
-            //worksheet.Cells.Locked = false;
             worksheet.Columns[1].Locked = true;
             worksheet.Columns[2].Locked = true;
-            //worksheet.Range[].Locked = true;
-            //worksheet.Range[worksheet.Columns[2]].Locked = true;
             worksheet.Protect("bom", missing, missing, missing, true, missing, missing,
                     missing, missing, missing, missing, missing, missing, missing, missing, missing);
             //UserInterfaceOnly: true
@@ -845,7 +809,6 @@ namespace TimesheetScheduler.Controllers
                 worksheet.Columns[7].ColumnWidth > 50 ?
                     worksheet.Columns[7].ColumnWidth = 50 :
                     worksheet.Columns[7].ColumnWidth;
-            //worksheet.Cells[11, 7].Style.WrapText = true; //does not work
             worksheet.get_Range("G11").WrapText = true;
         }
 
@@ -872,341 +835,17 @@ namespace TimesheetScheduler.Controllers
                 });
             }
 
+            //var _list = ReturnTFSEvents_ListWorkItems();
+
             return timesheetRecords;
         }
+
+        #endregion EXCEL
 
         private bool IsWeekend(DateTime day)
         {
             return (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday);
-        }
-
-        public void ConnectToTFS()
-        {
-            //GiovanniBoscoli@welfare.irlgov.ie
-            //https://social.msdn.microsoft.com/Forums/vstudio/en-US/f0bcdca8-60fc-4be3-ab64-2575589fc765/programatically-connecting-to-tfs?forum=tfsgeneral
-            //NetworkCredential networkCredentials = new NetworkCredential(@"Domain\Account", @"Password");
-            //Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
-            //VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
-            //TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(
-            //    new Uri("http://XXX:8080/tfs/DefaultCollection"),
-            //    basicCredentials);
-
-            //tfsColl.Authenticate(); // make sure it is authenticate
-
-            //Uri collectionUri = new Uri("https://MyName.visualstudio.com/DefaultCollection");
-
-            //Uri collectionUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS"); //working
-            //NetworkCredential credential = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ07");
-
-            //Uri collectionUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/BOM_MOD24/BOMi%20UI%20Design/_queries");
-            //Uri collectionUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/BOM_MOD24/BOMi%20UI%20Design/_queries?id=4cc9e796-664b-4e1e-b3df-7ebf43525e89&_a=query");
-            //Uri collectionUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/INTEG_MIRROR");
-            //NetworkCredential credential = new NetworkCredential(@"WELFARE\GiovanniBoscoli", "?bCh+*p#d8MQ07");
-            //NetworkCredential credential = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ07");
-
-            //TfsTeamProjectCollection teamProjectCollection = new TfsTeamProjectCollection(collectionUri, credential);
-            //teamProjectCollection.EnsureAuthenticated();
-
-
-            using (TfsTeamProjectCollection tpc = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/")))
-            {
-                tpc.EnsureAuthenticated();
-
-                // i am getting workitemstore object here
-                var wiStore = tpc.GetService<WorkItemStore>();
-
-                // i am getting version control server object here as well
-                var vcs = tpc.GetService<VersionControlServer>();
-
-                var a = vcs.GetAllTeamProjects(true);
-                var b = vcs.GetTeamProject("BOM_MOD24");
-                var c = b.TeamProjectCollection;
-
-                //using (TfsTeamProjectCollection tpc = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/")))
-                //{
-
-                //}
-                //List<int> ids = new List<int>();
-                //ids.Add(349423);
-                //var items = vcs.GetItems(ids.ToArray(), 1);
-
-                var d = b.TeamProjectCollection.GetService<WorkItemStore>();
-
-                //Workspace ws = vcs.GetWorkspace("$/BOM_MOD24", "BOM_MOD24");
-
-                //var path = "$/BOM_MOD24/BOMi%20UI%20Design/_queries";
-                //var path = "$/BOM_MOD24/BOMi%20UI%20Design/_queries?id=4cc9e796-664b-4e1e-b3df-7ebf43525e89&_a=query";
-                var path = "$/BOM_MOD24";
-
-                var myFolderAtChangeset17 = vcs.GetItems(path, new ChangesetVersionSpec(10), RecursionType.Full);
-
-                var _query = "SELECT * FROM WorkItems"; // WHERE [System.WorkItemType] = 'Task' AND [Assigned to] = 'name' ORDER BY[System.WorkItemType], [System.Id]";
-
-
-                WorkItemStore abc = (WorkItemStore)c.GetService(typeof(WorkItemStore));
-                //var WIC = abc.Query(_query);
-
-                //WorkItemStore _workItemStore = new WorkItemStore("BOM_MOD24");
-                //WorkItemStore _workItemStore2 = new WorkItemStore(vcs.TeamProjectCollection);
-                // but here i get a null object
-                //var bs = tpc.GetService<IBuildServer>();
-
-                ////this is what i want to do with buildserver object
-                //var buildDefinition = bs.GetBuildDefinition("aaa", "bbb");
-                //var buildRequest = buildDefinition.CreateBuildRequest();
-                //bs.QueueBuild(buildRequest);
-
-                WorkItemStore workItemStore = c.GetService<WorkItemStore>();
-
-                if (workItemStore != null)
-                {
-                    WorkItemCollection workItemCollection = workItemStore.Query("QUERY HERE");
-
-                    foreach (var item in workItemCollection)
-                    {
-                        //Do something here.
-                    }
-                }
-            }
-        }
-
-        public void ConnectTFS2()
-        {
-            NetworkCredential credential = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ08");
-            BasicAuthCredential basicCred = new BasicAuthCredential(credential);
-            TfsClientCredentials tfsCred = new TfsClientCredentials(basicCred);
-            tfsCred.AllowInteractive = false;
-
-            TfsTeamProjectCollection tpc = new TfsTeamProjectCollection(
-                //new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/INTEG_MIRROR"),
-                new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/"),
-                tfsCred);
-
-            tpc.EnsureAuthenticated();
-
-            Console.WriteLine(tpc.InstanceId);
-        }
-
-        public void ConnectTFS3()
-        {
-            //https://stackoverflow.com/questions/2455654/what-additional-configuration-is-necessary-to-reference-a-net-2-0-mixed-mode
-            //SecureString secureString = new SecureString("?bCh+*p#d8MQ07",10);
-
-            var pathBOM24 = "vstfs:///Classification/TeamProject/83822731-bd6e-4624-a6cf-45032d6c302a";
-
-            NetworkCredential networkCredential = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ07");
-
-            ICredentials credential = (ICredentials)networkCredential;
-
-            TfsTeamProjectCollection tfs = new TfsTeamProjectCollection(new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/"), credential);
-            TfsTeamProjectCollection tfs2 = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/"));
-            //TfsTeamProjectCollection tfs3 = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/BOM_MOD24"));            
-
-            //WorkItemStore wi = new WorkItemStore();
-
-            tfs.EnsureAuthenticated();
-            tfs2.EnsureAuthenticated();
-            //tfs3.EnsureAuthenticated();
-
-            var vcs = tfs.GetService<VersionControlServer>();
-            var a = vcs.GetAllTeamProjects(true);
-            var b = vcs.GetTeamProject("BOM_MOD24");
-            var c = b.TeamProjectCollection;
-            var d = b.TeamProjectCollection.GetService<WorkItemStore>();
-
-            var path = "$/BOM_MOD24";
-            //WorkItemStore wi2 = new WorkItemStore(path);
-
-            var myFolderAtChangeset17 = vcs.GetItems(path, new ChangesetVersionSpec(10), RecursionType.Full);
-
-            //var bs = tfs2.GetService<IBuildServer>();
-
-            WorkItemStore workitemstore = tfs.GetService<WorkItemStore>();
-            WorkItemStore workitemstore2 = tfs2.GetService<WorkItemStore>();
-
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/"));
-            ICommonStructureService Iss = (ICommonStructureService)tfs2.GetService(typeof(ICommonStructureService));
-            ProjectInfo[] ProjInfo = Iss.ListProjects();
-
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-            foreach (ProjectInfo pi in ProjInfo)
-            {
-                WorkItemCollection WIC = WIS.Query(
-                " SELECT [System.Id], [System.WorkItemType]," +
-                " [System.State], [System.AssignedTo], [System.Title] " +
-                " FROM WorkItems " +
-                " WHERE [System.TeamProject] = '" + pi.Name +
-                "' ORDER BY [System.WorkItemType], [System.Id]");
-
-                foreach (WorkItem wi in WIC)
-                {
-                    Console.WriteLine(wi.Id);
-                    Console.WriteLine(wi.Title);
-                }
-            }
-
-            if (workitemstore != null)
-            {
-                Console.WriteLine("… …");
-            }
-        }
-
-        public void ConnectTFS4()
-        {
-            Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-            //string teamProjectName = "INTEG_MIRROR";
-            string teamProjectName = "BOM_MOD24";
-            TfsTeamProjectCollection projectCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            var css3 = projectCollection.GetService<ICommonStructureService3>();
-            ProjectInfo projectInfo = css3.GetProjectFromName(teamProjectName);
-            TfsTeamService teamService = projectCollection.GetService<TfsTeamService>();
-            var allItems = teamService.QueryTeams(projectInfo.Uri);
-
-            TeamFoundationTeam foundationTeam = projectCollection.GetService<TeamFoundationTeam>();
-            var members = foundationTeam.GetMembers(projectCollection, MembershipQuery.Direct);
-        }
-
-        public JsonResult ConnectTFS5()
-        //public IList<WorkItem> ConnectTFS5()
-        {
-            Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-            //string teamProjectName = "INTEG_MIRROR";
-            //string teamProjectName = "BOM_MOD24";
-            //var projectUri = "vstfs:///Classification/TeamProject/83822731-bd6e-4624-a6cf-45032d6c302a";
-
-            //TfsTeamProjectCollection collection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-
-            //// Retrieve the default team.
-            //TfsTeamService teamService = collection.GetService<TfsTeamService>();
-            //TeamFoundationTeam defaultTeam = teamService.GetDefaultTeam(projectUri, null);
-
-            //// Get security namespace for the project collection.
-            //ISecurityService securityService = collection.GetService<ISecurityService>();
-            //SecurityNamespace securityNamespace = securityService.GetSecurityNamespace(FrameworkSecurity.IdentitiesNamespaceId);
-
-            //// Retrieve an ACL object for all the team members.
-            //var allMembers = defaultTeam.GetMembers(collection, MembershipQuery.Expanded).Where(m => !m.IsContainer);
-
-            // WorkItemStore store = (WorkItemStore)collection.GetService(typeof(WorkItemStore));
-
-            //var teamProjectCollection = new TfsTeamProjectCollection(tfsUri);
-            //var workItemStore = teamProjectCollection.GetService<WorkItemStore>();
-
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            //ICommonStructureService Iss = (ICommonStructureService)projCollection.GetService(typeof(ICommonStructureService));
-            //ProjectInfo[] ProjInfo = Iss.ListProjects();
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-            //IList<string> strBuilder = new List<string>();
-
-            var projectName = "BOM_MOD24";
-            var _iterationPath = "BOM_MOD24\\Timesheets";
-            var _assignedTo = "Giovanni Boscoli";
-
-            WorkItemCollection WIC = WIS.Query(
-                " SELECT [System.Id], " +
-                " [System.WorkItemType], " +
-                " [System.State], " +
-                " [System.AssignedTo], " +
-                " [System.Title], " +
-                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                " [Microsoft.VSTS.Scheduling.StartDate] " +
-                " FROM WorkItems " +
-                " WHERE [System.TeamProject] = '" + projectName + "'" +
-                " AND [Iteration Path] = '" + _iterationPath + "'" +
-                " AND [Assigned To] = '" + _assignedTo + "'" +
-                //" AND [Start Date] = '03/09/2019 00:00:00'" +
-                //" AND MONTH([Start Date]) = '8'" +
-                //" AND getdate([Start Date]) = @StartOfMonth " +
-                //" AND DATEPART(month, [Start Date]) = " + "DATEPART(month, GETDATE())" + 
-                //" AND ('2019-09-03') = " + " MONTH('2019-09-03') " + 
-                " ORDER BY [System.WorkItemType], [System.Id]");
-
-            IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
-            IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
-            IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
-
-            foreach (WorkItem wi in WIC)
-            {
-                if (wi["Start Date"] != null)
-                {
-                    DateTime _startDate = (DateTime)wi["Start Date"];
-                    if (_startDate.Month == DateTime.Now.Month)
-                    {
-                        listWorkItems.Add(new WorkItemSerialized()
-                        {
-                            Id = wi["Id"].ToString(),
-                            Title = wi["Title"].ToString(),
-                            StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                            Description = wi["Description"].ToString(),
-                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null
-                        });
-                    }
-                }
-                else
-                {
-                    listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
-                    {
-                        Id = wi["Id"].ToString(),
-                        Title = wi["Title"].ToString(),
-                    });
-
-                }
-
-                //if (wi.IterationPath.Equals(@"BOM_MOD24\Timesheets") && wi.CreatedBy.Equals("Giovanni Boscoli")) {
-                //    var assignedTo = wi["Start Date"];
-                //    strBuilder.Add(wi.Title);
-                //    strBuilder.Add(wi.Description);
-                //}
-                //Console.WriteLine(wi.Title);
-
-            }
-
-            joinWorkItemsList.Add(listWorkItems);
-            joinWorkItemsList.Add(listWorkItemsWithoutStartDate);
-
-            //var json = new JavaScriptSerializer().Serialize(joinWorkItemsList);
-            return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
-        }
-
-        public void ConnectTFS6()
-        {
-            Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-            TfsTeamProjectCollection collection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            //const String c_collectionUri = "https://dev.azure.com/fabrikam";
-            //const String c_projectName = "MyGreatProject";
-            //const String c_repoName = "MyRepo";
-
-            // Interactively ask the user for credentials, caching them so the user isn't constantly prompted
-            VssCredentials creds = new VssClientCredentials();
-            creds.Storage = new VssClientCredentialStorage();
-
-            // Connect to Azure DevOps Services
-            VssConnection connection = new VssConnection(tfsUri, creds);
-
-            // Get a GitHttpClient to talk to the Git endpoints
-            //GitHttpClient gitClient = connection.GetClient<GitHttpClient>();
-
-            // Get data about a specific repository
-            //var repo = gitClient.GetRepositoryAsync(c_projectName, c_repoName).Result;
-        }
-
-        private static string GetUrlTfs()
-        {
-            return ConfigurationManager.AppSettings["urlTFS"].ToString();
-        }
-
-        private static string GetProjectNameTFS()
-        {
-            return ConfigurationManager.AppSettings["projectNameTFS"].ToString();
-        }
-
-        private static string GetIterationPathTFS()
-        {
-            return ConfigurationManager.AppSettings["iterationPathTFS"].ToString();
-        }
-
-       
+        }     
     }
 }
 
