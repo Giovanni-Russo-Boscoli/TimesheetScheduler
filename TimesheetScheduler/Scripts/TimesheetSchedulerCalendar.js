@@ -6,12 +6,12 @@ $(document).ready(function () {
     bindMonthDropdown();
     Info();
     UnselecRadio();
-    renderMustacheTableTemplate(new Date());
-    RowSelected();
-    ShowHiddenTimesheetCalendarView();
-    toggleView();
-    saveEvent();
-    //connectToTFS();
+    //renderMustacheTableTemplate(new Date());
+    //RowSelected();
+    //ShowHiddenTimesheetCalendarView();
+    //toggleView();
+    //saveEvent();
+    connectToTFS();
 });
 
 function ShowHiddenTimesheetCalendarView() {
@@ -52,7 +52,7 @@ function eventsCalendar(_events, dateCalendar) {
         },
         eventRender: function (event, element) {
             $(element).attr("data-html", "true");
-            $(element).attr("data-container","body");
+            $(element).attr("data-container", "body");
             $(element).tooltip({
                 title: event.title + "<br> Chargeable Hours: " + event.chargeableHours + " <br> Non-Chargeable Hours:" + event.nonchargeableHours + "<br> Description: " + event.description,
                 placement: "bottom",
@@ -70,7 +70,7 @@ function eventsCalendar(_events, dateCalendar) {
             }
         },
         viewRender: function (view, element) {
-            calculateLoadBarEvents(_events);        
+            calculateLoadBarEvents(_events);
         }
 
     });
@@ -84,11 +84,11 @@ function toggleClass(_class) {
     $(_class).toggle();
 }
 
-function renderMustacheTableTemplate(dateCalendar) {
+function renderMustacheTableTemplate(dateCalendar, tfsEvents, bypassTFS) {
     var template = $('#templateTimesheetTable').html();
     Mustache.parse(template);   // optional, speeds up future uses
     var obj = fakeDataMustache();
-    var eventsTFSFormatted = formatTFSEventsForCalendar(fakeTFSObj());
+    var eventsTFSFormatted = bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(tfsEvents);
     var eventsFormatted = formatForCalendarEvents(obj);
     //eventsCalendar(eventsFormatted, dateCalendar);
     eventsCalendar(eventsTFSFormatted, dateCalendar);
@@ -104,7 +104,7 @@ function tooltipDaysListView() {
             title: $(value).attr("--title"),
             placement: "bottom",
         });
-    });    
+    });
 }
 
 function _formatDate(date, format, separator) {
@@ -134,7 +134,7 @@ function _formatDate(date, format, separator) {
             return day + separator + month + separator + year;
             break;
         }
-    }    
+    }
 }
 
 function fakeDataMustache() {
@@ -147,7 +147,7 @@ function fakeDataMustache() {
 
     for (i = 0; i < getLastDayMonthFromPage(); i++) {
         _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
-        if (formatDate(_date) == "8/9/2019" || formatDate(_date) == "7/9/2019" ) {
+        if (formatDate(_date) == "8/9/2019" || formatDate(_date) == "7/9/2019") {
             continue; //hiding weekend for listMonth view
         }
         _isWeekend = IsWeekend(_date);
@@ -165,7 +165,7 @@ function fakeDataMustache() {
                 nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
                 comments: "comments... " + (i + 1)
             });
-          
+
         }
         else {
             values.rows.push({
@@ -200,7 +200,7 @@ function fakeDataMustache() {
 }
 
 function generateRandomNumber(min, max) {
-    return Math.random() * (+max - +min) + +min; 
+    return Math.random() * (+max - +min) + +min;
 }
 
 function formatForCalendarEvents(_obj) {
@@ -218,13 +218,14 @@ function formatForCalendarEvents(_obj) {
             nonchargeableHours: _obj.rows[i].nonchargeableHours,
             comments: _obj.rows[i].comments
             //url: 'http://google.com/'
-        }); 
+        });
     }
     return _calendarEvents;
 }
 
 function formatTFSEventsForCalendar(_obj) {
     var _calendarEvents = [];
+    _obj = _obj[0];
     for (i = 0; i < _obj.length; i++) {
         //var _startDate = _formatDate(new Date(parseInt(_obj[i].StartDate.substr(6))), "ddmmyyyy", "/");
         //var _startDate = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString();
@@ -280,8 +281,8 @@ function calculateLoadBarEvents(calendarEvents) {
         $(this).find(".progress-bar")
             .tooltip({
                 title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
-            placement: "bottom",
-        });
+                placement: "bottom",
+            });
     });
 }
 
@@ -299,7 +300,7 @@ function calculateLoadBarEventsForListView(calendarEvents) {
         countChargeableHours = 0;
         $(days).each(function (_index, _value) {
             var _date = $(value).find(".dayListView").text().split("/");
-            if ($.format.date(new Date(_date[2], (_date[1]-1), _date[0]), "yyyy-MM-dd") == _value) {
+            if ($.format.date(new Date(_date[2], (_date[1] - 1), _date[0]), "yyyy-MM-dd") == _value) {
                 countChargeableHours += parseFloat(_chargeableHours[_index]);
             }
         });
@@ -455,22 +456,22 @@ function ModalEvent(event, eventCreation) {
     cleanModal();
     $("#eventModal").modal();
     if (!eventCreation) {
-        $("#dayTimesheet").val(_formatDate(event.day, "ddmmyyyy", "/")), 
-        $("#workItemTimesheet").val(event.workItem);
+        $("#dayTimesheet").val(_formatDate(event.day, "ddmmyyyy", "/")),
+            $("#workItemTimesheet").val(event.workItem);
         $("#descriptionTimesheet").val(event.description);
         $("#chargeableTimesheet").val(event.chargeableHours);
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
         $("#commentsTimesheet").val(event.comments);
         setModalTitle("Event Info");
     } else {
-        $("#dayTimesheet").val(_formatDate(event, "ddmmyyyy", "/")); 
+        $("#dayTimesheet").val(_formatDate(event, "ddmmyyyy", "/"));
         setModalTitle("Event Creation");
     }
 }
 
 function cleanModal() {
-    $("#dayTimesheet").val(""), 
-    $("#workItemTimesheet").val("");
+    $("#dayTimesheet").val(""),
+        $("#workItemTimesheet").val("");
     $("#descriptionTimesheet").val("");
     $("#chargeableTimesheet").val("");
     $("#nonchargeableTimesheet").val("");
@@ -529,7 +530,7 @@ function returnTopPage() {
 function toggleView() {
     var listUrl = "/Images/list.png";
     var calendarUrl = "/Images/calendarView.png";
-    
+
     $("#btnView").on("click", function () {
         if ($(this).attr("src") == listUrl) {
             $(this).attr("src", calendarUrl);
@@ -597,23 +598,28 @@ function changeColor() {
 }
 
 function connectToTFS() {
+    var _bypassTFS = true;
     $.ajax({
-        url: "/Home/ConnectTFS", 
+        url: "/Home/ConnectTFS",
         type: "GET",
         //contentType: "application/json; charset=utf-8",
         dataType: "json",
-        //data: JSON.stringify({ controlData: _controlData, _form: $form, idAction: favouriteActionId }),
-        //data: JSON.stringify({ controlData: _controlData, form: _form}),
-        //data: JSON.stringify({ controlData: _controlData }),
+        data: { bypassTFS: _bypassTFS },
         success: function (data) {
-            var teste = JSON.stringify(data[0]);
-            var teste2 = JSON.stringify(data[1]);
-            $(data[0]).each(function (index, value) {
-                var val = $(value);
-                var workItem = val[0].Id;
-                console.log(formatDate(new Date(parseInt(val[0].StartDate.substr(6)))));
-                console.log(_formatDate(new Date(parseInt(val[0].StartDate.substr(6))), "ddmmyyyy", "/"));
-            });
+            renderMustacheTableTemplate(new Date(), data, _bypassTFS);
+            RowSelected();
+            ShowHiddenTimesheetCalendarView();
+            toggleView();
+            saveEvent();
+            //return data;
+            //var teste = JSON.stringify(data[0]);
+            //var teste2 = JSON.stringify(data[1]);
+            //$(data[0]).each(function (index, value) {
+            //var val = $(value);
+            //var workItem = val[0].Id;
+            //console.log(formatDate(new Date(parseInt(val[0].StartDate.substr(6)))));
+            //console.log(_formatDate(new Date(parseInt(val[0].StartDate.substr(6))), "ddmmyyyy", "/"));
+            //});
             //alert(teste);
             //alert(teste2);
             //alert("data[1]: " + JSON.stringify(data[1]));
@@ -626,126 +632,187 @@ function connectToTFS() {
 
 function fakeTFSObj() {
     var fakeTFS = [
-        {
-            "Id": "352147",
-            "Title": "Timesheet - UI Improvements ",
-            "StartDate": "/Date(1567378800000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": "#350973"
-        },
-        {
-            "Id": "352779",
-            "Title": "Timesheet - UI Improvements ",
-            "StartDate": "/Date(1567465200000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "353270",
-            "Title": "Timesheet - UI Improvements ",
-            "StartDate": "/Date(1567551600000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "353573",
-            "Title": "Timesheet - UI Improvements + Live bug",
-            "StartDate": "/Date(1567638000000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "354065",
-            "Title": "Timesheet - Error when opening standalone tables - offset().top (live issue)",
-            "StartDate": "/Date(1567724400000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "354295",
-            "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
-            "StartDate": "/Date(1567983600000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "354566",
-            "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
-            "StartDate": "/Date(1568070000000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "354920",
-            "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
-            "StartDate": "/Date(1568156400000)/",
-            "Description": "",
-            "CompletedHours": null,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "355888",
-            "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
-            "StartDate": "/Date(1568674800000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "356179",
-            "Title": "Timesheet - Don't have collections minimise when dialog box is opened",
-            "StartDate": "/Date(1568156400000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "356548",
-            "Title": "Timesheet - Dropdown text overlapping icon  ",
-            "StartDate": "/Date(1568847600000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "356789",
-            "Title": "Timesheet - UI Improvements (Favourite Actions)",
-            "StartDate": "/Date(1568934000000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "357133",
-            "Title": "Timesheet - UI Improvements (Favourite Actions)",
-            "StartDate": "/Date(1569193200000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "357588",
-            "Title": "Timesheet - UI Improvements (Favourite Actions)",
-            "StartDate": "/Date(1569279600000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "357930",
-            "Title": "Timesheet - Freeze headers not working / Double scroll bars related ",
-            "StartDate": "/Date(1569366000000)/",
-            "Description": "",
-            "CompletedHours": 7.5,
-            "WorkItemsLinked": null
-        }
+        [
+            {
+                "Id": "352147",
+                "Title": "Timesheet - UI Improvements ",
+                "StartDate": "/Date(1567378800000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": "#350973"
+            },
+            {
+                "Id": "352779",
+                "Title": "Timesheet - UI Improvements ",
+                "StartDate": "/Date(1567465200000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "353270",
+                "Title": "Timesheet - UI Improvements ",
+                "StartDate": "/Date(1567551600000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "353573",
+                "Title": "Timesheet - UI Improvements + Live bug",
+                "StartDate": "/Date(1567638000000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "354065",
+                "Title": "Timesheet - Error when opening standalone tables - offset().top (live issue)",
+                "StartDate": "/Date(1567724400000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "354295",
+                "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
+                "StartDate": "/Date(1567983600000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "354566",
+                "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
+                "StartDate": "/Date(1568070000000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "354920",
+                "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
+                "StartDate": "/Date(1568156400000)/",
+                "Description": "",
+                "CompletedHours": null,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "355888",
+                "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
+                "StartDate": "/Date(1568674800000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "356179",
+                "Title": "Timesheet - Don't have collections minimise when dialog box is opened",
+                "StartDate": "/Date(1568156400000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "356548",
+                "Title": "Timesheet - Dropdown text overlapping icon  ",
+                "StartDate": "/Date(1568847600000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "356789",
+                "Title": "Timesheet - UI Improvements (Favourite Actions)",
+                "StartDate": "/Date(1568934000000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "357133",
+                "Title": "Timesheet - UI Improvements (Favourite Actions)",
+                "StartDate": "/Date(1569193200000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "357588",
+                "Title": "Timesheet - UI Improvements (Favourite Actions)",
+                "StartDate": "/Date(1569279600000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "357930",
+                "Title": "Timesheet - Freeze headers not working / Double scroll bars related ",
+                "StartDate": "/Date(1569366000000)/",
+                "Description": "",
+                "CompletedHours": 7.5,
+                "WorkItemsLinked": null
+            }
+        ],
+        [
+        //WorkItemsWithoutStartDate
+            {
+                "Id": "331577",
+                "Title": "Timesheet - International Posting - Implement Contributed Actions ",
+                "StartDate": null,
+                "Description": null,
+                "CompletedHours": null,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "332683",
+                "Title": "Timesheet - Implement Articles Dropdown ",
+                "StartDate": null,
+                "Description": null,
+                "CompletedHours": null,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "333005",
+                "Title": "Timesheet - Implement Add Contact from existing top 5 ",
+                "StartDate": null,
+                "Description": null,
+                "CompletedHours": null,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "333378",
+                "Title": "Timesheet - Add actions (edit) for new properties",
+                "StartDate": null,
+                "Description": null,
+                "CompletedHours": null,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "334022",
+                "Title": "Timesheet - Record Signed Action for all decisions",
+                "StartDate": null,
+                "Description": null,
+                "CompletedHours": null,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "334291",
+                "Title": "Timesheet - Improve add contact feature",
+                "StartDate": null,
+                "Description": null,
+                "CompletedHours": null,
+                "WorkItemsLinked": null
+            },
+            {
+                "Id": "334597",
+                "Title": "Timesheet - Refactor after merge with EESSI branch",
+                "StartDate": null,
+                "Description": null,
+                "CompletedHours": null,
+                "WorkItemsLinked": null
+            }
+        ]
     ];
     return fakeTFS;
 }

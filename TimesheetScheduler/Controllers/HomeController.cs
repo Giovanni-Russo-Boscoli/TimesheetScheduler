@@ -62,88 +62,92 @@ namespace TimesheetScheduler.Controllers
             return System.Security.Principal.WindowsIdentity.GetCurrent().Name;
         }
         //@
-        public JsonResult ConnectTFS()
+        public JsonResult ConnectTFS(bool bypassTFS)
         {
-            Uri tfsUri = new Uri(GetUrlTfs());
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-            var projectName = GetProjectNameTFS();
-            var _iterationPath = GetIterationPathTFS();
-            var _userLogged = UserPrincipal.Current.DisplayName;
-
-            WorkItemCollection WIC = WIS.Query(
-                " SELECT [System.Id], " +
-                " [System.WorkItemType], " +
-                " [System.State], " +
-                " [System.AssignedTo], " +
-                " [System.Title], " +
-                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                " [Microsoft.VSTS.Scheduling.StartDate] " +
-                " FROM WorkItems " +
-                " WHERE [System.TeamProject] = '" + projectName + "'" +
-                " AND [Iteration Path] = '" + _iterationPath + "'" +
-                " AND [Assigned To] = '" + _userLogged + "'" +
-                " ORDER BY [System.Id], [System.WorkItemType]");
-
-            IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
-            IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
-            IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
-
-            foreach (WorkItem wi in WIC)
+            if (!bypassTFS)
             {
-                if (wi["Start Date"] != null)
+                Uri tfsUri = new Uri(GetUrlTfs());
+                TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+                var projectName = GetProjectNameTFS();
+                var _iterationPath = GetIterationPathTFS();
+                var _userLogged = UserPrincipal.Current.DisplayName;
+
+                WorkItemCollection WIC = WIS.Query(
+                    " SELECT [System.Id], " +
+                    " [System.WorkItemType], " +
+                    " [System.State], " +
+                    " [System.AssignedTo], " +
+                    " [System.Title], " +
+                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                    " [Microsoft.VSTS.Scheduling.StartDate] " +
+                    " FROM WorkItems " +
+                    " WHERE [System.TeamProject] = '" + projectName + "'" +
+                    " AND [Iteration Path] = '" + _iterationPath + "'" +
+                    " AND [Assigned To] = '" + _userLogged + "'" +
+                    " ORDER BY [System.Id], [System.WorkItemType]");
+
+                IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
+                IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
+                IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
+
+                foreach (WorkItem wi in WIC)
                 {
-                    DateTime _startDate = (DateTime)wi["Start Date"];
-                    if (_startDate.Month == DateTime.Now.Month && _startDate.Year == DateTime.Now.Year)
+                    if (wi["Start Date"] != null)
                     {
-                        var _workItemsLinked = "";
-                        for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                        DateTime _startDate = (DateTime)wi["Start Date"];
+                        if (_startDate.Month == DateTime.Now.Month && _startDate.Year == DateTime.Now.Year)
                         {
-                            _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                            var _workItemsLinked = "";
+                            for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                            {
+                                _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                            }
+
+                            listWorkItems.Add(new WorkItemSerialized()
+                            {
+                                Id = wi["Id"].ToString(),
+                                Title = wi["Title"].ToString(),
+                                StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+                                Description = wi["Description"].ToString(),
+                                CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                                WorkItemsLinked = _workItemsLinked
+
+                                /*
+                                Id: (i + 1),
+                                tooltipDay: _isWeekend ? "WEEKEND" : "",
+                                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+                                disableFlag: _isWeekend ? "disabled" : "",
+                                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+                                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+                                workItem: "34500" + (i + 1),
+                                description: "description... " + (i + 1),
+                                //chargeableHours: "6.4",
+                                chargeableHours: "7.5",
+                                nonchargeableHours: "2.0",
+                                comments: "comments... " + (i + 1)
+                                 */
+                            });
                         }
-                        
-                        listWorkItems.Add(new WorkItemSerialized()
+                    }
+                    else
+                    {
+                        listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
                         {
                             Id = wi["Id"].ToString(),
                             Title = wi["Title"].ToString(),
-                            StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                            Description = wi["Description"].ToString(),
-                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-                            WorkItemsLinked = _workItemsLinked
-
-                            /*
-                            Id: (i + 1),
-                            tooltipDay: _isWeekend ? "WEEKEND" : "",
-                            classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-                            disableFlag: _isWeekend ? "disabled" : "",
-                            dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-                            day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-                            workItem: "34500" + (i + 1),
-                            description: "description... " + (i + 1),
-                            //chargeableHours: "6.4",
-                            chargeableHours: "7.5",
-                            nonchargeableHours: "2.0",
-                            comments: "comments... " + (i + 1)
-                             */
                         });
+
                     }
                 }
-                else
-                {
-                    listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
-                    {
-                        Id = wi["Id"].ToString(),
-                        Title = wi["Title"].ToString(),
-                    });
 
-                }
+                joinWorkItemsList.Add(listWorkItems);
+                joinWorkItemsList.Add(listWorkItemsWithoutStartDate);
+
+                return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
             }
-
-            joinWorkItemsList.Add(listWorkItems);
-            joinWorkItemsList.Add(listWorkItemsWithoutStartDate);
-
-            return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
+            return Json(new EmptyResult(), JsonRequestBehavior.AllowGet);
         }
 
         #region UTIL
