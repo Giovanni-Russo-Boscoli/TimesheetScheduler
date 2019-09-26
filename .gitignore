@@ -11,8 +11,8 @@
 *.user
 _ReSharper.*/
 *.sdf
-bin/
-obj/
+#bin/
+#obj/
 Debug/
 Release/
 *.opensdf
