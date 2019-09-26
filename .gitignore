@@ -6,12 +6,20 @@
 /.vs/TimesheetScheduler/v15/.suo
 /.vs/TimesheetScheduler/obj/Debug
 /.vs/
-
-# ignore all logs
-*.log
-
+/build/
 *.suo
 *.user
-_ReSharper.*
-bin
-obj
+_ReSharper.*/
+*.sdf
+bin/
+obj/
+Debug/
+Release/
+*.opensdf
+*.tlog
+*.log
+TestResult.xml
+*.VisualState.xml
+Version.cs
+Version.h
+Version.cpp
