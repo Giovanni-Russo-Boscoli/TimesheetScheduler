@@ -2183,15 +2183,15 @@ namespace TimesheetScheduler.Controllers
 
             // Interactively ask the user for credentials, caching them so the user isn't constantly prompted
 
-            VssCredentials creds = new VssClientCredentials();
+            //VssCredentials creds = new VssClientCredentials();
 
-            creds.Storage = new VssClientCredentialStorage();
+            //creds.Storage = new VssClientCredentialStorage();
 
 
 
             // Connect to Azure DevOps Services
 
-            VssConnection connection = new VssConnection(tfsUri, creds);
+            //VssConnection connection = new VssConnection(tfsUri, creds);
 
 
 

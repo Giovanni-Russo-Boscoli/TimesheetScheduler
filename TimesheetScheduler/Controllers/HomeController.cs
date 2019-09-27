@@ -1,24 +1,29 @@
-﻿using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.WorkItemTracking.Client;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Drawing;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using TimesheetScheduler.Models;
-using System.Runtime.InteropServices;
-using Microsoft.Office.Interop.Excel;
 using System.Globalization;
-using Microsoft.TeamFoundation.VersionControl.Client;
 using System.Net;
+using System.Configuration;
+//using System.Runtime.InteropServices;
+//using System.Linq;
+//using System.Web;
+
+//using TimesheetScheduler.Models;
+using Microsoft.Office.Interop.Excel;
+
+using Microsoft.TeamFoundation;
+using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.WorkItemTracking.Client;
 using Microsoft.TeamFoundation.Server;
 using Microsoft.TeamFoundation.Framework.Common;
+using Microsoft.TeamFoundation.VersionControl.Client;
+
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.WebApi;
-using System.Configuration;
+
 
 namespace TimesheetScheduler.Controllers
 {
@@ -26,8 +31,9 @@ namespace TimesheetScheduler.Controllers
     {
         public ActionResult Index()
         {
-            ExcelExport excelFileExport = new ExcelExport();
-            excelFileExport.ExcelFileExport();
+            //ExcelExport excelFileExport = new ExcelExport();
+            //excelFileExport.ExcelFileExport();
+            CreateTaskOnTFS();
             return View();
         }
 
@@ -62,7 +68,7 @@ namespace TimesheetScheduler.Controllers
             return System.Security.Principal.WindowsIdentity.GetCurrent().Name;
         }
         //@
-        public JsonResult ConnectTFS(bool bypassTFS)
+        public JsonResult ConnectTFS(bool bypassTFS, int _month, int _year)
         {
             if (!bypassTFS)
             {
@@ -97,7 +103,8 @@ namespace TimesheetScheduler.Controllers
                     if (wi["Start Date"] != null)
                     {
                         DateTime _startDate = (DateTime)wi["Start Date"];
-                        if (_startDate.Month == DateTime.Now.Month && _startDate.Year == DateTime.Now.Year)
+                        if (_startDate.Month == (_month == 0 ? DateTime.Now.Month : _month) 
+                            && _startDate.Year == (_year == 0 ? DateTime.Now.Year : _year))
                         {
                             var _workItemsLinked = "";
                             for (int i = 0; i < wi.WorkItemLinks.Count; i++)
@@ -148,6 +155,30 @@ namespace TimesheetScheduler.Controllers
                 return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
             }
             return Json(new EmptyResult(), JsonRequestBehavior.AllowGet);
+        }
+
+        public string CreateTaskOnTFS()//newTimesheetTask
+        {            
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+            var _userLogged = UserPrincipal.Current.DisplayName;
+
+            Uri tfsUri = new Uri(GetUrlTfs());
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            Project teamProject = WIS.Projects.GetById(3192); //3192 = BOM_MOD24 [35]
+            WorkItemType workItemType = teamProject.WorkItemTypes["Task"];
+
+            WorkItem newWI = new WorkItem(workItemType);
+            newWI.Title = "TASK TEST - DELETE #delete";
+            newWI.Fields["System.AssignedTo"].Value = _userLogged;
+            newWI.Fields["System.TeamProject"].Value = projectName;            
+            newWI.Fields["Iteration Path"].Value = _iterationPath;
+            //var _valid = newWI.Validate();
+            //newWI.Save();
+
+            return newWI.Fields["ID"].Value.ToString();
         }
 
         #region UTIL
@@ -1178,11 +1209,11 @@ namespace TimesheetScheduler.Controllers
             //const String c_repoName = "MyRepo";
 
             // Interactively ask the user for credentials, caching them so the user isn't constantly prompted
-            VssCredentials creds = new VssClientCredentials();
-            creds.Storage = new VssClientCredentialStorage();
+            //VssCredentials creds = new VssClientCredentials();
+            //creds.Storage = new VssClientCredentialStorage();
 
             // Connect to Azure DevOps Services
-            VssConnection connection = new VssConnection(tfsUri, creds);
+            //VssConnection connection = new VssConnection(tfsUri, creds);
 
             // Get a GitHttpClient to talk to the Git endpoints
             //GitHttpClient gitClient = connection.GetClient<GitHttpClient>();

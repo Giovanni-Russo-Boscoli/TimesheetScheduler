@@ -393,7 +393,8 @@ function getYearFromPage() {
 
 function bindMonthDropdown() {
     $("#monthTimesheet").on("change", function () {
-        renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 01));
+        //renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 01));
+        connectToTFS();
         //$('#calendar').fullCalendar('addEventSource', events);
     });
 }
@@ -598,15 +599,15 @@ function changeColor() {
 }
 
 function connectToTFS() {
-    var _bypassTFS = true;
+    var _bypassTFS = false;
     $.ajax({
         url: "/Home/ConnectTFS",
         type: "GET",
         //contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: { bypassTFS: _bypassTFS },
+        data: { bypassTFS: _bypassTFS, _month: getMonthFromPage()+1, _year: getYearFromPage() },
         success: function (data) {
-            renderMustacheTableTemplate(new Date(), data, _bypassTFS);
+            renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 1), data, _bypassTFS);
             RowSelected();
             ShowHiddenTimesheetCalendarView();
             toggleView();
