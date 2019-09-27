@@ -1,11 +1,11 @@
-﻿
+﻿var _bypassTFS = true;
 
 $(document).ready(function () {
     LoadMonths();
     LoadYears();
     bindMonthDropdown();
     Info();
-    UnselecRadio();
+    ExportExcel();
     //renderMustacheTableTemplate(new Date());
     //RowSelected();
     //ShowHiddenTimesheetCalendarView();
@@ -124,15 +124,15 @@ function _formatDate(date, format, separator) {
     switch (format) {
         case "yyyymmdd": {
             return year + separator + month + separator + day;
-            break;
+            //break;
         }
         case "ddmmyyyy": {
             return day + separator + month + separator + year;
-            break;
+            //break;
         }
         default: {
             return day + separator + month + separator + year;
-            break;
+            //break;
         }
     }
 }
@@ -147,11 +147,11 @@ function fakeDataMustache() {
 
     for (i = 0; i < getLastDayMonthFromPage(); i++) {
         _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
-        if (formatDate(_date) == "8/9/2019" || formatDate(_date) == "7/9/2019") {
+        if (formatDate(_date) === "8/9/2019" || formatDate(_date) === "7/9/2019") {
             continue; //hiding weekend for listMonth view
         }
         _isWeekend = IsWeekend(_date);
-        if (i % 2 == 0) {
+        if (i % 2 === 0) {
             values.rows.push({
                 Id: (i + 1),
                 tooltipDay: _isWeekend ? "WEEKEND" : "",
@@ -261,7 +261,7 @@ function calculateLoadBarEvents(calendarEvents) {
     $(".fc-day-top").each(function (index, value) {
         countChargeableHours = 0;
         $(days).each(function (_index, _value) {
-            if ($(value).attr("data-date") == _value) {
+            if ($(value).attr("data-date") === _value) {
                 countChargeableHours += parseFloat(_chargeableHours[_index]);
             }
         });
@@ -313,7 +313,7 @@ function calculateLoadBarEventsForListView(calendarEvents) {
         countChargeableHours = 0;
         $(days).each(function (_index, _value) {
             var _date = $(value).find(".dayListView").text().split("/");
-            if ($.format.date(new Date(_date[2], (_date[1] - 1), _date[0]), "yyyy-MM-dd") == _value) {
+            if ($.format.date(new Date(_date[2], (_date[1] - 1), _date[0]), "yyyy-MM-dd") === _value) {
                 countChargeableHours += parseFloat(_chargeableHours[_index]);
             }
         });
@@ -350,7 +350,7 @@ function LoadMonths() {
 
 function LoadYears() {
     var _currentYear = getCurrentYear();
-    if (getCurrentMonth() == 12) {
+    if (getCurrentMonth() === 12) {
         $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
     }
     $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
@@ -520,23 +520,6 @@ function calculateDaysWorked() {
     return (getChargeableHours() / (7.5)).toFixed(2);
 }
 
-function UnselecRadio() {
-    $("#btnAction").on("click", function () {
-        $(".chk-day").prop("checked", false);
-        $("tr").addClass("row-intial ");
-        $("tr").removeClass("row-inactive");
-        $("tr").removeClass("row-active");
-
-        //$("#dayTimesheet").prop('disabled', false);
-        //$("#dayTimesheet").val("");
-        //$("#workItemTimesheet").val("");
-        //$("#descriptionTimesheet").val("");
-        //$("#chargeableTimesheet").val("");
-        //$("#nonchargeableTimesheet").val("");
-        //$("#commentsTimesheet").val("");
-    });
-}
-
 function returnTopPage() {
     window.scrollTo(0, 0);
 }
@@ -546,7 +529,7 @@ function toggleView() {
     var calendarUrl = "/Images/calendarView.png";
 
     $("#btnView").on("click", function () {
-        if ($(this).attr("src") == listUrl) {
+        if ($(this).attr("src") === listUrl) {
             $(this).attr("src", calendarUrl);
             $(this).attr("title", "Change for Calendar View");
         } else {
@@ -612,13 +595,13 @@ function changeColor() {
 }
 
 function connectToTFS() {
-    var _bypassTFS = false;
+    //var _bypassTFS = true;
     $.ajax({
         url: "/Home/ConnectTFS",
         type: "GET",
         //contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: { bypassTFS: _bypassTFS, _month: getMonthFromPage()+1, _year: getYearFromPage() },
+        data: { bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         success: function (data) {
             renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 1), data, _bypassTFS);
             RowSelected();
@@ -641,6 +624,24 @@ function connectToTFS() {
         error: function (error) {
             alert("error: " + JSON.stringify(error));
         }
+    });
+}
+
+function ExportExcel() {
+    $("#btnExportExcel").on("click", function () {
+        $.ajax({
+            url: "/Home/ExcelExport",
+            type: "GET",
+            //contentType: "application/json; charset=utf-8",
+            //dataType: "json",
+            data: { _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+            success: function (data) {
+                toastrMessage("File Exported! " + data, "success");
+            },
+            error: function (error) {
+                alert("error: " + JSON.stringify(error));
+            }
+        });
     });
 }
 
@@ -769,7 +770,7 @@ function fakeTFSObj() {
             }
         ],
         [
-        //WorkItemsWithoutStartDate
+            //WorkItemsWithoutStartDate
             {
                 "Id": "331577",
                 "Title": "Timesheet - International Posting - Implement Contributed Actions ",
@@ -891,6 +892,8 @@ function returnWorkItemsWithoutStartDate() {
         }
     ]
 }
+
+
 
 //Id: (i + 1),
 //tooltipDay: _isWeekend ? "WEEKEND" : "",

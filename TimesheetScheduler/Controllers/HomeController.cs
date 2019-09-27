@@ -23,7 +23,7 @@ using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.WebApi;
-
+using TimesheetScheduler.Models;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -31,12 +31,7 @@ namespace TimesheetScheduler.Controllers
     {
         public ActionResult Index()
         {
-            //ExcelExport excelFileExport = new ExcelExport();
-            //excelFileExport.ExcelFileExport();
-            CreateTaskOnTFS();
-            ExcelExport excelFileExport = new ExcelExport();
-            excelFileExport.ExcelFileExport();
-            ExcelExport();
+            //CreateTaskOnTFS();
             return View();
         }
 
@@ -60,6 +55,7 @@ namespace TimesheetScheduler.Controllers
 
             return View();
         }
+
 
         #region TFS
 
@@ -88,15 +84,13 @@ namespace TimesheetScheduler.Controllers
             return ConfigurationManager.AppSettings["iterationPathTFS"].ToString();
         }
 
-        public JsonResult ConnectTFS(bool bypassTFS)
+        public JsonResult ConnectTFS(bool bypassTFS, int _month, int _year)
         {
             if (!bypassTFS)
             {
                 IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
-                IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
-                IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
 
-                joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems());
+                joinWorkItemsList.Add((IList<WorkItemSerialized>)ReturnTFSEvents_ListWorkItems(false, _month, _year));
                 joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate());
 
                 return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
@@ -105,40 +99,97 @@ namespace TimesheetScheduler.Controllers
             return Json(new EmptyResult(), JsonRequestBehavior.AllowGet);
         }
 
-        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems()
-        {
-            Uri tfsUri = new Uri(GetUrlTfs());
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+        //public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(int _month, int _year)
+        //{
+        //    Uri tfsUri = new Uri(GetUrlTfs());
+        //    TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+        //    WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
-            var projectName = GetProjectNameTFS();
-            var _iterationPath = GetIterationPathTFS();
-            var _userLogged = UserPrincipal.Current.DisplayName;
+        //    var projectName = GetProjectNameTFS();
+        //    var _iterationPath = GetIterationPathTFS();
+        //    var _userLogged = UserPrincipal.Current.DisplayName;
 
-            WorkItemCollection WIC = WIS.Query(
-                " SELECT [System.Id], " +
-                " [System.WorkItemType], " +
-                " [System.State], " +
-                " [System.AssignedTo], " +
-                " [System.Title], " +
-                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                " [Microsoft.VSTS.Scheduling.StartDate] " +
-                " FROM WorkItems " +
-                " WHERE [System.TeamProject] = '" + projectName + "'" +
-                " AND [Iteration Path] = '" + _iterationPath + "'" +
-                " AND [Assigned To] = '" + _userLogged + "'" +
-                " ORDER BY [System.Id], [System.WorkItemType]");
+        //    WorkItemCollection WIC = WIS.Query(
+        //        " SELECT [System.Id], " +
+        //        " [System.WorkItemType], " +
+        //        " [System.State], " +
+        //        " [System.AssignedTo], " +
+        //        " [System.Title], " +
+        //        " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+        //        " [Microsoft.VSTS.Scheduling.StartDate] " +
+        //        " FROM WorkItems " +
+        //        " WHERE [System.TeamProject] = '" + projectName + "'" +
+        //        " AND [Iteration Path] = '" + _iterationPath + "'" +
+        //        " AND [Assigned To] = '" + _userLogged + "'" +
+        //        " ORDER BY [System.Id], [System.WorkItemType]");
 
-            IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
+        //    IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
+
+        //        foreach (WorkItem wi in WIC)
+        //        {
+        //            if (wi["Start Date"] != null)
+        //            {
+        //                DateTime _startDate = (DateTime)wi["Start Date"];
+        //                if (_startDate.Month == (_month == 0 ? DateTime.Now.Month : _month) 
+        //                    && _startDate.Year == (_year == 0 ? DateTime.Now.Year : _year))
+        //                {
+        //                    var _workItemsLinked = "";
+        //                    for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+        //                    {
+        //                        _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+        //                    }
+
+        //                listWorkItems.Add(new WorkItemSerialized()
+        //                {
+        //                    Id = wi["Id"].ToString(),
+        //                    Title = wi["Title"].ToString(),
+        //                    StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+        //                    Description = wi["Description"].ToString(),
+        //                    CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+        //                    WorkItemsLinked = _workItemsLinked
+        //                });
+        //            }
+        //        }
+        //    }
+
+        //    return listWorkItems;
+        //}
+
+        //public IList<WorkItemRecord> ReturnTFSEvents_ListWorkItems(bool _bypass, int _month, int _year) {
+        public object ReturnTFSEvents_ListWorkItems(bool _bypass, int _month, int _year) {
+
             IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
-            IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
+
+            if (!_bypass)
+            {
+                Uri tfsUri = new Uri(GetUrlTfs());
+                TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+                var projectName = GetProjectNameTFS();
+                var _iterationPath = GetIterationPathTFS();
+                var _userLogged = UserPrincipal.Current.DisplayName;
+
+                WorkItemCollection WIC = WIS.Query(
+                    " SELECT [System.Id], " +
+                    " [System.WorkItemType], " +
+                    " [System.State], " +
+                    " [System.AssignedTo], " +
+                    " [System.Title], " +
+                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                    " [Microsoft.VSTS.Scheduling.StartDate] " +
+                    " FROM WorkItems " +
+                    " WHERE [System.TeamProject] = '" + projectName + "'" +
+                    " AND [Iteration Path] = '" + _iterationPath + "'" +
+                    " AND [Assigned To] = '" + _userLogged + "'" +
+                    " ORDER BY [System.Id], [System.WorkItemType]");
 
                 foreach (WorkItem wi in WIC)
                 {
                     if (wi["Start Date"] != null)
                     {
                         DateTime _startDate = (DateTime)wi["Start Date"];
-                        if (_startDate.Month == (_month == 0 ? DateTime.Now.Month : _month) 
+                        if (_startDate.Month == (_month == 0 ? DateTime.Now.Month : _month)
                             && _startDate.Year == (_year == 0 ? DateTime.Now.Year : _year))
                         {
                             var _workItemsLinked = "";
@@ -147,20 +198,61 @@ namespace TimesheetScheduler.Controllers
                                 _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
                             }
 
-                        listWorkItems.Add(new WorkItemSerialized()
-                        {
-                            Id = wi["Id"].ToString(),
-                            Title = wi["Title"].ToString(),
-                            StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                            Description = wi["Description"].ToString(),
-                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-                            WorkItemsLinked = _workItemsLinked
-                        });
+                            listWorkItems.Add(new WorkItemSerialized()
+                            {
+                                Id = wi["Id"].ToString(),
+                                Title = wi["Title"].ToString(),
+                                StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+                                Description = wi["Description"].ToString(),
+                                CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                                WorkItemsLinked = _workItemsLinked
+                            });
+                        }
                     }
+                }
+
+                return listWorkItems;
+            }
+            else
+            {
+                //---------------------
+                //IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
+                for (int i = 0; i < DateTime.DaysInMonth(_year, _month); i++)
+                {
+                    listWorkItems.Add(new WorkItemSerialized()
+                    {
+                        Id = "35541" + i,
+                        Title = "Title-" + i,
+                        StartDate = new DateTime(_year, _month, i + 1),
+                        Description = "Description-" + i,
+                        CompletedHours = i + 1,
+                        WorkItemsLinked = "#321321 #654654"
+                    });
                 }
             }
 
-            return listWorkItems;
+            IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
+            DateTime currentPeriod = DateTime.Now;
+            var _days = DateTime.DaysInMonth(_year, _month);
+            DateTime day;
+            for (int i = 0; i < _days; i++)
+            {
+                day = new DateTime(_year, _month, i+1);
+
+                timesheetRecords.Add(new WorkItemRecord
+                {
+                    Id = i,
+                    Date = listWorkItems[i].StartDate.Value,
+                    WorkItemNumber = int.Parse(listWorkItems[i].Id),
+                    Description = listWorkItems[i].Description,
+                    ChargeableHours = (float)listWorkItems[i].CompletedHours,
+                    NonChargeableHours = (float)listWorkItems[i].CompletedHours,
+                    Comments = listWorkItems[i].WorkItemsLinked,
+                    //IsWeekend = IsWeekend(day)
+                    IsWeekend = IsWeekend(listWorkItems[i].StartDate.Value)
+                }) ;
+            }
+            return timesheetRecords;
         }
 
         public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate()
@@ -331,11 +423,13 @@ namespace TimesheetScheduler.Controllers
 
         #endregion Const Cell Range and Labels
 
-        public void InitExcelVariables()
+        public void InitExcelVariables(int _month, int _year)
         {
             UserName = "GIOVANNI RUSSO BOSCOLI";
-            MonthTimesheet = DateTime.Now.ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
-            YearTimesheet = DateTime.Now.Year.ToString();
+            //MonthTimesheet = DateTime.Now.ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
+            MonthTimesheet = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
+            //YearTimesheet = DateTime.Now.Year.ToString();
+            YearTimesheet = _year.ToString();
 
             CellProjectNameLabel = new CellObject
             {
@@ -390,7 +484,7 @@ namespace TimesheetScheduler.Controllers
             CellPeriodInput = new CellObject
             {
                 CellPosition = "C2",
-                CellValue = DateTime.Now.ToString("MMM/yyyy", CultureInfo.CreateSpecificCulture("en")), //TODO DYNAMIC
+                CellValue = "'" + new DateTime(_year, _month, 1).ToString("MMM/yyyy", CultureInfo.CreateSpecificCulture("en")), //TODO DYNAMIC
                 FormatParams = new ParamsFormatCell()
                 {
                     fontSize = 11,
@@ -708,9 +802,9 @@ namespace TimesheetScheduler.Controllers
             //---------------------------------------- END HEADER TABLE---------------------------------------------
         }
 
-        private void CreateTable(Worksheet worksheet)
+        private void CreateTable(Worksheet worksheet, bool _bypassTFS, int _month, int _year)
         {
-            var _table = TimesheetRecords();
+            var _table = TimesheetRecords(_bypassTFS, _month, _year);
             int firstRow = 6;
             int lastRow = _table.Count + firstRow;
             int j;
@@ -750,7 +844,7 @@ namespace TimesheetScheduler.Controllers
             FormatCell(worksheet, cellObj);
         }
 
-        public void ExcelExport()
+        public string ExcelExport(bool _bypassTFS, int _month, int _year)
         {
             Application excel;
             Microsoft.Office.Interop.Excel.Workbook worKbooK;
@@ -764,13 +858,13 @@ namespace TimesheetScheduler.Controllers
                 excel.DisplayAlerts = false;
                 worKbooK = excel.Workbooks.Add(Type.Missing);
 
-                InitExcelVariables();
+                InitExcelVariables(_month, _year);
 
                 worksheet = (Worksheet)worKbooK.ActiveSheet;
                 worksheet.Name = "Timesheet"; //TODO: create a better file name using month and year
 
                 CreateHeader(worksheet);
-                CreateTable(worksheet);
+                CreateTable(worksheet, _bypassTFS,  _month, _year);
                 resizeColumns(worksheet);
           
                 celLrangE = worksheet.Range[worksheet.Cells[5, 1], worksheet.Cells[36, 7]]; //TODO
@@ -783,10 +877,12 @@ namespace TimesheetScheduler.Controllers
 
                 worKbooK.Close();
                 excel.Quit();
+                return "OK from backend";
             }
             catch (Exception ex)
             {
                 Console.Write(ex.Message);
+                return "Interal Code (1) - " + ex.Message;
             }
             finally
             {
@@ -843,32 +939,29 @@ namespace TimesheetScheduler.Controllers
             worksheet.get_Range("G11").WrapText = true;
         }
 
-        public IList<WorkItemRecord> TimesheetRecords()
+        public IList<WorkItemRecord> TimesheetRecords(bool _bypassTFS, int _month, int _year)
         {
-            IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
-            DateTime currentPeriod = DateTime.Now;
-            var _days = DateTime.DaysInMonth(currentPeriod.Year, currentPeriod.Month);
-            DateTime day;
-            for (int i = 1; i <= _days; i++)
-            {
-                day = new DateTime(currentPeriod.Year, currentPeriod.Month, i);
+            //IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
+            //DateTime currentPeriod = DateTime.Now;
+            //var _days = DateTime.DaysInMonth(currentPeriod.Year, currentPeriod.Month);
+            //DateTime day;
+            //for (int i = 1; i <= _days; i++)
+            //{
+            //    day = new DateTime(currentPeriod.Year, currentPeriod.Month, i);
 
-                timesheetRecords.Add(new WorkItemRecord
-                {
-                    Id = i,
-                    Date = day,
-                    WorkItemNumber = (345450 + i),
-                    Description = i == 3 ? "Timesheet - DeployP31/Nof7.2/Rebase Investigation branch/ case load summary bug #346796 #318197 #346798 #345474" : "Description-" + i,
-                    ChargeableHours = 7.5F,
-                    NonChargeableHours = 0.0F,
-                    Comments = i == 6 ? "Timesheet - DeployP31/Nof7.2/Rebase Investigation branch/ case load summary bug #346796 #318197 #346798 #345474" : "Comments-" + i,
-                    IsWeekend = IsWeekend(day)
-                });
-            }
-
-            //var _list = ReturnTFSEvents_ListWorkItems();
-
-            return timesheetRecords;
+            //    timesheetRecords.Add(new WorkItemRecord
+            //    {
+            //        Id = i,
+            //        Date = day,
+            //        WorkItemNumber = (345450 + i),
+            //        Description = i == 3 ? "Timesheet - DeployP31/Nof7.2/Rebase Investigation branch/ case load summary bug #346796 #318197 #346798 #345474" : "Description-" + i,
+            //        ChargeableHours = 7.5F,
+            //        NonChargeableHours = 0.0F,
+            //        Comments = i == 6 ? "Timesheet - DeployP31/Nof7.2/Rebase Investigation branch/ case load summary bug #346796 #318197 #346798 #345474" : "Comments-" + i,
+            //        IsWeekend = IsWeekend(day)
+            //    });
+            //}
+            return (IList<WorkItemRecord>)ReturnTFSEvents_ListWorkItems(_bypassTFS, _month, _year);
         }
 
         #endregion EXCEL
