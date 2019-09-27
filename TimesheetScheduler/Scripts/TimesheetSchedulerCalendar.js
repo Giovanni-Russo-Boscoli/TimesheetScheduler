@@ -278,12 +278,25 @@ function calculateLoadBarEvents(calendarEvents) {
             "</div>";
 
         $(this).append(_loadBar);
-        $(this).find(".progress-bar")
-            .tooltip({
-                title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
-                placement: "bottom",
-            });
+        if (!countChargeableHours) {
+            progressBarTooltipNull($(this));
+        }
+        else {
+            $(this).find(".progress-bar")
+                .tooltip({
+                    title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
+                    placement: "bottom",
+                });
+        }
     });
+}
+
+function progressBarTooltipNull(obj) {
+    $(obj).find(".progress")
+        .tooltip({
+            title: "0% - Hours: 0",
+            placement: "bottom",
+        });
 }
 
 function calculateLoadBarEventsForListView(calendarEvents) {
