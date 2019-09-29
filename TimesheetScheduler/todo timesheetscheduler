@@ -1,4 +1,4 @@
-- Organize regions
-OK - excel with fake data should respect the months' and years' dropdowns
-- click button excel export open the choose colors panel
-- excel file change hardcoded user name
+- Organize regions;
+- create a progress bar in list view
+- non-chargeable hours => include or not
+- do something with workitems without startdate

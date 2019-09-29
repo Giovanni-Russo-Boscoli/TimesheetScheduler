@@ -1,16 +1,18 @@
 ﻿var _bypassTFS = true;
 
 $(document).ready(function () {
+    //PLEASE WAIT DIALOG/GIF
+    $body = $("body");
+    $(document).on({
+        ajaxStart: function () { $body.addClass("loading"); },
+        ajaxStop: function () { $body.removeClass("loading"); }
+    });
+
     LoadMonths();
     LoadYears();
     bindMonthDropdown();
     Info();
-    ExportExcel();
-    //renderMustacheTableTemplate(new Date());
-    //RowSelected();
-    //ShowHiddenTimesheetCalendarView();
-    //toggleView();
-    //saveEvent();
+    SaveExcelFile();
     connectToTFS();
 });
 
@@ -85,16 +87,17 @@ function toggleClass(_class) {
 }
 
 function renderMustacheTableTemplate(dateCalendar, tfsEvents, bypassTFS) {
-    var template = $('#templateTimesheetTable').html();
-    Mustache.parse(template);   // optional, speeds up future uses
-    var obj = fakeDataMustache();
+    //var template = $('#templateTimesheetTable').html();
+    //Mustache.parse(template);   // optional, speeds up future uses
+    //var obj = fakeDataMustache();
     var eventsTFSFormatted = bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(tfsEvents);
-    var eventsFormatted = formatForCalendarEvents(obj);
+    //var eventsFormatted = formatForCalendarEvents(obj);
     //eventsCalendar(eventsFormatted, dateCalendar);
     eventsCalendar(eventsTFSFormatted, dateCalendar);
-    var rendered = Mustache.render(template, obj);
-    $('#targetTable').html(rendered);
-    calculateLoadBarEventsForListView(eventsFormatted);
+    //var rendered = Mustache.render(template, obj);
+    //$('#targetTable').html(rendered);
+    //calculateLoadBarEventsForListView(eventsTFSFormatted);
+    listViewActive(eventsTFSFormatted);
     tooltipDaysListView();
 }
 
@@ -102,7 +105,7 @@ function tooltipDaysListView() {
     $(".dayListView").each(function (index, value) {
         $(value).tooltip({
             title: $(value).attr("--title"),
-            placement: "bottom",
+            placement: "bottom"
         });
     });
 }
@@ -110,7 +113,7 @@ function tooltipDaysListView() {
 function _formatDate(date, format, separator) {
 
     if (!separator) {
-        separator = "/"
+        separator = "/";
     }
 
     var d = new Date(date),
@@ -143,7 +146,7 @@ function fakeDataMustache() {
     var values =
     {
         rows: []
-    }
+    };
 
     for (i = 0; i < getLastDayMonthFromPage(); i++) {
         _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
@@ -262,7 +265,7 @@ function calculateLoadBarEvents(calendarEvents) {
         countChargeableHours = 0;
         $(days).each(function (_index, _value) {
             if ($(value).attr("data-date") === _value) {
-                countChargeableHours += parseFloat(_chargeableHours[_index]);
+                countChargeableHours += _chargeableHours[_index] === null ? 0 : parseFloat(_chargeableHours[_index]);
             }
         });
 
@@ -285,9 +288,16 @@ function calculateLoadBarEvents(calendarEvents) {
             $(this).find(".progress-bar")
                 .tooltip({
                     title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
-                    placement: "bottom",
+                    placement: "bottom"
                 });
         }
+    });
+}
+
+function listViewActive(calendarEvents) {
+    $(".fc-listMonth-button:not(.fc-state-active)").click(function () {
+        var _events = _bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(returnEventsFromTFS());
+        calculateLoadBarEventsForListView(_events);
     });
 }
 
@@ -295,7 +305,7 @@ function progressBarTooltipNull(obj) {
     $(obj).find(".progress")
         .tooltip({
             title: "0% - Hours: 0",
-            placement: "bottom",
+            placement: "bottom"
         });
 }
 
@@ -309,12 +319,11 @@ function calculateLoadBarEventsForListView(calendarEvents) {
         _chargeableHours.push(value.chargeableHours); //percentage worked (7.5 = 100%)
     });
 
-    $("#timesheetTable tbody").each(function (index, value) {
+    $(".fc-list-heading").each(function (index, value) {
         countChargeableHours = 0;
         $(days).each(function (_index, _value) {
-            var _date = $(value).find(".dayListView").text().split("/");
-            if ($.format.date(new Date(_date[2], (_date[1] - 1), _date[0]), "yyyy-MM-dd") === _value) {
-                countChargeableHours += parseFloat(_chargeableHours[_index]);
+            if ($(value).attr("data-date") === _value) {
+                countChargeableHours += _chargeableHours[_index] === null ? 0 : parseFloat(_chargeableHours[_index]);
             }
         });
 
@@ -329,11 +338,11 @@ function calculateLoadBarEventsForListView(calendarEvents) {
             "  </div> " +
             "</div></td></tr>";
 
-        $(this).prepend(_loadBar);
+        $(this).find("td").last().append(_loadBar);
         $(this).find(".progress-bar")
             .tooltip({
                 title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
-                placement: "bottom",
+                placement: "bottom"
             });
     });
 }
@@ -464,6 +473,7 @@ function Info() {
         $("#chargeableHoursInfoTxt").text(getChargeableHours());
         $("#nonchargeableHoursInfoTxt").text(getNonChargeableHours());
     });
+    
 }
 
 function ModalEvent(event, eventCreation) {
@@ -498,20 +508,22 @@ function setModalTitle(title) {
 
 function getChargeableHours() {
     var chargeableHours = 0;
-    $(".chargeablehoursCls").each(function () {
-        if (!$(this).closest("tr").hasClass("weekendRow")) {
-            chargeableHours += parseInt($(this).text());
-        }
+    //$(".chargeablehoursCls").each(function () {
+
+    var _chargeableHours = _bypassTFS ? fakeTFSObj() : returnEventsFromTFS();
+
+    $(_chargeableHours[0]).each(function () {
+        chargeableHours += this.CompletedHours === null ? 0 : this.CompletedHours; 
     });
     return chargeableHours;
 }
 
+
+
 function getNonChargeableHours() {
     var nonchargeableHours = 0;
-    $(".nonchargeablehoursCls").each(function () {
-        if (!$(this).closest("tr").hasClass("weekendRow")) {
-            nonchargeableHours += parseInt($(this).text());
-        }
+    $("#nonchargeableTimesheet").each(function () {
+        //nonchargeableHours += parseFloat($(this).val());
     });
     return nonchargeableHours;
 }
@@ -595,6 +607,9 @@ function changeColor() {
 }
 
 function connectToTFS() {
+
+    //CHANGE FOR returnEventsFromTFS()
+
     //var _bypassTFS = true;
     $.ajax({
         url: "/Home/ConnectTFS",
@@ -627,21 +642,58 @@ function connectToTFS() {
     });
 }
 
-function ExportExcel() {
-    $("#btnExportExcel").on("click", function () {
-        $.ajax({
-            url: "/Home/ExcelExport",
-            type: "GET",
-            //contentType: "application/json; charset=utf-8",
-            //dataType: "json",
-            data: { _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
-            success: function (data) {
-                toastrMessage("File Exported! " + data, "success");
-            },
-            error: function (error) {
-                alert("error: " + JSON.stringify(error));
+function returnEventsFromTFS() {
+    $.ajax({
+        url: "/Home/ConnectTFS",
+        type: "GET",
+        //contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        data: { bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+        success: function (data) {
+            return data;
+        },
+        error: function (error) {
+            alert("error: " + JSON.stringify(error));
+        }
+    });
+}
+
+function SaveExcelFile() {
+    $("#btnSaveExcelFile").on("click", function () {
+        confirmationSavePath();
+    });
+}
+
+function confirmationSavePath() {
+    $.ajax({
+        url: "/Home/TimesheetSaveLocationAndFileName",
+        type: "GET",
+        data: { _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+        success: function (data) {
+            if (confirm("The Excel file will be saved in the following directory: " + data + ".xlsx")) {
+                $.ajax({
+                    url: "/Home/SaveExcelFile",
+                    type: "GET",
+                    //contentType: "application/json; charset=utf-8",
+                    //dataType: "json",
+                    data: { _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+                    success: function (data) {
+                        toastrMessage("File saved! " + data, "success");
+                    },
+                    error: function (error) {
+                        alert("error: " + JSON.stringify(error));
+                    }
+                });
             }
-        });
+            else {
+                toastrMessage("Not saved.", "warning");
+            }
+        },
+        error: function (error) {
+            toastrMessage("Not saved.", "warning");
+            alert("error: " + JSON.stringify(error));
+            return false;
+        }
     });
 }
 
@@ -892,26 +944,3 @@ function returnWorkItemsWithoutStartDate() {
         }
     ]
 }
-
-
-
-//Id: (i + 1),
-//tooltipDay: _isWeekend ? "WEEKEND" : "",
-//classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-//disableFlag: _isWeekend ? "disabled" : "",
-//dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-//day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-//workItem: "34500" + (i + 1),
-//description: "description... " + (i + 1),
-////chargeableHours: "6.4",
-//chargeableHours: "7.5",
-//nonchargeableHours: "2.0",
-//comments: "comments... " + (i + 1)
-
-
-//"Id": "352147",
-//"Title": "Timesheet - UI Improvements ",
-//"StartDate": "/Date(1567378800000)/",
-//"Description": "",
-//"CompletedHours": 7.5,
-//"WorkItemsLinked": null

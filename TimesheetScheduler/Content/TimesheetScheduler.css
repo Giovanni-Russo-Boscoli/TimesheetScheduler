@@ -2,6 +2,7 @@
   height: 720px !important;
   max-height: 720px !important;
   overflow: auto;
+  display: none;
 }
 #targetTable #timesheetTable.table tbody tr td {
   vertical-align: middle !important;
@@ -10,13 +11,17 @@
   height: 720px !important;
   max-height: 720px !important;
   overflow: auto;
+  /*table {
+        border-collapse: separate !important;
+        border-spacing: 20px 0 !important;
+    }*/
 }
 .fc-basic-view .fc-body .fc-row {
   min-height: 4em;
   height: 100px;
 }
 #calendar {
-  display: none;
+  /*display: none;*/
 }
 .form-group {
   margin-bottom: 5px !important;
@@ -58,6 +63,10 @@ td {
 .floatRight {
   float: right;
 }
+.h2RightAligned {
+  position: absolute;
+  right: 0;
+}
 #btnView {
   padding-top: 4px;
   margin-left: 6px;
@@ -70,4 +79,36 @@ td {
 }
 .tooltip-inner {
   max-width: 100%;
+}
+.loadBarContainer {
+  max-width: 95%;
+  padding-left: 2.5%;
+}
+.fc-list-table .loadBarContainerListView {
+  max-width: 90vw;
+}
+/* Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.modalPleaseWait {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
+}
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading .modalPleaseWait {
+  overflow: hidden;
+}
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .modalPleaseWait {
+  display: block;
 }

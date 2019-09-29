@@ -24,6 +24,10 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.WebApi;
 using TimesheetScheduler.Models;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using Application = Microsoft.Office.Interop.Excel.Application;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -61,12 +65,17 @@ namespace TimesheetScheduler.Controllers
 
         public string GetUserName()
         {
-            return UserPrincipal.Current.DisplayName;
+            return string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
         }
 
         public string GetDomainUserName()
         {
             return System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+        }
+
+        public string FormatDomainUserName(string domainUserName) {
+            return domainUserName.Split(new string[] {"\\"}, StringSplitOptions.RemoveEmptyEntries)[1];
+            //return domainUserName.Replace("/","");
         }
 
         private static string GetUrlTfs()
@@ -168,7 +177,7 @@ namespace TimesheetScheduler.Controllers
 
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
-                var _userLogged = UserPrincipal.Current.DisplayName;
+                var _userLogged = GetUserName();
 
                 WorkItemCollection WIC = WIS.Query(
                     " SELECT [System.Id], " +
@@ -232,7 +241,6 @@ namespace TimesheetScheduler.Controllers
             }
 
             IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
-            DateTime currentPeriod = DateTime.Now;
             var _days = DateTime.DaysInMonth(_year, _month);
             DateTime day;
             for (int i = 0; i < _days; i++)
@@ -263,7 +271,7 @@ namespace TimesheetScheduler.Controllers
 
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
-            var _userLogged = UserPrincipal.Current.DisplayName;
+            var _userLogged = GetUserName();
 
             WorkItemCollection WIC = WIS.Query(
                 " SELECT [System.Id], " +
@@ -305,7 +313,7 @@ namespace TimesheetScheduler.Controllers
         {            
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
-            var _userLogged = UserPrincipal.Current.DisplayName;
+            var _userLogged = GetUserName();
 
             Uri tfsUri = new Uri(GetUrlTfs());
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
@@ -332,10 +340,24 @@ namespace TimesheetScheduler.Controllers
             return name.Replace(" ", separator);
         }
 
-        public string TimesheetFileName(char separator)
+        public string TimesheetFileName(char separator, int _month, int _year)
         {
-            return "Timesheet" + separator + NameSplittedByUnderscore(UserName, separator.ToString()) + separator + MonthTimesheet + separator + YearTimesheet;
+            var _monthFormatted = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
+            return "Timesheet" + separator + NameSplittedByUnderscore(FormatDomainUserName(GetDomainUserName()), separator.ToString()) + separator + _monthFormatted + separator + _year;
         }
+        
+        public string TimesheetSaveLocation()
+        {
+            var _path = ConfigurationManager.AppSettings["pathTimesheet"].ToString();
+            return Directory.Exists(_path) ? _path : (Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\");
+        }
+
+        [HttpGet]
+        public string TimesheetSaveLocationAndFileName(int _month, int _year)
+        {
+            return TimesheetSaveLocation() + TimesheetFileName('_', _month, _year);
+        }
+        
 
         public void SetCellValue(Worksheet worksheet, CellObject cellObj)
         {
@@ -425,10 +447,8 @@ namespace TimesheetScheduler.Controllers
 
         public void InitExcelVariables(int _month, int _year)
         {
-            UserName = "GIOVANNI RUSSO BOSCOLI";
-            //MonthTimesheet = DateTime.Now.ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
+            UserName = FormatDomainUserName(GetDomainUserName()); //GetUserName();
             MonthTimesheet = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
-            //YearTimesheet = DateTime.Now.Year.ToString();
             YearTimesheet = _year.ToString();
 
             CellProjectNameLabel = new CellObject
@@ -844,12 +864,12 @@ namespace TimesheetScheduler.Controllers
             FormatCell(worksheet, cellObj);
         }
 
-        public string ExcelExport(bool _bypassTFS, int _month, int _year)
+        public string SaveExcelFile(bool _bypassTFS, int _month, int _year)
         {
             Application excel;
-            Microsoft.Office.Interop.Excel.Workbook worKbooK;
-            Microsoft.Office.Interop.Excel.Worksheet worksheet;
-            Microsoft.Office.Interop.Excel.Range celLrangE;
+            Workbook worKbooK;
+            Worksheet worksheet;
+            Range celLrangE;
 
             try
             {
@@ -873,10 +893,14 @@ namespace TimesheetScheduler.Controllers
                 border.Weight = 2d;
      
                 protectSheet(worksheet);
-                worKbooK.SaveAs(TimesheetFileName('_'));
+                var saveParams = TimesheetSaveLocationAndFileName(_month, _year);
+                worKbooK.SaveAs(saveParams);
 
                 worKbooK.Close();
+                excel.Workbooks.Close();
                 excel.Quit();
+                Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
+                Marshal.ReleaseComObject(worKbooK);
                 return "OK from backend";
             }
             catch (Exception ex)
@@ -889,12 +913,13 @@ namespace TimesheetScheduler.Controllers
                 worksheet = null;
                 celLrangE = null;
                 worKbooK = null;
+                
             }
         }
 
-        //-0------------------------------------------------------------------------------------------------------
+            //-0------------------------------------------------------------------------------------------------------
 
-        private void WorkbookSheetChange(Workbook workbook)
+            private void WorkbookSheetChange(Workbook workbook)
         {
             workbook.SheetChange += new
                 WorkbookEvents_SheetChangeEventHandler(
