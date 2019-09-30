@@ -1,0 +1,342 @@
+﻿
+@Styles.Render("~/Content/timesheetscheduler")
+@Scripts.Render("~/bundles/jquery")
+
+@*https://stackoverflow.com/questions/8423768/freeze-the-top-row-for-an-html-table-only-fixed-table-header-scrolling*@
+
+<script>
+
+    $(document).ready(function () {
+        var count = 0;
+        $(".externalDiv").scroll(function () {
+            $(this).find("tbody").width($(this).find("tbody").width() + ($(this).scrollLeft() - count));
+            count = $(this).scrollLeft();
+        })
+    });
+    //$(document).ready(function () {
+    //    var count = 0;
+    //    $(".externalDiv").scroll(function () {
+    //        //console.log($(this).scrollLeft());
+    //        var t = $(this).find("tbody").width() + ($(this).scrollLeft() - count);
+    //        console.log("tbody width before: " + $(this).find("tbody").width());
+    //        console.log("atual position: " + $(this).scrollLeft());
+    //        console.log("increment: " + ($(this).scrollLeft() - count));
+    //        console.log("t: " + t);
+    //        $(this).find("tbody").width("+="+(t-15));
+    //        console.log("total tbody width after: " + $(this).find("tbody").width());
+    //        count = $(this).scrollLeft();
+    //        console.log("count now: " + count);
+    //        console.log("--------------------------------------------------");
+            
+    //        //console.log("Measures: "+$("tbody").width() + (count - $(this).scrollLeft()));
+    //    })
+    //});
+
+</script>
+
+<style>
+
+    table {
+        border: 1px solid black;
+        padding: 3px;
+    }
+
+        table thead tr {
+            display: block;
+            overflow-x: auto;
+        }
+
+        table th, table td {
+            min-width: 200px;
+            /*fixed width*/
+            border: 1px solid black;
+        }
+
+        table tbody {
+            display: block;
+            height: 200px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            width:300px;
+            max-width:620px;
+        }
+
+    .divExternal {
+        width: 300px;
+        border: 1px solid green;
+        overflow: auto;
+    }
+
+    .externalDiv {
+        width: 300px;
+        max-width:620px;
+        /*height: 300px;*/
+        overflow-y: auto;
+    }
+    .internalDiv{
+        /*width:300px;
+        overflow:auto;*/
+    }
+</style>
+<br />
+<br />
+<div class="externalDiv">
+    @*<div class="internalDiv">*@
+        <table id="_table">
+            <thead>
+                <tr class="thatTR">
+                    <th>Test 1</th>
+                    <th>Test 2</th>
+                    <th>Test 3</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <tr>
+                    <td>What is Lorem Ipsum?</td>
+                    <td>Contrary to popular belief, Lorem Ipsum is not simply random text.</td>
+                    <td>There are many variations of passages of Lorem Ipsum available</td>
+                <tr />
+                <tr>
+                    <td>There are many variations of passages of Lorem Ipsum available</td>
+                    <td>What is Lorem Ipsum?</td>
+                    <td>Contrary to popular belief, Lorem Ipsum is not simply random text.</td>
+                <tr />
+                <tr>
+                    <td>There are many variations of passages of Lorem Ipsum available</td>
+                    <td>Contrary to popular belief, Lorem Ipsum is not simply random text.</td>
+                    <td>What is Lorem Ipsum?</td>
+                <tr />
+                <tr>
+                    <td>What is Lorem Ipsum?</td>
+                    <td>There are many variations of passages of Lorem Ipsum available</td>
+                    <td>Contrary to popular belief, Lorem Ipsum is not simply random text.</td>
+                <tr />
+                <tr>
+                    <td>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book</td>
+                    <td>What is Lorem Ipsum?</td>
+                    <td>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book</td>
+                <tr />
+                <tr>
+                    <td>What is Lorem Ipsum?</td>
+                    <td>Contrary to popular belief, Lorem Ipsum is not simply random text.</td>
+                    <td>There are many variations of passages of Lorem Ipsum available</td>
+                <tr />
+                <tr>
+                    <td>There are many variations of passages of Lorem Ipsum available</td>
+                    <td>What is Lorem Ipsum?</td>
+                    <td>Contrary to popular belief, Lorem Ipsum is not simply random text.</td>
+                <tr />
+                <tr>
+                    <td>There are many variations of passages of Lorem Ipsum available</td>
+                    <td>Contrary to popular belief, Lorem Ipsum is not simply random text.</td>
+                    <td>What is Lorem Ipsum?</td>
+                <tr />
+                <tr>
+                    <td>What is Lorem Ipsum?</td>
+                    <td>There are many variations of passages of Lorem Ipsum available</td>
+                    <td>Contrary to popular belief, Lorem Ipsum is not simply random text.</td>
+                <tr />
+                <tr>
+                    <td>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book</td>
+                    <td>What is Lorem Ipsum?</td>
+                    <td>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book</td>
+                <tr />
+            </tbody>
+
+        </table>
+    @*</div>*@
+</div>
+<br />
+<br />
+<div class="divExternal">
+    <table class="mytable">
+        <thead>
+            <tr>
+                <th>col1</th>
+                <th>col2</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+            <tr>
+                <td>one</td>
+                <td>two</td>
+            </tr>
+        </tbody>
+
+
+    </table>
+</div>

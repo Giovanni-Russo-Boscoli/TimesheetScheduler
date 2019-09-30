@@ -564,6 +564,7 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\StepsReports.cshtml" />
     <Content Include="todo timesheetscheduler" />
+    <Content Include="Views\Home\SampleTest.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

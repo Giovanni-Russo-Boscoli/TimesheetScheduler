@@ -47,6 +47,12 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
+        public ActionResult SampleTest()
+        {
+            return View();
+        }
+
+
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
@@ -74,8 +80,9 @@ namespace TimesheetScheduler.Controllers
             return System.Security.Principal.WindowsIdentity.GetCurrent().Name;
         }
 
-        public string FormatDomainUserName(string domainUserName) {
-            return domainUserName.Split(new string[] {"\\"}, StringSplitOptions.RemoveEmptyEntries)[1];
+        public string FormatDomainUserName(string domainUserName)
+        {
+            return domainUserName.Split(new string[] { "\\" }, StringSplitOptions.RemoveEmptyEntries)[1];
             //return domainUserName.Replace("/","");
         }
 
@@ -109,7 +116,8 @@ namespace TimesheetScheduler.Controllers
             return Json(new EmptyResult(), JsonRequestBehavior.AllowGet);
         }
 
-        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, int _month, int _year) {
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, int _month, int _year)
+        {
 
             IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
 
@@ -212,7 +220,7 @@ namespace TimesheetScheduler.Controllers
 
             foreach (WorkItem wi in WIC)
             {
-               if (wi["Start Date"] == null)
+                if (wi["Start Date"] == null)
                 {
                     listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
                     {
@@ -242,7 +250,7 @@ namespace TimesheetScheduler.Controllers
                 {
                     timesheetRecords.Add(new WorkItemRecord
                     {
-                        Id = (i+1),
+                        Id = (i + 1),
                         Date = day,
                         WorkItemNumber = 0,
                         Description = "",
@@ -254,7 +262,7 @@ namespace TimesheetScheduler.Controllers
                 }
                 else
                 {
-                    _index = _events.Where(e => e.StartDate.Value == day).Select(e=>e.Id);
+                    //_index = _events.Where(e => e.StartDate.Value == day).Select(e => e.Id);
                     timesheetRecords.Add(new WorkItemRecord
                     {
                         Id = (i + 1),
@@ -276,7 +284,7 @@ namespace TimesheetScheduler.Controllers
         #region EXCEL
 
         public string CreateTaskOnTFS()//newTimesheetTask
-        {            
+        {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
             var _userLogged = GetUserName();
@@ -291,7 +299,7 @@ namespace TimesheetScheduler.Controllers
             WorkItem newWI = new WorkItem(workItemType);
             newWI.Title = "TASK TEST - DELETE #delete";
             newWI.Fields["System.AssignedTo"].Value = _userLogged;
-            newWI.Fields["System.TeamProject"].Value = projectName;            
+            newWI.Fields["System.TeamProject"].Value = projectName;
             newWI.Fields["Iteration Path"].Value = _iterationPath;
             //var _valid = newWI.Validate();
             //newWI.Save();
@@ -311,7 +319,7 @@ namespace TimesheetScheduler.Controllers
             var _monthFormatted = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
             return "Timesheet" + separator + NameSplittedByUnderscore(FormatDomainUserName(GetDomainUserName()), separator.ToString()) + separator + _monthFormatted + separator + _year;
         }
-        
+
         public string TimesheetSaveLocation()
         {
             var _path = ConfigurationManager.AppSettings["pathTimesheet"].ToString();
@@ -323,7 +331,7 @@ namespace TimesheetScheduler.Controllers
         {
             return TimesheetSaveLocation() + TimesheetFileName('_', _month, _year);
         }
-        
+
 
         public void SetCellValue(Worksheet worksheet, CellObject cellObj)
         {
@@ -850,14 +858,14 @@ namespace TimesheetScheduler.Controllers
                 worksheet.Name = "Timesheet"; //TODO: create a better file name using month and year
 
                 CreateHeader(worksheet);
-                CreateTable(worksheet, _bypassTFS,  _month, _year);
+                CreateTable(worksheet, _bypassTFS, _month, _year);
                 resizeColumns(worksheet);
-          
+
                 celLrangE = worksheet.Range[worksheet.Cells[5, 1], worksheet.Cells[36, 7]]; //TODO
                 Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
                 border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
                 border.Weight = 2d;
-     
+
                 protectSheet(worksheet);
                 var saveParams = TimesheetSaveLocationAndFileName(_month, _year);
                 worKbooK.SaveAs(saveParams);
@@ -879,13 +887,13 @@ namespace TimesheetScheduler.Controllers
                 worksheet = null;
                 celLrangE = null;
                 worKbooK = null;
-                
+
             }
         }
 
-            //-0------------------------------------------------------------------------------------------------------
+        //-0------------------------------------------------------------------------------------------------------
 
-            private void WorkbookSheetChange(Workbook workbook)
+        private void WorkbookSheetChange(Workbook workbook)
         {
             workbook.SheetChange += new
                 WorkbookEvents_SheetChangeEventHandler(
@@ -940,7 +948,7 @@ namespace TimesheetScheduler.Controllers
         private bool IsWeekend(DateTime day)
         {
             return (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday);
-        }     
+        }
     }
 }
 
