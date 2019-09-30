@@ -2,3 +2,8 @@
 - create a progress bar in list view
 - non-chargeable hours => include or not
 - do something with workitems without startdate
+- edit task (StartDate/CompletedHours/Description/Comments/WorkItemLinked)
+
+(Convert_TFS_Events_To_Excel_Format)
+ - loop for all days in the month but doesn't include weekends
+ - allow more then 1 task per day (EXCEL CREATION)			
