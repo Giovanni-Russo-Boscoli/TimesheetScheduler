@@ -143,6 +143,7 @@ namespace TimesheetScheduler.Controllers
                     " WHERE [System.TeamProject] = '" + projectName + "'" +
                     " AND [Iteration Path] = '" + _iterationPath + "'" +
                     " AND [Assigned To] = '" + _userLogged + "'" +
+                    //" AND [Assigned To] =" + "'Ian O''Brien'" +
                     " ORDER BY [System.Id], [System.WorkItemType]");
 
                 foreach (WorkItem wi in WIC)

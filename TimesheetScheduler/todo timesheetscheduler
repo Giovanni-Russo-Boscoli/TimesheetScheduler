@@ -7,3 +7,7 @@
 (Convert_TFS_Events_To_Excel_Format)
  - loop for all days in the month but doesn't include weekends
  - allow more then 1 task per day (EXCEL CREATION)			
+
+ -Consider month and year for ReturnTFSEvents_ListWorkItemsWithoutStartDate (instead starddate use created date)
+
+ - userLogged in query should allow names with apostrophy (e.g. 'Ian O''Brien') (use double single quotes)
