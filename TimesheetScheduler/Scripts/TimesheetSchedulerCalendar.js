@@ -1,4 +1,4 @@
-﻿var _bypassTFS = true;
+﻿var _bypassTFS = false;
 
 $(document).ready(function () {
     //PLEASE WAIT DIALOG/GIF
@@ -14,6 +14,7 @@ $(document).ready(function () {
     Info();
     SaveExcelFile();
     connectToTFS();
+    saveEvent();
 });
 
 function ShowHiddenTimesheetCalendarView() {
@@ -234,7 +235,7 @@ function formatTFSEventsForCalendar(_obj) {
         //var _startDate = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString();
         var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
         _calendarEvents.push({
-            title: _obj[i].Id + " - " + _obj[i].Title,
+            title: "[" + _obj[i].Id + "] " + " - " + _obj[i].Title,
             start: _startDate,
             end: _startDate,
             allDay: false,
@@ -555,7 +556,23 @@ function toggleView() {
 
 function saveEvent() {
     $("#btnSaveEvent").on("click", function () {
-        toastrMessage("Saved", "success");
+        $.ajax({
+            url: "/Home/CreateTaskOnTFS",
+            type: "GET",
+            //contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: { startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val()},
+            success: function (data) {
+                toastrMessage("Saved -> Workitem: [" + data +"]", "success");
+                //return data;
+                //$('#calendar').fullCalendar('refetchEvents');
+                connectToTFS();
+            },
+            error: function (error) {
+                alert("error: " + JSON.stringify(error));
+            }
+        });
+        
     });
 }
 
@@ -622,7 +639,7 @@ function connectToTFS() {
             RowSelected();
             ShowHiddenTimesheetCalendarView();
             toggleView();
-            saveEvent();
+            //saveEvent();
             //return data;
             //var teste = JSON.stringify(data[0]);
             //var teste2 = JSON.stringify(data[1]);
