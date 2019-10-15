@@ -143,6 +143,7 @@ namespace TimesheetScheduler.Controllers
                     " WHERE [System.TeamProject] = '" + projectName + "'" +
                     " AND [Iteration Path] = '" + _iterationPath + "'" +
                     " AND [Assigned To] = '" + _userLogged + "'" +
+                    //" AND [Assigned To] =" + "'Ian O''Brien'" +
                     " ORDER BY [System.Id], [System.WorkItemType]");
 
                 foreach (WorkItem wi in WIC)
@@ -243,7 +244,7 @@ namespace TimesheetScheduler.Controllers
 
             //loop for all days in the month but doesn't include weekends
             //allow more then 1 task per day
-            for (int i = 0; i < _days; i++)
+            for (int i = 0; i < _days; i++) //_events.Count; i++) //
             {
                 day = new DateTime(_year, _month, i + 1);
                 if (IsWeekend(day))
@@ -262,28 +263,44 @@ namespace TimesheetScheduler.Controllers
                 }
                 else
                 {
-                    //_index = _events.Where(e => e.StartDate.Value == day).Select(e => e.Id);
-                    timesheetRecords.Add(new WorkItemRecord
+                    var _itemEvent = _events.Where(x => x.StartDate.Value.ToShortDateString() == day.ToShortDateString());
+                    if (_itemEvent.Count() > 0)
                     {
-                        Id = (i + 1),
-                        Date = _events[i].StartDate.Value,
-                        WorkItemNumber = int.Parse(_events[i].Id),
-                        Description = _events[i].Description,
-                        ChargeableHours = _events[i].CompletedHours == null ? 0 : (float)_events[i].CompletedHours,
-                        NonChargeableHours = (float)_events[i].CompletedHours,
-                        Comments = _events[i].WorkItemsLinked,
-                        IsWeekend = IsWeekend(_events[i].StartDate.Value)
-                    });
+                        foreach (var item in _itemEvent)
+                        {
+                            timesheetRecords.Add(new WorkItemRecord
+                            {
+                                Id = (i + 1),
+                                Date = item.StartDate.Value,
+                                WorkItemNumber = int.Parse(item.Id),
+                                Description = item.Title, //item.Description,
+                                ChargeableHours = item.CompletedHours == null ? 0 : (float)item.CompletedHours,
+                                NonChargeableHours = (float)item.CompletedHours,
+                                Comments = item.WorkItemsLinked,
+                                IsWeekend = IsWeekend(item.StartDate.Value)
+                            });
+                        }
+                    }
+                    else //does not exist this date in the events
+                    {
+                        timesheetRecords.Add(new WorkItemRecord
+                        {
+                            Id = (i + 1),
+                            Date = day,
+                            WorkItemNumber = 0,
+                            Description = "",
+                            ChargeableHours = 0,
+                            NonChargeableHours = 0,
+                            Comments = "",
+                            IsWeekend = IsWeekend(day)
+                        });
+                    }
                 }
             }
             return timesheetRecords;
         }
 
-        #endregion TFS
-
-        #region EXCEL
-
-        public string CreateTaskOnTFS()//newTimesheetTask
+        public string CreateTaskOnTFS(string startDate, string description, float chargeableHours)//newTimesheetTask
         {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
@@ -297,15 +314,21 @@ namespace TimesheetScheduler.Controllers
             WorkItemType workItemType = teamProject.WorkItemTypes["Task"];
 
             WorkItem newWI = new WorkItem(workItemType);
-            newWI.Title = "TASK TEST - DELETE #delete";
+            newWI.Title = description;
             newWI.Fields["System.AssignedTo"].Value = _userLogged;
             newWI.Fields["System.TeamProject"].Value = projectName;
             newWI.Fields["Iteration Path"].Value = _iterationPath;
+            newWI.Fields["Completed Work"].Value = chargeableHours;
+            newWI.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
             //var _valid = newWI.Validate();
-            //newWI.Save();
+            newWI.Save();
 
             return newWI.Fields["ID"].Value.ToString();
         }
+
+        #endregion TFS
+
+        #region EXCEL
 
         #region UTIL
 
@@ -322,8 +345,9 @@ namespace TimesheetScheduler.Controllers
 
         public string TimesheetSaveLocation()
         {
-            var _path = ConfigurationManager.AppSettings["pathTimesheet"].ToString();
-            return Directory.Exists(_path) ? _path : (Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\");
+            var _desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\";
+            var _path = ConfigurationManager.AppSettings["pathTimesheet"];
+            return _path == null ? _desktop : (Directory.Exists(_path.ToString()) ? _path.ToString() : _desktop);
         }
 
         [HttpGet]
@@ -913,8 +937,9 @@ namespace TimesheetScheduler.Controllers
         private void protectSheet(Worksheet worksheet)
         {
             var missing = Type.Missing;
-            worksheet.Columns[1].Locked = true;
-            worksheet.Columns[2].Locked = true;
+            //worksheet.Columns[1].Locked = true;
+            //worksheet.Columns[2].Locked = true;
+            worksheet.Columns.Locked = true;
             worksheet.Protect("bom", missing, missing, missing, true, missing, missing,
                     missing, missing, missing, missing, missing, missing, missing, missing, missing);
             //UserInterfaceOnly: true

@@ -6,11 +6,16 @@
 
 <script>
 
+    //$(document).ready(function () {
+    //    var count = 0;
+    //    $(".externalDiv").scroll(function () {
+    //        $(this).find("tbody").width($(this).find("tbody").width() + ($(this).scrollLeft() - count));
+    //        count = $(this).scrollLeft();
+    //    })
+    //});
     $(document).ready(function () {
-        var count = 0;
         $(".externalDiv").scroll(function () {
-            $(this).find("tbody").width($(this).find("tbody").width() + ($(this).scrollLeft() - count));
-            count = $(this).scrollLeft();
+            $(this).find("tbody").width($(this).width() + $(this).scrollLeft());
         })
     });
     //$(document).ready(function () {
