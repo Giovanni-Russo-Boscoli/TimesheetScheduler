@@ -26,6 +26,9 @@
 .overloadedLoadBar {
   background-color: rgba(255, 0, 0, 0.15) !important;
 }
+.underloadedLoadBar {
+  background-color: rgba(255, 216, 0, 0.15) !important;
+}
 @keyframes progressAnimationStrike {
   from {
     width: 0;

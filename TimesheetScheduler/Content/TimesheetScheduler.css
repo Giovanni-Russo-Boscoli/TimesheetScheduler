@@ -59,6 +59,7 @@ td {
 }
 .customBtn {
   display: flex;
+  margin-top: 3px;
 }
 .floatRight {
   float: right;
@@ -86,6 +87,11 @@ td {
 }
 .fc-list-table .loadBarContainerListView {
   max-width: 90vw;
+}
+.userNameSelect {
+  margin-top: 5px;
+  margin-right: 15px;
+  width: 250px;
 }
 /* Start by setting display:none to make this hidden.
    Then we position it in relation to the viewport window

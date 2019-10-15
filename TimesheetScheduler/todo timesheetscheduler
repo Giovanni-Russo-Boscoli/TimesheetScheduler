@@ -17,3 +17,5 @@
  - add a flag/dropdown to choose Annual Leave/Sick/Out of office in the event day (after integrate with Database)
 
  - edit an existing item
+
+ - rename label Description and Comment (title)

@@ -1,4 +1,4 @@
-﻿var _bypassTFS = false;
+﻿var _bypassTFS = true;
 
 $(document).ready(function () {
     //PLEASE WAIT DIALOG/GIF
@@ -7,9 +7,10 @@ $(document).ready(function () {
         ajaxStart: function () { $body.addClass("loading"); },
         ajaxStop: function () { $body.removeClass("loading"); }
     });
-
+    LoadUserNames();
     LoadMonths();
     LoadYears();
+    bindUserNameDropdown();
     bindMonthDropdown();
     Info();
     SaveExcelFile();
@@ -271,11 +272,15 @@ function calculateLoadBarEvents(calendarEvents) {
         });
 
         var _class = "";
-        if (((countChargeableHours / 7.5) * 100) > 100) {
+        var _totalHours = countChargeableHours / 7.5 * 100;
+        if (_totalHours > 100) {
             _class = "overloadedLoadBar";
         }
+        if (_totalHours < 100) {
+             _class = "underloadedLoadBar";
+        }
         var _loadBar = "<div class='loadBarContainer'>    " +
-            "  <div class='progress progress-striped' style='--loadbar-percent:" + ((countChargeableHours / 7.5) * 100) + "%'>" +
+            "  <div class='progress progress-striped' style='--loadbar-percent:" + _totalHours + "%'>" +
             "    <div class='progress-bar " + _class + "'>" +
             "    </div>                      " +
             "  </div> " +
@@ -288,7 +293,7 @@ function calculateLoadBarEvents(calendarEvents) {
         else {
             $(this).find(".progress-bar")
                 .tooltip({
-                    title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
+                    title: parseFloat(_totalHours).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
                     placement: "bottom"
                 });
         }
@@ -329,11 +334,15 @@ function calculateLoadBarEventsForListView(calendarEvents) {
         });
 
         var _class = "";
-        if (((countChargeableHours / 7.5) * 100) > 100) {
+        var _totalHours = countChargeableHours / 7.5 * 100;
+        if (_totalHours > 100) {
             _class = "overloadedLoadBar";
         }
+        if (_totalHours < 100) {
+            _class = "underloadedLoadBar";
+        }
         var _loadBar = "<tr><td colspan='7' style='padding:0 !important;'><div class='loadBarContainerListView'>    " +
-            "  <div class='progress progress-striped' style='--loadbar-percent:" + ((countChargeableHours / 7.5) * 100) + "%'>" +
+            "  <div class='progress progress-striped' style='--loadbar-percent:" + _totalHours + "%'>" +
             "    <div class='progress-bar " + _class + "'>" +
             "    </div>                      " +
             "  </div> " +
@@ -342,10 +351,25 @@ function calculateLoadBarEventsForListView(calendarEvents) {
         $(this).find("td").last().append(_loadBar);
         $(this).find(".progress-bar")
             .tooltip({
-                title: parseFloat((countChargeableHours / 7.5) * 100).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
+                title: parseFloat(_totalHours).toFixed(2) + "% - Hours: " + parseFloat(countChargeableHours).toFixed(2),
                 placement: "bottom"
             });
     });
+}
+
+function LoadUserNames() {
+    var names = [
+        "Giovanni Boscoli",
+        "Amy Kelly",
+        "Eoin O'Toole",
+        "Ian O'Brien",
+        "Niall Murphy"];
+    var options = "";
+    for (i = 0; i < names.length; i++) {
+        options += "<option value='" + (i + 1) + "'>" + names[i] + "</option>";
+    }
+    $("#userNameTimesheet").append(options);
+    $('#userNameTimesheet option[value="' + getCurrentMonth() + '"]').prop('selected', true);
 }
 
 function LoadMonths() {
@@ -406,12 +430,25 @@ function ChangeWorkItem(dataId) {
     //$("#commentsTimesheet").val($("#comments" + dataId).text());
 }
 
+function getUserNameFromPage() {
+    //return $("#userNameTimesheet").text();
+    return $('#userNameTimesheet').find(":selected").text();
+}
+
 function getMonthFromPage() {
     return ($("#monthTimesheet").val() - 1);
 }
 
 function getYearFromPage() {
     return $("#yearTimesheet").val();
+}
+
+function bindUserNameDropdown() {
+    $("#userNameTimesheet").on("change", function () {
+        //renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 01));
+        connectToTFS();
+        //$('#calendar').fullCalendar('addEventSource', events);
+    });
 }
 
 function bindMonthDropdown() {
@@ -564,8 +601,6 @@ function saveEvent() {
             data: { startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val()},
             success: function (data) {
                 toastrMessage("Saved -> Workitem: [" + data +"]", "success");
-                //return data;
-                //$('#calendar').fullCalendar('refetchEvents');
                 connectToTFS();
             },
             error: function (error) {
@@ -633,25 +668,13 @@ function connectToTFS() {
         type: "GET",
         //contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: { bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+        data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         success: function (data) {
+            //alert(JSON.stringify(data[0]));
             renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 1), data, _bypassTFS);
-            RowSelected();
+            //RowSelected();
             ShowHiddenTimesheetCalendarView();
             toggleView();
-            //saveEvent();
-            //return data;
-            //var teste = JSON.stringify(data[0]);
-            //var teste2 = JSON.stringify(data[1]);
-            //$(data[0]).each(function (index, value) {
-            //var val = $(value);
-            //var workItem = val[0].Id;
-            //console.log(formatDate(new Date(parseInt(val[0].StartDate.substr(6)))));
-            //console.log(_formatDate(new Date(parseInt(val[0].StartDate.substr(6))), "ddmmyyyy", "/"));
-            //});
-            //alert(teste);
-            //alert(teste2);
-            //alert("data[1]: " + JSON.stringify(data[1]));
         },
         error: function (error) {
             alert("error: " + JSON.stringify(error));
@@ -685,7 +708,7 @@ function confirmationSavePath() {
     $.ajax({
         url: "/Home/TimesheetSaveLocationAndFileName",
         type: "GET",
-        data: { _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+        data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         success: function (data) {
             if (confirm("The Excel file will be saved in the following directory: " + data + ".xlsx")) {
                 $.ajax({
@@ -693,7 +716,7 @@ function confirmationSavePath() {
                     type: "GET",
                     //contentType: "application/json; charset=utf-8",
                     //dataType: "json",
-                    data: { _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+                    data: { userName:getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
                     success: function (data) {
                         toastrMessage("File saved! " + data, "success");
                     },
@@ -722,7 +745,7 @@ function fakeTFSObj() {
                 "Title": "Timesheet - UI Improvements ",
                 "StartDate": "/Date(1567378800000)/",
                 "Description": "",
-                "CompletedHours": 7.5,
+                "CompletedHours": 5.5,
                 "WorkItemsLinked": "#350973"
             },
             {
@@ -730,7 +753,7 @@ function fakeTFSObj() {
                 "Title": "Timesheet - UI Improvements ",
                 "StartDate": "/Date(1567465200000)/",
                 "Description": "",
-                "CompletedHours": 7.5,
+                "CompletedHours": 4.5,
                 "WorkItemsLinked": null
             },
             {
@@ -738,7 +761,7 @@ function fakeTFSObj() {
                 "Title": "Timesheet - UI Improvements ",
                 "StartDate": "/Date(1567551600000)/",
                 "Description": "",
-                "CompletedHours": 7.5,
+                "CompletedHours": 4.5,
                 "WorkItemsLinked": null
             },
             {
@@ -746,7 +769,7 @@ function fakeTFSObj() {
                 "Title": "Timesheet - UI Improvements + Live bug",
                 "StartDate": "/Date(1567638000000)/",
                 "Description": "",
-                "CompletedHours": 7.5,
+                "CompletedHours": 3.5,
                 "WorkItemsLinked": null
             },
             {
@@ -770,7 +793,7 @@ function fakeTFSObj() {
                 "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
                 "StartDate": "/Date(1568070000000)/",
                 "Description": "",
-                "CompletedHours": 7.5,
+                "CompletedHours": 8.5,
                 "WorkItemsLinked": null
             },
             {
@@ -786,7 +809,7 @@ function fakeTFSObj() {
                 "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
                 "StartDate": "/Date(1568674800000)/",
                 "Description": "",
-                "CompletedHours": 7.5,
+                "CompletedHours": 9.5,
                 "WorkItemsLinked": null
             },
             {
@@ -829,14 +852,14 @@ function fakeTFSObj() {
                 "CompletedHours": 7.5,
                 "WorkItemsLinked": null
             },
-            {
-                "Id": "357930",
-                "Title": "Timesheet - Freeze headers not working / Double scroll bars related ",
-                "StartDate": "/Date(1569366000000)/",
-                "Description": "",
-                "CompletedHours": 7.5,
-                "WorkItemsLinked": null
-            }
+            //{
+            //    "Id": "357930",
+            //    "Title": "Timesheet - Freeze headers not working / Double scroll bars related ",
+            //    "StartDate": "/Date(1569366000000)/",
+            //    "Description": "",
+            //    "CompletedHours": 7.5,
+            //    "WorkItemsLinked": null
+            //}
         ],
         [
             //WorkItemsWithoutStartDate
@@ -959,5 +982,5 @@ function returnWorkItemsWithoutStartDate() {
             "CompletedHours": null,
             "WorkItemsLinked": null
         }
-    ]
+    ];
 }

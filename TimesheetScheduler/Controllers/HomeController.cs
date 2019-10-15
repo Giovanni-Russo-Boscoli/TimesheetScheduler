@@ -101,22 +101,22 @@ namespace TimesheetScheduler.Controllers
             return ConfigurationManager.AppSettings["iterationPathTFS"].ToString();
         }
 
-        public JsonResult ConnectTFS(bool bypassTFS, int _month, int _year)
+        public JsonResult ConnectTFS(bool bypassTFS, string userName, int _month, int _year)
         {
-            if (!bypassTFS)
-            {
-                IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
+            //if (!bypassTFS)
+            //{
+            IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
+            userName = userName.Replace("'", "''");
+            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(bypassTFS, userName, _month, _year));
+            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(bypassTFS, userName, _month, _year));
 
-                joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(bypassTFS, _month, _year));
-                joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate());
+            return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
+            //}
 
-                return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
-            }
-
-            return Json(new EmptyResult(), JsonRequestBehavior.AllowGet);
+            //return Json(new EmptyResult(), JsonRequestBehavior.AllowGet);
         }
 
-        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, int _month, int _year)
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, string userName, int _month, int _year)
         {
 
             IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
@@ -142,7 +142,7 @@ namespace TimesheetScheduler.Controllers
                     " FROM WorkItems " +
                     " WHERE [System.TeamProject] = '" + projectName + "'" +
                     " AND [Iteration Path] = '" + _iterationPath + "'" +
-                    " AND [Assigned To] = '" + _userLogged + "'" +
+                    " AND [Assigned To] = '" + userName + "'" +
                     //" AND [Assigned To] =" + "'Ian O''Brien'" +
                     " ORDER BY [System.Id], [System.WorkItemType]");
 
@@ -178,6 +178,8 @@ namespace TimesheetScheduler.Controllers
                 //---------------------
                 for (int i = 0; i < DateTime.DaysInMonth(_year, _month); i++)
                 {
+                    //few days without info to simulate "out of the office"
+                    if (i == 7 || i == 12 || i == 17 || i == 22 || i == 28) continue;
                     listWorkItems.Add(new WorkItemSerialized()
                     {
                         Id = "35541" + i,
@@ -193,46 +195,61 @@ namespace TimesheetScheduler.Controllers
             return listWorkItems;
         }
 
-        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate()
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate(bool _bypass, string userName, int _month, int _year)
         {
-            Uri tfsUri = new Uri(GetUrlTfs());
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-            var projectName = GetProjectNameTFS();
-            var _iterationPath = GetIterationPathTFS();
-            var _userLogged = GetUserName();
-
-            WorkItemCollection WIC = WIS.Query(
-                " SELECT [System.Id], " +
-                " [System.WorkItemType], " +
-                " [System.State], " +
-                " [System.AssignedTo], " +
-                " [System.Title], " +
-                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                " [Microsoft.VSTS.Scheduling.StartDate] " +
-                " FROM WorkItems " +
-                " WHERE [System.TeamProject] = '" + projectName + "'" +
-                " AND [Iteration Path] = '" + _iterationPath + "'" +
-                " AND [Assigned To] = '" + _userLogged + "'" +
-                " ORDER BY [System.Id], [System.WorkItemType]");
-
             IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
-
-            foreach (WorkItem wi in WIC)
+            if (!_bypass)
             {
-                if (wi["Start Date"] == null)
+                Uri tfsUri = new Uri(GetUrlTfs());
+                TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+                var projectName = GetProjectNameTFS();
+                var _iterationPath = GetIterationPathTFS();
+                var _userLogged = GetUserName();
+
+                WorkItemCollection WIC = WIS.Query(
+                    " SELECT [System.Id], " +
+                    " [System.WorkItemType], " +
+                    " [System.State], " +
+                    " [System.AssignedTo], " +
+                    " [System.Title], " +
+                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                    " [Microsoft.VSTS.Scheduling.StartDate] " +
+                    " FROM WorkItems " +
+                    " WHERE [System.TeamProject] = '" + projectName + "'" +
+                    " AND [Iteration Path] = '" + _iterationPath + "'" +
+                    " AND [Assigned To] = '" + userName + "'" +
+                    " ORDER BY [System.Id], [System.WorkItemType]");
+
+
+
+                foreach (WorkItem wi in WIC)
+                {
+                    if (wi["Start Date"] == null)
+                    {
+                        listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
+                        {
+                            Id = wi["Id"].ToString(),
+                            Title = wi["Title"].ToString(),
+                        });
+
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < DateTime.DaysInMonth(_year, _month); i++)
                 {
                     listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
                     {
-                        Id = wi["Id"].ToString(),
-                        Title = wi["Title"].ToString(),
+                        Id = "35541" + i,
+                        Title = "Title-" + i
                     });
-
                 }
             }
-
             return listWorkItemsWithoutStartDate;
+
         }
 
         public IList<WorkItemRecord> Convert_TFS_Events_To_Excel_Format(IList<WorkItemSerialized> _events, int _month, int _year)
@@ -288,10 +305,10 @@ namespace TimesheetScheduler.Controllers
                             Id = (i + 1),
                             Date = day,
                             WorkItemNumber = 0,
-                            Description = "",
+                            Description = "Out of the office",
                             ChargeableHours = 0,
                             NonChargeableHours = 0,
-                            Comments = "",
+                            Comments = "------",
                             IsWeekend = IsWeekend(day)
                         });
                     }
@@ -337,10 +354,11 @@ namespace TimesheetScheduler.Controllers
             return name.Replace(" ", separator);
         }
 
-        public string TimesheetFileName(char separator, int _month, int _year)
+        public string TimesheetFileName(string userName, char separator, int _month, int _year)
         {
             var _monthFormatted = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
-            return "Timesheet" + separator + NameSplittedByUnderscore(FormatDomainUserName(GetDomainUserName()), separator.ToString()) + separator + _monthFormatted + separator + _year;
+            //return "Timesheet" + separator + NameSplittedByUnderscore(FormatDomainUserName(GetDomainUserName()), separator.ToString()) + separator + _monthFormatted + separator + _year;
+            return "Timesheet" + separator + NameSplittedByUnderscore(userName, separator.ToString()) + separator + _monthFormatted + separator + _year;
         }
 
         public string TimesheetSaveLocation()
@@ -351,9 +369,9 @@ namespace TimesheetScheduler.Controllers
         }
 
         [HttpGet]
-        public string TimesheetSaveLocationAndFileName(int _month, int _year)
+        public string TimesheetSaveLocationAndFileName(string userName, int _month, int _year)
         {
-            return TimesheetSaveLocation() + TimesheetFileName('_', _month, _year);
+            return TimesheetSaveLocation() + TimesheetFileName(userName.Replace("'", ""), '_', _month, _year);
         }
 
 
@@ -443,9 +461,10 @@ namespace TimesheetScheduler.Controllers
 
         #endregion Const Cell Range and Labels
 
-        public void InitExcelVariables(int _month, int _year)
+        public void InitExcelVariables(string userName, int _month, int _year)
         {
-            UserName = FormatDomainUserName(GetDomainUserName()); //GetUserName();
+            //UserName = FormatDomainUserName(GetDomainUserName()); //GetUserName();
+            UserName = userName; //GetUserName();
             MonthTimesheet = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
             YearTimesheet = _year.ToString();
 
@@ -820,9 +839,9 @@ namespace TimesheetScheduler.Controllers
             //---------------------------------------- END HEADER TABLE---------------------------------------------
         }
 
-        private void CreateTable(Worksheet worksheet, bool _bypassTFS, int _month, int _year)
+        private void CreateTable(Worksheet worksheet, bool _bypassTFS, string userName, int _month, int _year)
         {
-            var _table = TimesheetRecords(_bypassTFS, _month, _year);
+            var _table = TimesheetRecords(_bypassTFS, userName, _month, _year);
             int firstRow = 6;
             int lastRow = _table.Count + firstRow;
             int j;
@@ -862,7 +881,7 @@ namespace TimesheetScheduler.Controllers
             FormatCell(worksheet, cellObj);
         }
 
-        public string SaveExcelFile(bool _bypassTFS, int _month, int _year)
+        public string SaveExcelFile(bool _bypassTFS, string userName, int _month, int _year)
         {
             Application excel;
             Workbook worKbooK;
@@ -876,13 +895,13 @@ namespace TimesheetScheduler.Controllers
                 excel.DisplayAlerts = false;
                 worKbooK = excel.Workbooks.Add(Type.Missing);
 
-                InitExcelVariables(_month, _year);
+                InitExcelVariables(userName, _month, _year);
 
                 worksheet = (Worksheet)worKbooK.ActiveSheet;
                 worksheet.Name = "Timesheet"; //TODO: create a better file name using month and year
 
                 CreateHeader(worksheet);
-                CreateTable(worksheet, _bypassTFS, _month, _year);
+                CreateTable(worksheet, _bypassTFS, userName, _month, _year);
                 resizeColumns(worksheet);
 
                 celLrangE = worksheet.Range[worksheet.Cells[5, 1], worksheet.Cells[36, 7]]; //TODO
@@ -891,7 +910,7 @@ namespace TimesheetScheduler.Controllers
                 border.Weight = 2d;
 
                 protectSheet(worksheet);
-                var saveParams = TimesheetSaveLocationAndFileName(_month, _year);
+                var saveParams = TimesheetSaveLocationAndFileName(userName, _month, _year);
                 worKbooK.SaveAs(saveParams);
 
                 worKbooK.Close();
@@ -963,9 +982,9 @@ namespace TimesheetScheduler.Controllers
             worksheet.get_Range("G11").WrapText = true;
         }
 
-        public IList<WorkItemRecord> TimesheetRecords(bool _bypassTFS, int _month, int _year)
+        public IList<WorkItemRecord> TimesheetRecords(bool _bypassTFS, string userName, int _month, int _year)
         {
-            return Convert_TFS_Events_To_Excel_Format(ReturnTFSEvents_ListWorkItems(_bypassTFS, _month, _year), _month, _year);
+            return Convert_TFS_Events_To_Excel_Format(ReturnTFSEvents_ListWorkItems(_bypassTFS, userName, _month, _year), _month, _year);
         }
 
         #endregion EXCEL
