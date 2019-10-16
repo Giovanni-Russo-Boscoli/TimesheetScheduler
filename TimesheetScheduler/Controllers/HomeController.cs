@@ -317,11 +317,11 @@ namespace TimesheetScheduler.Controllers
             return timesheetRecords;
         }
 
-        public string CreateTaskOnTFS(string startDate, string description, float chargeableHours)//newTimesheetTask
+        public string CreateTaskOnTFS(string userName, string startDate, string description, float chargeableHours)//newTimesheetTask
         {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
-            var _userLogged = GetUserName();
+            //var _userLogged = GetUserName();
 
             Uri tfsUri = new Uri(GetUrlTfs());
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
@@ -332,7 +332,7 @@ namespace TimesheetScheduler.Controllers
 
             WorkItem newWI = new WorkItem(workItemType);
             newWI.Title = description;
-            newWI.Fields["System.AssignedTo"].Value = _userLogged;
+            newWI.Fields["System.AssignedTo"].Value = userName; // _userLogged;
             newWI.Fields["System.TeamProject"].Value = projectName;
             newWI.Fields["Iteration Path"].Value = _iterationPath;
             newWI.Fields["Completed Work"].Value = chargeableHours;
@@ -341,6 +341,34 @@ namespace TimesheetScheduler.Controllers
             newWI.Save();
 
             return newWI.Fields["ID"].Value.ToString();
+        }
+
+        public int EditTaskOnTFS(int workItemNumber, string startDate, string description, float chargeableHours)
+        {
+            Uri tfsUri = new Uri(GetUrlTfs());
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+            
+            WorkItemCollection WIC = WIS.Query(
+                " SELECT [System.Id], " +
+                " [System.WorkItemType], " +
+                " [System.State], " +
+                " [System.AssignedTo], " +
+                " [System.Title], " +
+                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                " [Microsoft.VSTS.Scheduling.StartDate] " +
+                " FROM WorkItems " +
+                " WHERE [System.ID] = '" + workItemNumber + "'");
+
+            WorkItem _wi = WIC.OfType<WorkItem>().FirstOrDefault();
+            _wi.Open();
+            _wi.Title = description;
+            _wi.Fields["Completed Work"].Value = chargeableHours;
+            _wi.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
+            //var _valid = newWI.Validate();
+            _wi.Save();
+
+            return (int)_wi.Fields["ID"].Value;
         }
 
         #endregion TFS
@@ -839,7 +867,7 @@ namespace TimesheetScheduler.Controllers
             //---------------------------------------- END HEADER TABLE---------------------------------------------
         }
 
-        private void CreateTable(Worksheet worksheet, bool _bypassTFS, string userName, int _month, int _year)
+        private int CreateTable(Worksheet worksheet, bool _bypassTFS, string userName, int _month, int _year)
         {
             var _table = TimesheetRecords(_bypassTFS, userName, _month, _year);
             int firstRow = 6;
@@ -873,6 +901,7 @@ namespace TimesheetScheduler.Controllers
                     worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = false;
                 }
             }
+            return _table.Count;
         }
 
         public void SetValAndFormatCell(Worksheet worksheet, CellObject cellObj)
@@ -894,6 +923,7 @@ namespace TimesheetScheduler.Controllers
                 excel.Visible = false;
                 excel.DisplayAlerts = false;
                 worKbooK = excel.Workbooks.Add(Type.Missing);
+                var tableEventCount = 0;
 
                 InitExcelVariables(userName, _month, _year);
 
@@ -901,10 +931,12 @@ namespace TimesheetScheduler.Controllers
                 worksheet.Name = "Timesheet"; //TODO: create a better file name using month and year
 
                 CreateHeader(worksheet);
-                CreateTable(worksheet, _bypassTFS, userName, _month, _year);
+                tableEventCount = CreateTable(worksheet, _bypassTFS, userName, _month, _year);
                 resizeColumns(worksheet);
 
-                celLrangE = worksheet.Range[worksheet.Cells[5, 1], worksheet.Cells[36, 7]]; //TODO
+                var borderStartsRow = 5;
+                var borderEndsRow = borderStartsRow + tableEventCount;
+                celLrangE = worksheet.Range[worksheet.Cells[borderStartsRow, 1], worksheet.Cells[borderEndsRow, 7]]; //TODO
                 Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
                 border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
                 border.Weight = 2d;

@@ -1,4 +1,4 @@
-﻿var _bypassTFS = true;
+﻿var _bypassTFS = false;
 
 $(document).ready(function () {
     //PLEASE WAIT DIALOG/GIF
@@ -89,17 +89,9 @@ function toggleClass(_class) {
 }
 
 function renderMustacheTableTemplate(dateCalendar, tfsEvents, bypassTFS) {
-    //var template = $('#templateTimesheetTable').html();
-    //Mustache.parse(template);   // optional, speeds up future uses
-    //var obj = fakeDataMustache();
     var eventsTFSFormatted = bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(tfsEvents);
-    //var eventsFormatted = formatForCalendarEvents(obj);
-    //eventsCalendar(eventsFormatted, dateCalendar);
     eventsCalendar(eventsTFSFormatted, dateCalendar);
-    //var rendered = Mustache.render(template, obj);
-    //$('#targetTable').html(rendered);
-    //calculateLoadBarEventsForListView(eventsTFSFormatted);
-    listViewActive(eventsTFSFormatted);
+    listViewActive();
     tooltipDaysListView();
 }
 
@@ -232,19 +224,20 @@ function formatTFSEventsForCalendar(_obj) {
     var _calendarEvents = [];
     _obj = _obj[0];
     for (i = 0; i < _obj.length; i++) {
-        //var _startDate = _formatDate(new Date(parseInt(_obj[i].StartDate.substr(6))), "ddmmyyyy", "/");
-        //var _startDate = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString();
         var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
+        var _chargeableHours = _obj[i].CompletedHours > 7.5 ? 7.5 : _obj[i].CompletedHours;
+        var _nonchargeableHours = _obj[i].CompletedHours > 7.5 ? _obj[i].CompletedHours - 7.5 : 0;
         _calendarEvents.push({
             title: "[" + _obj[i].Id + "] " + " - " + _obj[i].Title,
+            titleOriginal: _obj[i].Title,
             start: _startDate,
             end: _startDate,
             allDay: false,
             day: _startDate,
             workItem: _obj[i].Id,
             description: _obj[i].Description,
-            chargeableHours: _obj[i].CompletedHours,
-            nonchargeableHours: _obj[i].CompletedHours,
+            chargeableHours: _chargeableHours,
+            nonchargeableHours: _nonchargeableHours,
             comments: _obj[i].WorkItemsLinked
             //url: 'http://google.com/'
         });
@@ -300,7 +293,7 @@ function calculateLoadBarEvents(calendarEvents) {
     });
 }
 
-function listViewActive(calendarEvents) {
+function listViewActive() {
     $(".fc-listMonth-button:not(.fc-state-active)").click(function () {
         var _events = _bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(returnEventsFromTFS());
         calculateLoadBarEventsForListView(_events);
@@ -361,7 +354,7 @@ function LoadUserNames() {
     var names = [
         "Giovanni Boscoli",
         "Amy Kelly",
-        "Eoin O'Toole",
+        "Eoin OToole",
         "Ian O'Brien",
         "Niall Murphy"];
     var options = "";
@@ -391,7 +384,7 @@ function LoadYears() {
     $('#yearTimesheet option[value="' + _currentYear + '"]').prop('selected', true);
 }
 
-//return int e.g.: January = 12 / December = 12
+//return int e.g.: January = 1 / December = 12
 function getCurrentMonth() {
     return new Date().getMonth() + 1;
 }
@@ -400,35 +393,35 @@ function getCurrentYear() {
     return (new Date).getFullYear();
 }
 
-function RowSelected() {
-    $(".chk-day").click(function () {
-        $(".chk-day").each(function (index, value) {
-            $(value).closest("tr").addClass("row-inactive");
-            $(this).closest("tr").removeClass("row-active");
-        });
-        $(this).closest("tr").removeClass("row-inactive");
-        $(this).closest("tr").addClass("row-active");
-        ChangeWorkItem($(this).attr("id"));
-        returnTopPage();
-        //highlightRecordOnTopTape($(this).attr("id"));
-        $("#dayTimesheet").prop('disabled', true);
-    });
-}
+//function RowSelected() {
+//    $(".chk-day").click(function () {
+//        $(".chk-day").each(function (index, value) {
+//            $(value).closest("tr").addClass("row-inactive");
+//            $(this).closest("tr").removeClass("row-active");
+//        });
+//        $(this).closest("tr").removeClass("row-inactive");
+//        $(this).closest("tr").addClass("row-active");
+//        ChangeWorkItem($(this).attr("id"));
+//        returnTopPage();
+//        //highlightRecordOnTopTape($(this).attr("id"));
+//        $("#dayTimesheet").prop('disabled', true);
+//    });
+//}
 
-function getDayFromPage() {
+//function getDayFromPage() {
     //var strDate = $("#dayTimesheet" + dataId).text().split("/");
     //var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
     //return dateBase;
-}
+//}
 
-function ChangeWorkItem(dataId) {
+//function ChangeWorkItem(dataId) {
     //$("#dayTimesheet").val($("#dayTimesheet" + dataId).text());
     //$("#workItemTimesheet").val($("#workitem" + dataId).text());
     //$("#descriptionTimesheet").val($("#description" + dataId).text());
     //$("#chargeableTimesheet").val($("#chargeablehours" + dataId).text());
     //$("#nonchargeableTimesheet").val($("#nonchargeablehours" + dataId).text());
     //$("#commentsTimesheet").val($("#comments" + dataId).text());
-}
+//}
 
 function getUserNameFromPage() {
     //return $("#userNameTimesheet").text();
@@ -445,17 +438,13 @@ function getYearFromPage() {
 
 function bindUserNameDropdown() {
     $("#userNameTimesheet").on("change", function () {
-        //renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 01));
         connectToTFS();
-        //$('#calendar').fullCalendar('addEventSource', events);
     });
 }
 
 function bindMonthDropdown() {
     $("#monthTimesheet").on("change", function () {
-        //renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 01));
         connectToTFS();
-        //$('#calendar').fullCalendar('addEventSource', events);
     });
 }
 
@@ -520,7 +509,7 @@ function ModalEvent(event, eventCreation) {
     if (!eventCreation) {
         $("#dayTimesheet").val(_formatDate(event.day, "ddmmyyyy", "/")),
             $("#workItemTimesheet").val(event.workItem);
-        $("#descriptionTimesheet").val(event.description);
+        $("#descriptionTimesheet").val(event.titleOriginal);
         $("#chargeableTimesheet").val(event.chargeableHours);
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
         $("#commentsTimesheet").val(event.comments);
@@ -548,6 +537,7 @@ function getChargeableHours() {
     var chargeableHours = 0;
     //$(".chargeablehoursCls").each(function () {
 
+    //USE CALLBACK IN THIS CALL => returnEventsFromTFS
     var _chargeableHours = _bypassTFS ? fakeTFSObj() : returnEventsFromTFS();
 
     $(_chargeableHours[0]).each(function () {
@@ -555,8 +545,6 @@ function getChargeableHours() {
     });
     return chargeableHours;
 }
-
-
 
 function getNonChargeableHours() {
     var nonchargeableHours = 0;
@@ -574,40 +562,57 @@ function returnTopPage() {
     window.scrollTo(0, 0);
 }
 
-function toggleView() {
-    var listUrl = "/Images/list.png";
-    var calendarUrl = "/Images/calendarView.png";
+//function toggleView() {
+//    var listUrl = "/Images/list.png";
+//    var calendarUrl = "/Images/calendarView.png";
 
-    $("#btnView").on("click", function () {
-        if ($(this).attr("src") === listUrl) {
-            $(this).attr("src", calendarUrl);
-            $(this).attr("title", "Change for Calendar View");
-        } else {
-            $(this).attr("src", listUrl);
-            $(this).attr("title", "Change for List View");
-        }
-        $("#calendar").toggle();
-        $("#targetTable").toggle();
-    });
-}
+//    $("#btnView").on("click", function () {
+//        if ($(this).attr("src") === listUrl) {
+//            $(this).attr("src", calendarUrl);
+//            $(this).attr("title", "Change for Calendar View");
+//        } else {
+//            $(this).attr("src", listUrl);
+//            $(this).attr("title", "Change for List View");
+//        }
+//        $("#calendar").toggle();
+//        $("#targetTable").toggle();
+//    });
+//}
 
 function saveEvent() {
     $("#btnSaveEvent").on("click", function () {
-        $.ajax({
-            url: "/Home/CreateTaskOnTFS",
-            type: "GET",
-            //contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            data: { startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val()},
-            success: function (data) {
-                toastrMessage("Saved -> Workitem: [" + data +"]", "success");
-                connectToTFS();
-            },
-            error: function (error) {
-                alert("error: " + JSON.stringify(error));
-            }
-        });
-        
+        var _workItemNumber = $("#workItemTimesheet").val();
+        if (_workItemNumber) {
+            //EDIT
+            $.ajax({
+                url: "/Home/EditTaskOnTFS",
+                type: "POST",
+                dataType: "json",
+                data: { workItemNumber: _workItemNumber, startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val() },
+                success: function (data) {
+                    toastrMessage("Saved -> Workitem: [" + data + "]", "success");
+                    connectToTFS();
+                },
+                error: function (error) {
+                    alert("error: " + JSON.stringify(error));
+                }
+            });
+        } else {
+            //CREATION
+            $.ajax({
+                url: "/Home/CreateTaskOnTFS",
+                type: "POST",
+                dataType: "json",
+                data: { userName: getUserNameFromPage(), startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val() },
+                success: function (data) {
+                    toastrMessage("Saved -> Workitem: [" + data + "]", "success");
+                    connectToTFS();
+                },
+                error: function (error) {
+                    alert("error: " + JSON.stringify(error));
+                }
+            });
+        }
     });
 }
 
@@ -674,7 +679,7 @@ function connectToTFS() {
             renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 1), data, _bypassTFS);
             //RowSelected();
             ShowHiddenTimesheetCalendarView();
-            toggleView();
+            //toggleView();
         },
         error: function (error) {
             alert("error: " + JSON.stringify(error));
@@ -688,7 +693,7 @@ function returnEventsFromTFS() {
         type: "GET",
         //contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: { bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+        data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         success: function (data) {
             return data;
         },

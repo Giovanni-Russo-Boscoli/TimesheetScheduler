@@ -1,21 +1,30 @@
 - Organize regions;
-- create a progress bar in list view
 - non-chargeable hours => include or not
 - do something with workitems without startdate
 - edit task (StartDate/CompletedHours/Description/Comments/WorkItemLinked)
 
-(Convert_TFS_Events_To_Excel_Format)
- - loop for all days in the month but doesn't include weekends
- - allow more then 1 task per day (EXCEL CREATION)			
-
- -Consider month and year for ReturnTFSEvents_ListWorkItemsWithoutStartDate (instead startdate use created date)
-
- - userLogged in query should allow names with apostrophy (e.g. 'Ian O''Brien') (use double single quotes)
-
- - loading gif when creating excel file
-
- - add a flag/dropdown to choose Annual Leave/Sick/Out of office in the event day (after integrate with Database)
-
  - edit an existing item
 
  - rename label Description and Comment (title)
+
+ - non-chargeablehours from excel file is replicating the chargeablehours value
+
+ - create a background-color/message for days "out of the office" (without task) in calendar view
+
+ - When editing/creating task use label "title" + Description + comments
+
+ - allow creates task for another person/user
+
+ - block user dropdown in calendar view page (unblock only for specific user)
+
+ - refactor bordering excel file
+
+ - create a reminder/alert each x hour if a task isn't created for the current day
+
+ - create multiple tasks
+
+ - INFO button not working for TFS events (working fine for fake data)
+
+ - date field should has mask (__/__/__) - validation in date format
+
+ - reports end of the month
