@@ -129,7 +129,7 @@ namespace TimesheetScheduler.Controllers
 
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
-                var _userLogged = GetUserName();
+                //var _userLogged = GetUserName();
 
                 WorkItemCollection WIC = WIS.Query(
                     " SELECT [System.Id], " +
@@ -257,7 +257,7 @@ namespace TimesheetScheduler.Controllers
             IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
             var _days = DateTime.DaysInMonth(_year, _month);
             DateTime day;
-            var _index = 0;
+            //var _index = 0;
 
             //loop for all days in the month but doesn't include weekends
             //allow more then 1 task per day
@@ -317,7 +317,7 @@ namespace TimesheetScheduler.Controllers
             return timesheetRecords;
         }
 
-        public string CreateTaskOnTFS(string userName, string startDate, string description, float chargeableHours)//newTimesheetTask
+        public string CreateTaskOnTFS(string userName, string startDate, string description, float chargeableHours, float nonchargeableHours)//newTimesheetTask
         {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
@@ -335,7 +335,7 @@ namespace TimesheetScheduler.Controllers
             newWI.Fields["System.AssignedTo"].Value = userName; // _userLogged;
             newWI.Fields["System.TeamProject"].Value = projectName;
             newWI.Fields["Iteration Path"].Value = _iterationPath;
-            newWI.Fields["Completed Work"].Value = chargeableHours;
+            newWI.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
             newWI.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
             //var _valid = newWI.Validate();
             newWI.Save();
@@ -343,7 +343,7 @@ namespace TimesheetScheduler.Controllers
             return newWI.Fields["ID"].Value.ToString();
         }
 
-        public int EditTaskOnTFS(int workItemNumber, string startDate, string description, float chargeableHours)
+        public int EditTaskOnTFS(int workItemNumber, string startDate, string description, float chargeableHours, float nonchargeableHours)
         {
             Uri tfsUri = new Uri(GetUrlTfs());
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
@@ -363,7 +363,7 @@ namespace TimesheetScheduler.Controllers
             WorkItem _wi = WIC.OfType<WorkItem>().FirstOrDefault();
             _wi.Open();
             _wi.Title = description;
-            _wi.Fields["Completed Work"].Value = chargeableHours;
+            _wi.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
             _wi.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
             //var _valid = newWI.Validate();
             _wi.Save();

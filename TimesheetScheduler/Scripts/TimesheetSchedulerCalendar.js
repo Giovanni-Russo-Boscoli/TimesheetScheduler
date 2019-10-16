@@ -1,6 +1,6 @@
-﻿var _bypassTFS = false;
+﻿var _bypassTFS = true;
 
-$(document).ready(function () {
+$(document).ready(function ($) {
     //PLEASE WAIT DIALOG/GIF
     $body = $("body");
     $(document).on({
@@ -134,67 +134,67 @@ function _formatDate(date, format, separator) {
     }
 }
 
-function fakeDataMustache() {
-    var _date;
-    var _isWeekend;
-    var values =
-    {
-        rows: []
-    };
+//function fakeDataMustache() {
+//    var _date;
+//    var _isWeekend;
+//    var values =
+//    {
+//        rows: []
+//    };
 
-    for (i = 0; i < getLastDayMonthFromPage(); i++) {
-        _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
-        if (formatDate(_date) === "8/9/2019" || formatDate(_date) === "7/9/2019") {
-            continue; //hiding weekend for listMonth view
-        }
-        _isWeekend = IsWeekend(_date);
-        if (i % 2 === 0) {
-            values.rows.push({
-                Id: (i + 1),
-                tooltipDay: _isWeekend ? "WEEKEND" : "",
-                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-                disableFlag: _isWeekend ? "disabled" : "",
-                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-                workItem: "34500" + (i + 1),
-                description: "description... " + (i + 1),
-                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
-                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
-                comments: "comments... " + (i + 1)
-            });
+//    for (i = 0; i < getLastDayMonthFromPage(); i++) {
+//        _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
+//        if (formatDate(_date) === "8/9/2019" || formatDate(_date) === "7/9/2019") {
+//            continue; //hiding weekend for listMonth view
+//        }
+//        _isWeekend = IsWeekend(_date);
+//        if (i % 2 === 0) {
+//            values.rows.push({
+//                Id: (i + 1),
+//                tooltipDay: _isWeekend ? "WEEKEND" : "",
+//                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+//                disableFlag: _isWeekend ? "disabled" : "",
+//                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+//                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+//                workItem: "34500" + (i + 1),
+//                description: "description... " + (i + 1),
+//                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
+//                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
+//                comments: "comments... " + (i + 1)
+//            });
 
-        }
-        else {
-            values.rows.push({
-                Id: (i + 1),
-                tooltipDay: _isWeekend ? "WEEKEND" : "",
-                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-                disableFlag: _isWeekend ? "disabled" : "",
-                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-                workItem: "34500" + (i + 1),
-                description: "description... " + (i + 1),
-                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
-                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
-                comments: "comments... " + (i + 1)
-            });
-            values.rows.push({
-                Id: (i + 1),
-                tooltipDay: _isWeekend ? "WEEKEND" : "",
-                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-                disableFlag: _isWeekend ? "disabled" : "",
-                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-                workItem: "34500" + (i + 1),
-                description: "description... " + (i + 1),
-                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
-                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
-                comments: "comments... " + (i + 1)
-            });
-        }
-    }
-    return values;
-}
+//        }
+//        else {
+//            values.rows.push({
+//                Id: (i + 1),
+//                tooltipDay: _isWeekend ? "WEEKEND" : "",
+//                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+//                disableFlag: _isWeekend ? "disabled" : "",
+//                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+//                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+//                workItem: "34500" + (i + 1),
+//                description: "description... " + (i + 1),
+//                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
+//                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
+//                comments: "comments... " + (i + 1)
+//            });
+//            values.rows.push({
+//                Id: (i + 1),
+//                tooltipDay: _isWeekend ? "WEEKEND" : "",
+//                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
+//                disableFlag: _isWeekend ? "disabled" : "",
+//                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
+//                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
+//                workItem: "34500" + (i + 1),
+//                description: "description... " + (i + 1),
+//                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
+//                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
+//                comments: "comments... " + (i + 1)
+//            });
+//        }
+//    }
+//    return values;
+//}
 
 function generateRandomNumber(min, max) {
     return Math.random() * (+max - +min) + +min;
@@ -225,7 +225,7 @@ function formatTFSEventsForCalendar(_obj) {
     _obj = _obj[0];
     for (i = 0; i < _obj.length; i++) {
         var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
-        var _chargeableHours = _obj[i].CompletedHours > 7.5 ? 7.5 : _obj[i].CompletedHours;
+        var _chargeableHours = _obj[i].CompletedHours > 7.5 ? 7.5 : (_obj[i].CompletedHours !== null ? _obj[i].CompletedHours : 0);
         var _nonchargeableHours = _obj[i].CompletedHours > 7.5 ? _obj[i].CompletedHours - 7.5 : 0;
         _calendarEvents.push({
             title: "[" + _obj[i].Id + "] " + " - " + _obj[i].Title,
@@ -270,7 +270,7 @@ function calculateLoadBarEvents(calendarEvents) {
             _class = "overloadedLoadBar";
         }
         if (_totalHours < 100) {
-             _class = "underloadedLoadBar";
+            _class = "underloadedLoadBar";
         }
         var _loadBar = "<div class='loadBarContainer'>    " +
             "  <div class='progress progress-striped' style='--loadbar-percent:" + _totalHours + "%'>" +
@@ -409,18 +409,18 @@ function getCurrentYear() {
 //}
 
 //function getDayFromPage() {
-    //var strDate = $("#dayTimesheet" + dataId).text().split("/");
-    //var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
-    //return dateBase;
+//var strDate = $("#dayTimesheet" + dataId).text().split("/");
+//var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
+//return dateBase;
 //}
 
 //function ChangeWorkItem(dataId) {
-    //$("#dayTimesheet").val($("#dayTimesheet" + dataId).text());
-    //$("#workItemTimesheet").val($("#workitem" + dataId).text());
-    //$("#descriptionTimesheet").val($("#description" + dataId).text());
-    //$("#chargeableTimesheet").val($("#chargeablehours" + dataId).text());
-    //$("#nonchargeableTimesheet").val($("#nonchargeablehours" + dataId).text());
-    //$("#commentsTimesheet").val($("#comments" + dataId).text());
+//$("#dayTimesheet").val($("#dayTimesheet" + dataId).text());
+//$("#workItemTimesheet").val($("#workitem" + dataId).text());
+//$("#descriptionTimesheet").val($("#description" + dataId).text());
+//$("#chargeableTimesheet").val($("#chargeablehours" + dataId).text());
+//$("#nonchargeableTimesheet").val($("#nonchargeablehours" + dataId).text());
+//$("#commentsTimesheet").val($("#comments" + dataId).text());
 //}
 
 function getUserNameFromPage() {
@@ -488,6 +488,16 @@ function formatDate(date) {
     return (date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear());
 }
 
+function dateMaskById(id, mask) {
+    if (!mask) {
+        mask = 'dd/mm/yyyy';
+    }
+    //$("#date1").mask("99/99/9999", { placeholder: 'dd/mm/yyyy' });
+    $("#" + id).mask("99/99/9999", { placeholder: mask });
+    //alert(id);
+    //$("#" + id).mask("00/00/0000");
+}
+
 function IsWeekend(date) {
     var day = date.getDay();
     return (day === 6) || (day === 0);
@@ -496,25 +506,33 @@ function IsWeekend(date) {
 function Info() {
     $("#btnInfo").click(function () {
         $("#infoModal").modal();
-        $("#dayWorkedInfoTxt").text(calculateDaysWorked());
-        $("#chargeableHoursInfoTxt").text(getChargeableHours());
-        $("#nonchargeableHoursInfoTxt").text(getNonChargeableHours());
+        if ($(".infoMonthLabel").length < 1) {
+            $(".H4tTitleInfoModal").text($(".H4tTitleInfoModal").text() + " - " + $(".fc-left").find("h2").text());
+            $(".H4tTitleInfoModal").addClass("infoMonthLabel");
+        }
+
+        $("#dayWorkedInfoTxt").text(calculateDaysWorked()); //populate this field while rendering events - (no needs to retrieve data again - modal is not being shown but is static html)
+        $("#chargeableHoursInfoTxt").text(getChargeableHours()); //populate this field while rendering events -  (no needs to retrieve data again - modal is not being shown but is static html)
+        $("#nonchargeableHoursInfoTxt").text(getNonChargeableHours()); //populate this field while rendering events -  (no needs to retrieve data again - modal is not being shown but is static html)
     });
-    
+
 }
 
 function ModalEvent(event, eventCreation) {
     cleanModal();
     $("#eventModal").modal();
     if (!eventCreation) {
+        $("#dayTimesheet").prop("disabled", false);
+        dateMaskById("dayTimesheet");
         $("#dayTimesheet").val(_formatDate(event.day, "ddmmyyyy", "/")),
-            $("#workItemTimesheet").val(event.workItem);
+        $("#workItemTimesheet").val(event.workItem);
         $("#descriptionTimesheet").val(event.titleOriginal);
         $("#chargeableTimesheet").val(event.chargeableHours);
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
         $("#commentsTimesheet").val(event.comments);
         setModalTitle("Event Info");
     } else {
+        $("#dayTimesheet").prop("disabled", true);
         $("#dayTimesheet").val(_formatDate(event, "ddmmyyyy", "/"));
         setModalTitle("Event Creation");
     }
@@ -541,15 +559,19 @@ function getChargeableHours() {
     var _chargeableHours = _bypassTFS ? fakeTFSObj() : returnEventsFromTFS();
 
     $(_chargeableHours[0]).each(function () {
-        chargeableHours += this.CompletedHours === null ? 0 : this.CompletedHours; 
+        chargeableHours += this.CompletedHours === null ? 0 : (this.CompletedHours > 7.5 ? 7.5 : this.CompletedHours);
     });
     return chargeableHours;
 }
 
 function getNonChargeableHours() {
     var nonchargeableHours = 0;
-    $("#nonchargeableTimesheet").each(function () {
-        //nonchargeableHours += parseFloat($(this).val());
+
+    //USE CALLBACK IN THIS CALL => returnEventsFromTFS
+    var _nonchargeableHours = _bypassTFS ? fakeTFSObj() : returnEventsFromTFS();
+
+    $(_nonchargeableHours[0]).each(function () {
+        nonchargeableHours += (this.CompletedHours === null || this.CompletedHours <= 7.5) ? 0 : this.CompletedHours - 7.5;
     });
     return nonchargeableHours;
 }
@@ -588,7 +610,9 @@ function saveEvent() {
                 url: "/Home/EditTaskOnTFS",
                 type: "POST",
                 dataType: "json",
-                data: { workItemNumber: _workItemNumber, startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val() },
+                data: {
+                    workItemNumber: _workItemNumber, startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val(), nonchargeableHours: $("#nonchargeableTimesheet").val()
+                },
                 success: function (data) {
                     toastrMessage("Saved -> Workitem: [" + data + "]", "success");
                     connectToTFS();
@@ -603,7 +627,7 @@ function saveEvent() {
                 url: "/Home/CreateTaskOnTFS",
                 type: "POST",
                 dataType: "json",
-                data: { userName: getUserNameFromPage(), startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val() },
+                data: { userName: getUserNameFromPage(), startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val(), nonchargeableHours: $("#nonchargeableTimesheet").val() },
                 success: function (data) {
                     toastrMessage("Saved -> Workitem: [" + data + "]", "success");
                     connectToTFS();
@@ -721,7 +745,7 @@ function confirmationSavePath() {
                     type: "GET",
                     //contentType: "application/json; charset=utf-8",
                     //dataType: "json",
-                    data: { userName:getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+                    data: { userName: getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
                     success: function (data) {
                         toastrMessage("File saved! " + data, "success");
                     },
@@ -774,7 +798,7 @@ function fakeTFSObj() {
                 "Title": "Timesheet - UI Improvements + Live bug",
                 "StartDate": "/Date(1567638000000)/",
                 "Description": "",
-                "CompletedHours": 3.5,
+                "CompletedHours": 8.5,
                 "WorkItemsLinked": null
             },
             {
@@ -782,7 +806,7 @@ function fakeTFSObj() {
                 "Title": "Timesheet - Error when opening standalone tables - offset().top (live issue)",
                 "StartDate": "/Date(1567724400000)/",
                 "Description": "",
-                "CompletedHours": 7.5,
+                "CompletedHours": 10.5,
                 "WorkItemsLinked": null
             },
             {

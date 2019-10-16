@@ -28,3 +28,9 @@
  - date field should has mask (__/__/__) - validation in date format
 
  - reports end of the month
+
+ - link workitems (using autocomplete or search field) when creating/editing workitem
+
+ - Info() should get populated while rendering events (no needs to retrieve data again - modal is not being shown but is static html)
+
+ - REMOVE LINK FROM LAYOUT.CSHTML (input mask - install in project)
