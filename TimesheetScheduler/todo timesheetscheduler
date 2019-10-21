@@ -1,36 +1,46 @@
 - Organize regions;
-- non-chargeable hours => include or not
+
 - do something with workitems without startdate
-- edit task (StartDate/CompletedHours/Description/Comments/WorkItemLinked)
 
- - edit an existing item
+- create a background-color/message for days "out of the office" (without task) in calendar view
 
- - rename label Description and Comment (title)
+- allow creates task for another person/user
 
- - non-chargeablehours from excel file is replicating the chargeablehours value
+- block user dropdown in calendar view page (unblock only for specific user)
 
- - create a background-color/message for days "out of the office" (without task) in calendar view
+- create multiple tasks
 
- - When editing/creating task use label "title" + Description + comments
+- INFO button not working for TFS events (working fine for fake data)
+- Info() should get populated while rendering events (no needs to retrieve data again - modal is not being shown but is static html)
 
- - allow creates task for another person/user
+- reports end of the month
 
- - block user dropdown in calendar view page (unblock only for specific user)
+- link workitems (using autocomplete or search field) when creating/editing workitem
 
- - refactor bordering excel file
+- REMOVE LINK FROM LAYOUT.CSHTML (input mask - install in project)
 
- - create a reminder/alert each x hour if a task isn't created for the current day
+- register user (Name (exactly as in windows authentication), project, iteration path, etc...) [this will allow us to use with in multiple teams]
 
- - create multiple tasks
+- feature to copy the previous task (give options if is there more than one) [ONLY FOR CREATION - NOT WHEN EDITING]
 
- - INFO button not working for TFS events (working fine for fake data)
+- reminder when change anything in a task and try to close without saving
 
- - date field should has mask (__/__/__) - validation in date format
+- apply loading gif for all ajax calls/request
 
- - reports end of the month
+- refactor home page 
 
- - link workitems (using autocomplete or search field) when creating/editing workitem
+	- add a default prefix when creating task (in the 'title' field) - also get focused on the same field
 
- - Info() should get populated while rendering events (no needs to retrieve data again - modal is not being shown but is static html)
+- allow close tasks; when a task is not closed should has a color different when it's closed (add status field in edit mode)
 
- - REMOVE LINK FROM LAYOUT.CSHTML (input mask - install in project)
+- give an option for tasks without 'StartDate' to apply the 'Creation Date' as 'StartDate' (and Close tasks)
+
+- counter time to update each X minutes
+
+- create a reminder/alert each x hour if a task isn't created for the current day
+
+- add status (new/active/closed) for tasks (creation/editing)
+
+- tasks with 'closed' status has different color
+
+- feature to close tasks (monthly - close tasks for specific month)

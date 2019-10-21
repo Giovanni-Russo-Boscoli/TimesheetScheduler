@@ -167,7 +167,8 @@ namespace TimesheetScheduler.Controllers
                                 StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
                                 Description = wi["Description"].ToString(),
                                 CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-                                WorkItemsLinked = _workItemsLinked
+                                WorkItemsLinked = _workItemsLinked,
+                                State = wi.State
                             });
                         }
                     }
@@ -187,7 +188,8 @@ namespace TimesheetScheduler.Controllers
                         StartDate = new DateTime(_year, _month, i + 1),
                         Description = "Description-" + i,
                         CompletedHours = i + 1,
-                        WorkItemsLinked = "#321321 #654654"
+                        WorkItemsLinked = "#321321 #654654",
+                        State = "Closed"
                     });
                 }
             }
@@ -252,72 +254,7 @@ namespace TimesheetScheduler.Controllers
 
         }
 
-        public IList<WorkItemRecord> Convert_TFS_Events_To_Excel_Format(IList<WorkItemSerialized> _events, int _month, int _year)
-        {
-            IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
-            var _days = DateTime.DaysInMonth(_year, _month);
-            DateTime day;
-            //var _index = 0;
-
-            //loop for all days in the month but doesn't include weekends
-            //allow more then 1 task per day
-            for (int i = 0; i < _days; i++) //_events.Count; i++) //
-            {
-                day = new DateTime(_year, _month, i + 1);
-                if (IsWeekend(day))
-                {
-                    timesheetRecords.Add(new WorkItemRecord
-                    {
-                        Id = (i + 1),
-                        Date = day,
-                        WorkItemNumber = 0,
-                        Description = "",
-                        ChargeableHours = 0,
-                        NonChargeableHours = 0,
-                        Comments = "",
-                        IsWeekend = IsWeekend(day)
-                    });
-                }
-                else
-                {
-                    var _itemEvent = _events.Where(x => x.StartDate.Value.ToShortDateString() == day.ToShortDateString());
-                    if (_itemEvent.Count() > 0)
-                    {
-                        foreach (var item in _itemEvent)
-                        {
-                            timesheetRecords.Add(new WorkItemRecord
-                            {
-                                Id = (i + 1),
-                                Date = item.StartDate.Value,
-                                WorkItemNumber = int.Parse(item.Id),
-                                Description = item.Title, //item.Description,
-                                ChargeableHours = item.CompletedHours == null ? 0 : (float)item.CompletedHours,
-                                NonChargeableHours = (float)item.CompletedHours,
-                                Comments = item.WorkItemsLinked,
-                                IsWeekend = IsWeekend(item.StartDate.Value)
-                            });
-                        }
-                    }
-                    else //does not exist this date in the events
-                    {
-                        timesheetRecords.Add(new WorkItemRecord
-                        {
-                            Id = (i + 1),
-                            Date = day,
-                            WorkItemNumber = 0,
-                            Description = "Out of the office",
-                            ChargeableHours = 0,
-                            NonChargeableHours = 0,
-                            Comments = "------",
-                            IsWeekend = IsWeekend(day)
-                        });
-                    }
-                }
-            }
-            return timesheetRecords;
-        }
-
-        public string CreateTaskOnTFS(string userName, string startDate, string description, float chargeableHours, float nonchargeableHours)//newTimesheetTask
+        public string CreateTaskOnTFS(string userName, string startDate, string description, float chargeableHours = 7.5f, float nonchargeableHours = 0)//newTimesheetTask
         {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
@@ -904,6 +841,71 @@ namespace TimesheetScheduler.Controllers
             return _table.Count;
         }
 
+        public IList<WorkItemRecord> Convert_TFS_Events_To_Excel_Format(IList<WorkItemSerialized> _events, int _month, int _year)
+        {
+            IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
+            var _days = DateTime.DaysInMonth(_year, _month);
+            DateTime day;
+            //var _index = 0;
+
+            //loop for all days in the month but doesn't include weekends
+            //allow more then 1 task per day
+            for (int i = 0; i < _days; i++) //_events.Count; i++) //
+            {
+                day = new DateTime(_year, _month, i + 1);
+                if (IsWeekend(day))
+                {
+                    timesheetRecords.Add(new WorkItemRecord
+                    {
+                        Id = (i + 1),
+                        Date = day,
+                        WorkItemNumber = 0,
+                        Description = "",
+                        ChargeableHours = 0,
+                        NonChargeableHours = 0,
+                        Comments = "",
+                        IsWeekend = IsWeekend(day)
+                    });
+                }
+                else
+                {
+                    var _itemEvent = _events.Where(x => x.StartDate.Value.ToShortDateString() == day.ToShortDateString());
+                    if (_itemEvent.Count() > 0)
+                    {
+                        foreach (var item in _itemEvent)
+                        {
+                            timesheetRecords.Add(new WorkItemRecord
+                            {
+                                Id = (i + 1),
+                                Date = item.StartDate.Value,
+                                WorkItemNumber = int.Parse(item.Id),
+                                Description = item.Title, //item.Description,
+                                ChargeableHours = item.CompletedHours == null ? 0 : ((float)item.CompletedHours > 7.5 ? 7.5f : (float)item.CompletedHours),
+                                NonChargeableHours = (item.CompletedHours == null || item.CompletedHours <= 7.5) ? 0 : ((float)item.CompletedHours - 7.5f),
+                                Comments = item.WorkItemsLinked,
+                                IsWeekend = IsWeekend(item.StartDate.Value)
+                            });
+                        }
+                    }
+                    else //does not exist this date in the events
+                    {
+                        timesheetRecords.Add(new WorkItemRecord
+                        {
+                            Id = (i + 1),
+                            Date = day,
+                            WorkItemNumber = 0,
+                            Description = "Out of the office",
+                            ChargeableHours = 0,
+                            NonChargeableHours = 0,
+                            Comments = "------",
+                            IsWeekend = IsWeekend(day)
+                        });
+                    }
+                }
+            }
+            return timesheetRecords;
+        }
+
         public void SetValAndFormatCell(Worksheet worksheet, CellObject cellObj)
         {
             SetCellValue(worksheet, cellObj);
@@ -1037,6 +1039,8 @@ public class WorkItemSerialized
     public string Description { get; set; }
     public double? CompletedHours { get; set; }
     public string WorkItemsLinked { get; set; }
+
+    public string State { get; set; }
 
 }
 
