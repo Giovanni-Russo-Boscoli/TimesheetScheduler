@@ -264,7 +264,7 @@ namespace TimesheetScheduler.Controllers
                     });
                 }
             }
-            return listWorkItemsWithoutStartDate;
+            return listWorkItemsWithoutStartDate.OrderBy(x=>x.CreationDate).ToList();
 
         }
 

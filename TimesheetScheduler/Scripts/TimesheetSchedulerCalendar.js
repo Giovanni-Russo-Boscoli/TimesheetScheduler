@@ -1,12 +1,7 @@
 ﻿var _bypassTFS = false;
 
 $(document).ready(function ($) {
-    //PLEASE WAIT DIALOG/GIF
-    $body = $("body");
-    $(document).on({
-        ajaxStart: function () { $body.addClass("loading"); },
-        ajaxStop: function () { $body.removeClass("loading"); }
-    });
+    registerTriggerAjax();
     LoadMonths();
     LoadYears();
     bindUserNameDropdown();
@@ -16,6 +11,18 @@ $(document).ready(function ($) {
     getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
     saveEvent();
 });
+
+function registerTriggerAjax() {
+    jQuery.ajaxSetup({
+        beforeSend: function () {
+            $('.modalPleaseWait').show();
+        },
+        complete: function () {
+            $('.modalPleaseWait').hide();
+        },
+        success: function () { }
+    });
+}
 
 function eventsCalendar(_events, dateCalendar) {
     $('#calendar').fullCalendar('destroy');
@@ -348,11 +355,11 @@ function getYearFromPage() {
 
 function bindUserNameDropdown() {
     $("#userNameTimesheet").on("change", function () {
-        $body = $("body");
-        $(document).on({
-            ajaxStart: function () { $body.addClass("loading"); },
-            ajaxStop: function () { $body.removeClass("loading"); }
-        });
+        //$body = $("body");
+        //$(document).on({
+        //    ajaxStart: function () { $body.addClass("loading"); },
+        //    ajaxStop: function () { $body.removeClass("loading"); }
+        //});
         connectToTFS();
     });
 }
