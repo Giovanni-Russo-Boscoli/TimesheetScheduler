@@ -208,7 +208,7 @@ namespace TimesheetScheduler.Controllers
 
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
-                var _userLogged = GetUserName();
+                //var _userLogged = GetUserName();
 
                 WorkItemCollection WIC = WIS.Query(
                     " SELECT [System.Id], " +
@@ -224,16 +224,25 @@ namespace TimesheetScheduler.Controllers
                     " AND [Assigned To] = '" + userName + "'" +
                     " ORDER BY [System.Id], [System.WorkItemType]");
 
-
-
                 foreach (WorkItem wi in WIC)
                 {
                     if (wi["Start Date"] == null)
                     {
+                        var _workItemsLinked = "";
+                        for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                        {
+                            _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                        }
+
                         listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
                         {
                             Id = wi["Id"].ToString(),
                             Title = wi["Title"].ToString(),
+                            Description = wi["Description"].ToString(),
+                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                            WorkItemsLinked = _workItemsLinked,
+                            State = wi.State,
+                            CreationDate = wi.CreatedDate
                         });
 
                     }
@@ -246,7 +255,12 @@ namespace TimesheetScheduler.Controllers
                     listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
                     {
                         Id = "35541" + i,
-                        Title = "Title-" + i
+                        Title = "Title-" + i,
+                        Description = "Description - " + i,
+                        CompletedHours = 7.5,
+                        WorkItemsLinked = "",
+                        State = "New",
+                        CreationDate = DateTime.Now
                     });
                 }
             }
@@ -254,7 +268,7 @@ namespace TimesheetScheduler.Controllers
 
         }
 
-        public string CreateTaskOnTFS(string userName, string startDate, string description, float chargeableHours = 7.5f, float nonchargeableHours = 0)//newTimesheetTask
+        public string CreateTaskOnTFS(string userName, string startDate, string description, string state, float chargeableHours = 7.5f, float nonchargeableHours = 0)//newTimesheetTask
         {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
@@ -274,13 +288,19 @@ namespace TimesheetScheduler.Controllers
             newWI.Fields["Iteration Path"].Value = _iterationPath;
             newWI.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
             newWI.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
-            //var _valid = newWI.Validate();
+            newWI.State = state;
+            var _valid = newWI.Validate();
+
+            if (_valid.Count > 0) {
+                throw new Exception("Errors when validating object [CreateTaskOnTFS]");
+            }
+
             newWI.Save();
 
             return newWI.Fields["ID"].Value.ToString();
         }
 
-        public int EditTaskOnTFS(int workItemNumber, string startDate, string description, float chargeableHours, float nonchargeableHours)
+        public int EditTaskOnTFS(int workItemNumber, string startDate, string description, float chargeableHours, float nonchargeableHours, string state)
         {
             Uri tfsUri = new Uri(GetUrlTfs());
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
@@ -302,7 +322,15 @@ namespace TimesheetScheduler.Controllers
             _wi.Title = description;
             _wi.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
             _wi.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
-            //var _valid = newWI.Validate();
+            _wi.State = state;
+
+            var _valid = _wi.Validate();
+
+            if (_valid.Count > 0)
+            {
+                throw new Exception("Errors when validating object [CreateTaskOnTFS]");
+            }
+
             _wi.Save();
 
             return (int)_wi.Fields["ID"].Value;
@@ -1036,6 +1064,7 @@ public class WorkItemSerialized
     public string Id { get; set; }
     public string Title { get; set; }
     public DateTime? StartDate { get; set; }
+    public DateTime? CreationDate { get; set; }
     public string Description { get; set; }
     public double? CompletedHours { get; set; }
     public string WorkItemsLinked { get; set; }

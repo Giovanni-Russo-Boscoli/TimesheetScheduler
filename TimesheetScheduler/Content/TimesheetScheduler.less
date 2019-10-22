@@ -1,39 +1,60 @@
-﻿#targetTable {
-    height: 720px !important;
-    max-height: 720px !important;
+﻿#divStatDateNotDefined {
+    height: 435px;
+    max-height: 500px;
+    border: 1px solid #ddd;
+    padding: 7px;
     overflow: auto;
-    display: none;
-    #timesheetTable {
-        &.table {
-            tbody {
-                tr {
-                    td {
-                        vertical-align: middle !important;
-                    }
-                }
-            }
+
+    .eventStartDateNofDefined {
+        border: 1px solid #ddd;
+        width: 100%;
+        min-width: 200px;
+        height: 18px;
+        background-color: saddlebrown;
+        border-radius: 4px;
+        text-align: center;
+        margin: 2px;
+        cursor: pointer !important;
+
+        label {
+            color: white;
+            font-size: .85em;
+            margin: 0 auto !important;
+            font-weight: normal;
+            vertical-align: middle;
+            padding-left: 5px;
+            padding-bottom: 15px;
+            cursor: pointer !important;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
+
+        .lblTooltip {
+            display: none;
+        }
+
+        &:hover {
+            opacity: 0.5;
+        }
+    }
+
+    .tooltip-inner {
+        max-width: 300%;
+        white-space: nowrap;
     }
 }
 
 #calendar {
-    height: 720px !important;
-    max-height: 720px !important;
+    height: 750px !important;
+    max-height: 750px !important;
     overflow: auto;
-    /*table {
-        border-collapse: separate !important;
-        border-spacing: 20px 0 !important;
-    }*/
 }
 
-.fc-basic-view .fc-body .fc-row {
+/*.fc-basic-view .fc-body .fc-row {
     min-height: 4em;
     height: 100px;
-}
-
-#calendar {
-    /*display: none;*/
-}
+}*/
 
 .form-group {
     margin-bottom: 5px !important;
@@ -43,7 +64,7 @@ input {
     max-width: none !important;
 }
 
-.tableHighlighted {
+/*.tableHighlighted {
     border: 13px solid yellow;
 }
 
@@ -63,7 +84,7 @@ input {
 .weekendRow {
     background-color: #4c4949 !important;
     color: #b9b9b9;
-}
+}*/
 
 table th, td {
     margin: auto !important;
@@ -78,31 +99,35 @@ table th, td {
     display: none;
 }
 
-.customBtn {
+/*.customBtn {
     display: flex;
     margin-top: 3px;
-}
+}*/
 
-.floatRight {
-    float:right;
-}
+/*.floatRight {
+    float: right;
+}*/
 
-.h2RightAligned {
+/*.h2RightAligned {
     position: absolute;
     right: 0;
-}
+}*/
 
-#btnView {
+/*#btnView {
     padding-top: 4px;
     margin-left: 6px;
-}
+}*/
 
-#eventModal label {
-    width: 160px !important;
-}
+#eventModal {
+    label {
+        width: 160px !important;
+    }
 
-#eventModal input {
-    width: 380px !important;
+    input:not([type="checkbox"]),
+    select {
+        width: 380px !important;
+        max-width: none;
+    }
 }
 
 .tooltip-inner {
@@ -114,49 +139,43 @@ table th, td {
     padding-left: 2.5%;
 }
 
-.fc-list-table .loadBarContainerListView {
-    max-width: 90vw;
-}
-
-.userNameSelect {
+/*.userNameSelect {
     margin-top: 5px;
-    margin-right:15px;
+    margin-right: 15px;
     width: 250px;
-}
+}*/
 
 .fc-list-item-marker,
 .fc-list-item-time {
-    display:none !important;
+    display: none !important;
 }
 
 .modal-footer {
     padding-right: 40px !important;
 }
 
-    // ----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------
-    /* Start by setting display:none to make this hidden.
+// ----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------
+/* Start by setting display:none to make this hidden.
    Then we position it in relation to the viewport window
    with position:fixed. Width, height, top and left speak
    for themselves. Background we set to 80% white with
    our animation centered, and no-repeating */
-    .modalPleaseWait {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 100%;
-        background: rgba( 255, 255, 255, .8 ) url('http://i.stack.imgur.com/FhHRx.gif') 50% 50% no-repeat;
-    }
-    /* When the body has the loading class, we turn
+.modalPleaseWait {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba( 255, 255, 255, .8 ) url(../Images/giphy.gif) no-repeat;
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+}
+/* When the body has the loading class, we turn
    the scrollbar off with overflow:hidden */
-    body.loading .modalPleaseWait {
-        overflow: hidden;
-    }
-    /* Anytime the body has the loading class, our
-   modal element will be visible */
-    body.loading .modalPleaseWait {
-        display: block;
-    }
-    // ----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------
+body.loading .modalPleaseWait {
+    display: block;
+    overflow: hidden;
+}
+// ----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------

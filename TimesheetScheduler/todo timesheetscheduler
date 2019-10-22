@@ -4,7 +4,7 @@
 
 - create a background-color/message for days "out of the office" (without task) in calendar view
 
-- allow creates task for another person/user
+	- allow creates task for another person/user
 
 - block user dropdown in calendar view page (unblock only for specific user)
 
@@ -31,11 +31,12 @@
 
 	- add a default prefix when creating task (in the 'title' field) - also get focused on the same field
 
-- allow close tasks; when a task is not closed should has a color different when it's closed (add status field in edit mode)
+	- allow close tasks; when a task is not closed should has a color different when it's closed (add status field in edit mode)
 
 - give an option for tasks without 'StartDate' to apply the 'Creation Date' as 'StartDate' (and Close tasks)
 
-- counter time to update each X minutes
+- counter time to update each X minutes (when missing 2 min to update show a loading bar saying is going to update 
+->	- prevents lose any work done by updating the page without inform)
 
 - create a reminder/alert each x hour if a task isn't created for the current day
 
@@ -44,3 +45,7 @@
 - tasks with 'closed' status has different color
 
 - feature to close tasks (monthly - close tasks for specific month)
+
+- apply event color when in listview mode (task closed, new or active)
+
+- refactor footer (layout)

@@ -418,6 +418,7 @@
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="Images\calendarView.png" />
+    <Content Include="Images\giphy.gif" />
     <Content Include="Images\list.png" />
     <Content Include="Images\plus.png" />
     <Content Include="Scripts\bootstrap.js" />

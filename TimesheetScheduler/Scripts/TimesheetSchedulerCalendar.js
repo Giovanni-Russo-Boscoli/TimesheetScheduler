@@ -17,24 +17,12 @@ $(document).ready(function ($) {
     saveEvent();
 });
 
-function ShowHiddenTimesheetCalendarView() {
-    $("#btnInputColor").on("click", function () {
-        $("#inputColor").click();
-    });
-
-    $("#inputColor").change(
-        function (e) {
-            $(".fc-day-grid-event").css("background-color", e.target.value);
-        }
-    );
-}
-
 function eventsCalendar(_events, dateCalendar) {
     $('#calendar').fullCalendar('destroy');
     $('#calendar').fullCalendar({
         defaultView: 'month',
         firstDay: 1,
-        height: 700,
+        height: 750,
         contentHeight: "auto",
         weekMode: 'liquid',
         weekends: false,
@@ -93,13 +81,6 @@ function toggleClass(_class) {
     $(_class).toggle();
 }
 
-function renderMustacheTableTemplate(dateCalendar, tfsEvents, bypassTFS) {
-    var eventsTFSFormatted = bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(tfsEvents);
-    eventsCalendar(eventsTFSFormatted, dateCalendar);
-    listViewActive();
-    tooltipDaysListView();
-}
-
 function tooltipDaysListView() {
     $(".dayListView").each(function (index, value) {
         $(value).tooltip({
@@ -139,95 +120,12 @@ function _formatDate(date, format, separator) {
     }
 }
 
-//function fakeDataMustache() {
-//    var _date;
-//    var _isWeekend;
-//    var values =
-//    {
-//        rows: []
-//    };
-
-//    for (i = 0; i < getLastDayMonthFromPage(); i++) {
-//        _date = new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i);
-//        if (formatDate(_date) === "8/9/2019" || formatDate(_date) === "7/9/2019") {
-//            continue; //hiding weekend for listMonth view
-//        }
-//        _isWeekend = IsWeekend(_date);
-//        if (i % 2 === 0) {
-//            values.rows.push({
-//                Id: (i + 1),
-//                tooltipDay: _isWeekend ? "WEEKEND" : "",
-//                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-//                disableFlag: _isWeekend ? "disabled" : "",
-//                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-//                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-//                workItem: "34500" + (i + 1),
-//                description: "description... " + (i + 1),
-//                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
-//                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
-//                comments: "comments... " + (i + 1)
-//            });
-
-//        }
-//        else {
-//            values.rows.push({
-//                Id: (i + 1),
-//                tooltipDay: _isWeekend ? "WEEKEND" : "",
-//                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-//                disableFlag: _isWeekend ? "disabled" : "",
-//                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-//                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-//                workItem: "34500" + (i + 1),
-//                description: "description... " + (i + 1),
-//                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
-//                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
-//                comments: "comments... " + (i + 1)
-//            });
-//            values.rows.push({
-//                Id: (i + 1),
-//                tooltipDay: _isWeekend ? "WEEKEND" : "",
-//                classRow: _isWeekend ? "weekendRow" : "weekdayRow",
-//                disableFlag: _isWeekend ? "disabled" : "",
-//                dayShortFormat: formatDate(new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i)),
-//                day: new Date(getYearFromPage(), getMonthFromPage(), new Date(getLastDayMonthFromPage()).getDate() + i).toDateString(),
-//                workItem: "34500" + (i + 1),
-//                description: "description... " + (i + 1),
-//                chargeableHours: generateRandomNumber(0, 10).toFixed(2),
-//                nonchargeableHours: generateRandomNumber(0, 10).toFixed(2),
-//                comments: "comments... " + (i + 1)
-//            });
-//        }
-//    }
-//    return values;
-//}
-
 function generateRandomNumber(min, max) {
     return Math.random() * (+max - +min) + +min;
 }
 
-//function formatForCalendarEvents(_obj) {
-//    var _calendarEvents = [];
-//    for (i = 0; i < _obj.rows.length; i++) {
-//        _calendarEvents.push({
-//            title: _obj.rows[i].workItem + " - " + _obj.rows[i].description,
-//            start: _obj.rows[i].day,
-//            end: _obj.rows[i].day,
-//            allDay: false,
-//            day: _obj.rows[i].day,
-//            workItem: _obj.rows[i].workItem,
-//            description: _obj.rows[i].description,
-//            chargeableHours: _obj.rows[i].chargeableHours,
-//            nonchargeableHours: _obj.rows[i].nonchargeableHours,
-//            comments: _obj.rows[i].comments
-//            //url: 'http://google.com/'
-//        });
-//    }
-//    return _calendarEvents;
-//}
-
 function formatTFSEventsForCalendar(_obj) {
     var _calendarEvents = [];
-    _obj = _obj[0];
     for (i = 0; i < _obj.length; i++) {
         var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
         var _chargeableHours = _obj[i].CompletedHours > 7.5 ? 7.5 : (_obj[i].CompletedHours !== null ? _obj[i].CompletedHours : 0);
@@ -255,7 +153,11 @@ function formatTFSEventsForCalendar(_obj) {
 function returnEventColor(state) {
     switch (state) {
         case 'Closed':
-                return 'green';
+            return 'green';
+        case 'Active':
+            return '#045177';
+        case 'New':
+            return '#3a87ad';
         default:
             return '#3a87ad'
     }
@@ -309,9 +211,8 @@ function calculateLoadBarEvents(calendarEvents) {
     });
 }
 
-function listViewActive() {
+function listViewActive(_events) {
     $(".fc-listMonth-button:not(.fc-state-active)").click(function () {
-        var _events = _bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(returnEventsFromTFS());
         calculateLoadBarEventsForListView(_events);
     });
 }
@@ -432,36 +333,6 @@ function getCurrentYear() {
     return (new Date).getFullYear();
 }
 
-//function RowSelected() {
-//    $(".chk-day").click(function () {
-//        $(".chk-day").each(function (index, value) {
-//            $(value).closest("tr").addClass("row-inactive");
-//            $(this).closest("tr").removeClass("row-active");
-//        });
-//        $(this).closest("tr").removeClass("row-inactive");
-//        $(this).closest("tr").addClass("row-active");
-//        ChangeWorkItem($(this).attr("id"));
-//        returnTopPage();
-//        //highlightRecordOnTopTape($(this).attr("id"));
-//        $("#dayTimesheet").prop('disabled', true);
-//    });
-//}
-
-//function getDayFromPage() {
-//var strDate = $("#dayTimesheet" + dataId).text().split("/");
-//var dateBase = new Date(strDate[2], strDate[1] - 1, strDate[0]);
-//return dateBase;
-//}
-
-//function ChangeWorkItem(dataId) {
-//$("#dayTimesheet").val($("#dayTimesheet" + dataId).text());
-//$("#workItemTimesheet").val($("#workitem" + dataId).text());
-//$("#descriptionTimesheet").val($("#description" + dataId).text());
-//$("#chargeableTimesheet").val($("#chargeablehours" + dataId).text());
-//$("#nonchargeableTimesheet").val($("#nonchargeablehours" + dataId).text());
-//$("#workItemsLinkedTimesheet").val($("#comments" + dataId).text());
-//}
-
 function getUserNameFromPage() {
     //return $("#userNameTimesheet").text();
     return $('#userNameTimesheet').find(":selected").text();
@@ -477,6 +348,11 @@ function getYearFromPage() {
 
 function bindUserNameDropdown() {
     $("#userNameTimesheet").on("change", function () {
+        $body = $("body");
+        $(document).on({
+            ajaxStart: function () { $body.addClass("loading"); },
+            ajaxStop: function () { $body.removeClass("loading"); }
+        });
         connectToTFS();
     });
 }
@@ -568,6 +444,7 @@ function ModalEvent(event, eventCreation) {
         $("#chargeableTimesheet").val(event.chargeableHours);
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
         $("#workItemsLinkedTimesheet").val(event.comments);
+        populateStateTask(event.state);
         setModalTitle("Event Info");
     } else {
         //NEW/CREATE
@@ -576,12 +453,28 @@ function ModalEvent(event, eventCreation) {
         $("#descriptionTimesheet").val("Timesheet - "); //TODO - make it variable
         $("#chargeableTimesheet").val(7.5);
         $("#nonchargeableTimesheet").val(0);
+        populateStateTask(event.state);
         setModalTitle("Event Creation");
-
         //to resolve problems trying to do stuff when the modal is loading
         $("#eventModal").on('shown.bs.modal', function () {
             $('#descriptionTimesheet').focus();
         });
+    }
+}
+
+function populateStateTask(state) {
+    switch (state) {
+        case 'New': { addOptionToTaskState("New|Active"); break; }
+        case 'Active': { addOptionToTaskState("Active|Closed"); break; }
+        case 'Closed': { addOptionToTaskState("Closed"); $("#closeTaskTimesheet").attr("disabled", true); break; }
+        default: { addOptionToTaskState("New"); $("#closeTaskTimesheet").attr("disabled", true); break; } //no event - creation
+    }
+}
+
+function addOptionToTaskState(textOption) {
+    textOption = textOption.split("|");
+    for (i = 0; i < textOption.length; i++) {
+        $("#closeTaskTimesheet").append("<option value='" + textOption[i] + "'>" + textOption[i] + "</option>");
     }
 }
 
@@ -593,6 +486,8 @@ function cleanModal() {
     $("#chargeableTimesheet").val("");
     $("#nonchargeableTimesheet").val("");
     $("#workItemsLinkedTimesheet").val("");
+    $("#closeTaskTimesheet").find("option").remove();
+    $("#closeTaskTimesheet").attr("disabled", false);
 }
 
 function setModalTitle(title) {
@@ -632,25 +527,10 @@ function returnTopPage() {
     window.scrollTo(0, 0);
 }
 
-//function toggleView() {
-//    var listUrl = "/Images/list.png";
-//    var calendarUrl = "/Images/calendarView.png";
-
-//    $("#btnView").on("click", function () {
-//        if ($(this).attr("src") === listUrl) {
-//            $(this).attr("src", calendarUrl);
-//            $(this).attr("title", "Change for Calendar View");
-//        } else {
-//            $(this).attr("src", listUrl);
-//            $(this).attr("title", "Change for List View");
-//        }
-//        $("#calendar").toggle();
-//        $("#targetTable").toggle();
-//    });
-//}
-
 function saveEvent() {
+    
     $("#btnSaveEvent").on("click", function () {
+
         var _workItemNumber = $("#workItemTimesheet").val();
         if (_workItemNumber) {
             //EDIT
@@ -659,7 +539,12 @@ function saveEvent() {
                 type: "POST",
                 dataType: "json",
                 data: {
-                    workItemNumber: _workItemNumber, startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val(), nonchargeableHours: $("#nonchargeableTimesheet").val()
+                    workItemNumber: _workItemNumber,
+                    startDate: $("#dayTimesheet").val(),
+                    description: $("#descriptionTimesheet").val(),
+                    chargeableHours: $("#chargeableTimesheet").val(),
+                    nonchargeableHours: $("#nonchargeableTimesheet").val(),
+                    state: $("#closeTaskTimesheet").children("option:selected").val()
                 },
                 success: function (data) {
                     toastrMessage("Saved -> Workitem: [" + data + "]", "success");
@@ -675,7 +560,14 @@ function saveEvent() {
                 url: "/Home/CreateTaskOnTFS",
                 type: "POST",
                 dataType: "json",
-                data: { userName: getUserNameFromPage(), startDate: $("#dayTimesheet").val(), description: $("#descriptionTimesheet").val(), chargeableHours: $("#chargeableTimesheet").val(), nonchargeableHours: $("#nonchargeableTimesheet").val() },
+                data: {
+                    userName: getUserNameFromPage(),
+                    startDate: $("#dayTimesheet").val(),
+                    description: $("#descriptionTimesheet").val(),
+                    state: $("#closeTaskTimesheet").children("option:selected").val(),
+                    chargeableHours: $("#chargeableTimesheet").val(),
+                    nonchargeableHours: $("#nonchargeableTimesheet").val()                    
+                },
                 success: function (data) {
                     toastrMessage("Saved -> Workitem: [" + data + "]", "success");
                     connectToTFS();
@@ -736,26 +628,51 @@ function changeColor() {
 }
 
 function connectToTFS() {
-
-    //CHANGE FOR returnEventsFromTFS()
-
-    //var _bypassTFS = true;
     $.ajax({
         url: "/Home/ConnectTFS",
         type: "GET",
-        //contentType: "application/json; charset=utf-8",
         dataType: "json",
         data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         success: function (data) {
-            //alert(JSON.stringify(data[0]));
-            renderMustacheTableTemplate(new Date(getYearFromPage(), getMonthFromPage(), 1), data, _bypassTFS);
-            //RowSelected();
-            ShowHiddenTimesheetCalendarView();
-            //toggleView();
+
+            var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
+            var eventsTFSFormatted = _bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(data[0]);
+
+            eventsCalendar(eventsTFSFormatted, dateCalendar);
+            eventsCalendarStartDateNotDefined(data[1]);
+            listViewActive(eventsTFSFormatted);
+            tooltipDaysListView();
         },
         error: function (error) {
             alert("error: " + JSON.stringify(error));
         }
+    });
+}
+
+function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
+    $("#divStatDateNotDefined").empty();
+    $(eventsStartDateNotDefined).each(function (index, value) {
+        var _creationDate = _formatDate(new Date(parseInt(value.CreationDate.substr(6))).toDateString(), "/");
+        var _item = "<div class='eventStartDateNofDefined'>" +
+            "<label class='mainLbl'>" + "[" + value.Id + "] - " + value.Title + "</label>" + 
+            "<label class='lblTooltip lblStartDateNotDefinedTitle'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
+            "<label class='lblTooltip lblStartDateNotDefinedState'>" + value.State + "</label>" + 
+            "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" + 
+            "</div>";
+        $("#divStatDateNotDefined").append(_item);
+    });
+    tooltipStartDateNotDefined();
+}
+
+function tooltipStartDateNotDefined() {
+    $(".eventStartDateNofDefined").each(function (index, value) {
+        $(this).attr("data-html", "true");
+        $(this).tooltip({
+            title: $(this).find(".lblStartDateNotDefinedTitle").text() + "<br>" +
+                "State: " + $(this).find(".lblStartDateNotDefinedState").text() + "<br>" +
+                "Date Created: " + $(this).find(".lblStartDateNotDefinedDateCreated").text(),
+            placement: "bottom"
+        });
     });
 }
 
@@ -1061,3 +978,15 @@ function returnWorkItemsWithoutStartDate() {
         }
     ];
 }
+
+//function ShowHiddenTimesheetCalendarView() {
+//    $("#btnInputColor").on("click", function () {
+//        $("#inputColor").click();
+//    });
+
+//    $("#inputColor").change(
+//        function (e) {
+//            $(".fc-day-grid-event").css("background-color", e.target.value);
+//        }
+//    );
+//}
