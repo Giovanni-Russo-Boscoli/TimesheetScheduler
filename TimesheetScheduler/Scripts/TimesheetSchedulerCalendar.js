@@ -1,4 +1,4 @@
-﻿var _bypassTFS = false;
+﻿var _bypassTFS = true;
 
 $(document).ready(function ($) {
     registerTriggerAjax();
@@ -643,7 +643,7 @@ function connectToTFS() {
         success: function (data) {
 
             var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
-            var eventsTFSFormatted = _bypassTFS ? formatTFSEventsForCalendar(fakeTFSObj()) : formatTFSEventsForCalendar(data[0]);
+            var eventsTFSFormatted = formatTFSEventsForCalendar(data[0]);
 
             eventsCalendar(eventsTFSFormatted, dateCalendar);
             eventsCalendarStartDateNotDefined(data[1]);
@@ -923,67 +923,6 @@ function fakeTFSObj() {
         ]
     ];
     return fakeTFS;
-}
-
-function returnWorkItemsWithoutStartDate() {
-    return [
-        {
-            "Id": "331577",
-            "Title": "Timesheet - International Posting - Implement Contributed Actions ",
-            "StartDate": null,
-            "Description": null,
-            "CompletedHours": null,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "332683",
-            "Title": "Timesheet - Implement Articles Dropdown ",
-            "StartDate": null,
-            "Description": null,
-            "CompletedHours": null,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "333005",
-            "Title": "Timesheet - Implement Add Contact from existing top 5 ",
-            "StartDate": null,
-            "Description": null,
-            "CompletedHours": null,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "333378",
-            "Title": "Timesheet - Add actions (edit) for new properties",
-            "StartDate": null,
-            "Description": null,
-            "CompletedHours": null,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "334022",
-            "Title": "Timesheet - Record Signed Action for all decisions",
-            "StartDate": null,
-            "Description": null,
-            "CompletedHours": null,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "334291",
-            "Title": "Timesheet - Improve add contact feature",
-            "StartDate": null,
-            "Description": null,
-            "CompletedHours": null,
-            "WorkItemsLinked": null
-        },
-        {
-            "Id": "334597",
-            "Title": "Timesheet - Refactor after merge with EESSI branch",
-            "StartDate": null,
-            "Description": null,
-            "CompletedHours": null,
-            "WorkItemsLinked": null
-        }
-    ];
 }
 
 //function ShowHiddenTimesheetCalendarView() {
