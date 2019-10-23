@@ -25,9 +25,9 @@
 
 - reminder when change anything in a task and try to close without saving
 
-- apply loading gif for all ajax calls/request
+	- apply loading gif for all ajax calls/request
 
-- refactor home page 
+	- refactor home page 
 
 	- add a default prefix when creating task (in the 'title' field) - also get focused on the same field
 
@@ -40,12 +40,18 @@
 
 - create a reminder/alert each x hour if a task isn't created for the current day
 
-- add status (new/active/closed) for tasks (creation/editing)
+	- add status (new/active/closed) for tasks (creation/editing)
 
-- tasks with 'closed' status has different color
+	- tasks with 'closed' status has different color
 
-- feature to close tasks (monthly - close tasks for specific month)
+- feature to close tasks (monthly - close all tasks for specific month)
 
-- apply event color when in listview mode (task closed, new or active)
+- apply event color when in listview mode (task closed, new or active) - ? not shure if should
 
-- refactor footer (layout)
+	- refactor footer (layout)
+
+	- indicator how many tasks in "Start Date Not Defined" (N) = (7 tasks)
+
+- remove classes from HomeController
+
+- add Description field for Modal when creating/editing

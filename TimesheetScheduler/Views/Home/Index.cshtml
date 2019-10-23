@@ -11,44 +11,17 @@
 
 <body>
     <div class="container">
-        @*<div class="row">
-                <div class="form-group col-xs-6 customBtn">
-                    <h2 class="h2RightAligned">
-                        <button id="btnInputColor" class="btn btn-primary">COLOR</button>
-                        <button id="btnSaveExcelFile" class="btn btn-warning" title="Export to a Excel file">EXCEL</button>
-                        <button id="btnInfo" class="btn btn-danger">INFO</button>
-                    </h2>
-                </div>
-                <div class="form-group col-xs-2">
-
-                    <div class="form-group">
-                        <h2 class="h2RightAligned">
-                            <select class="form-control userNameSelect" id="userNameTimesheet"></select>
-                        </h2>
-                    </div>
-
-                </div>
-                <div class="form-group col-xs-2 floatRight">
-                    <div class="form-group">
-                        <label for="monthTimesheet">Month</label>
-                        <select class="form-control" id="monthTimesheet"></select>
-                    </div>
-                </div>
-                <div class="form-group col-xs-2 floatRight">
-                    <div class="form-group">
-                        <label for="yearTimesheet">Year</label>
-                        <select class="form-control" id="yearTimesheet"></select>
-                    </div>
-                </div>
-            </div>*@
         <br />
         <div class="row">
-            <div class="form-group col-xs-2">
-
-                <button id="btnSaveExcelFile" class="btn btn-warning" title="Export to a Excel file">EXCEL</button>
-                <button id="btnInfo" class="btn btn-danger">INFO</button>
+            <div class="form-group col-xs-2 leftContent">
 
                 <br />
+
+                <div>
+                    <input id="btnSaveExcelFile" title="Export to Excel file" type="submit" name="" value="">
+                    <input id="btnInfo" title="Show month info (days and hours worked)" type="submit" name="" value="">
+                </div>
+
                 <br />
 
                 <label for="userNameTimesheet">User</label>
@@ -66,119 +39,11 @@
 
                 <br />
 
-                <label for="divStatDateNotDefined" title="This list show all the items in the timesheet path and signed to a specific user without 'Start Date'">Start Date not defined</label>
-                <div class="" id="divStatDateNotDefined">
-                    @*<div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>
-                    <div class="eventStartDateNofDefined">
-                        <label class="mainLbl"> [321321] - Timesheet - Test tasks </label>
-                        <label class="lblTooltip lblStartDateNotDefinedTitle"> Test tooltip </label>
-                        <label class="lblTooltip lblStartDateNotDefinedDateCreated">10/10/2019</label>
-                    </div>*@
+                <label for="divStatDateNotDefined" title="This list show all the items in the timesheet path and signed to a specific user without 'Start Date'">
+                    Start Date not defined <span class="spanCountStartDateNotDefined">(0)</span>
+                </label>
 
+                <div class="" id="divStatDateNotDefined">
                 </div>
 
             </div>
@@ -256,8 +121,8 @@
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
-                        <label for="descriptionTimesheet">Title</label>
-                        <input class="form-control" id="descriptionTimesheet" />
+                        <label for="titleTimesheet">Title</label>
+                        <input class="form-control" id="titleTimesheet" />
                     </div>
                 </form>
                 <form class="form-inline">
@@ -280,8 +145,20 @@
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
+                        <label for="descriptionTimesheet">Description</label>
+                        <textarea class="form-control" id="descriptionTimesheet" placeholder="Description..." rows="3"></textarea>
+                    </div>
+                </form>
+                <form class="form-inline">
+                    <div class="form-group">
                         <label for="closeTaskTimesheet">Close Task</label>
                         <select class="form-control" id="closeTaskTimesheet"></select>
+                    </div>
+                </form>
+                <form class="form-inline urlLinkTfs">
+                    <div class="form-group">
+                        <label for="linkOriginalUrlTimesheet">Link Original Task</label>
+                        <a id="linkOriginalUrlTimesheet" target="_blank" href="" title="Original task url - redirect to TFS">Click to redirect to TFS</a>
                     </div>
                 </form>
             </div>
@@ -293,7 +170,6 @@
     </div>
 </div>
 
-@*<input id="inputColor" type="color" style='opacity:0;width:100px;position:absolute;' />*@
 <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
 
 <script id="templateTimesheetTable" type="x-tmpl-mustache">

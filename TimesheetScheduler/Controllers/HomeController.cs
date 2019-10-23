@@ -1,34 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.DirectoryServices.AccountManagement;
-using System.Drawing;
-using System.Web.Mvc;
-using System.Globalization;
-using System.Net;
-using System.Configuration;
-//using System.Runtime.InteropServices;
-//using System.Linq;
-//using System.Web;
-
-//using TimesheetScheduler.Models;
-using Microsoft.Office.Interop.Excel;
-
-using Microsoft.TeamFoundation;
+﻿using Microsoft.Office.Interop.Excel;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
-using Microsoft.TeamFoundation.Server;
-using Microsoft.TeamFoundation.Framework.Common;
-using Microsoft.TeamFoundation.VersionControl.Client;
-
-using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.Client;
-using Microsoft.VisualStudio.Services.WebApi;
-using TimesheetScheduler.Models;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.DirectoryServices.AccountManagement;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using Application = Microsoft.Office.Interop.Excel.Application;
 using System.Linq;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Web.Mvc;
+using System.Web.Security;
+using Application = Microsoft.Office.Interop.Excel.Application;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -36,7 +21,6 @@ namespace TimesheetScheduler.Controllers
     {
         public ActionResult Index()
         {
-            //CreateTaskOnTFS();
             return View();
         }
 
@@ -52,7 +36,6 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
-
         public ActionResult Contact()
         {
             ViewBag.Message = "Your contact page.";
@@ -67,9 +50,6 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
-
-        #region TFS
-
         public string GetUserName()
         {
             return string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
@@ -83,8 +63,9 @@ namespace TimesheetScheduler.Controllers
         public string FormatDomainUserName(string domainUserName)
         {
             return domainUserName.Split(new string[] { "\\" }, StringSplitOptions.RemoveEmptyEntries)[1];
-            //return domainUserName.Replace("/","");
         }
+
+        #region TFS
 
         private static string GetUrlTfs()
         {
@@ -103,17 +84,12 @@ namespace TimesheetScheduler.Controllers
 
         public JsonResult ConnectTFS(bool bypassTFS, string userName, int _month, int _year)
         {
-            //if (!bypassTFS)
-            //{
             IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
             userName = userName.Replace("'", "''");
             joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(bypassTFS, userName, _month, _year));
             joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(bypassTFS, userName, _month, _year));
 
             return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
-            //}
-
-            //return Json(new EmptyResult(), JsonRequestBehavior.AllowGet);
         }
 
         public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, string userName, int _month, int _year)
@@ -123,13 +99,13 @@ namespace TimesheetScheduler.Controllers
 
             if (!_bypass)
             {
-                Uri tfsUri = new Uri(GetUrlTfs());
+                var _urlTFS = GetUrlTfs();
+                Uri tfsUri = new Uri(_urlTFS);
                 TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
                 WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
-                //var _userLogged = GetUserName();
 
                 WorkItemCollection WIC = WIS.Query(
                     " SELECT [System.Id], " +
@@ -143,7 +119,6 @@ namespace TimesheetScheduler.Controllers
                     " WHERE [System.TeamProject] = '" + projectName + "'" +
                     " AND [Iteration Path] = '" + _iterationPath + "'" +
                     " AND [Assigned To] = '" + userName + "'" +
-                    //" AND [Assigned To] =" + "'Ian O''Brien'" +
                     " ORDER BY [System.Id], [System.WorkItemType]");
 
                 foreach (WorkItem wi in WIC)
@@ -160,16 +135,20 @@ namespace TimesheetScheduler.Controllers
                                 _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
                             }
 
+                            //http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/BOM_MOD24/_queries?id=318197
+                            //var _link = GetUrlTfs() + GetProjectNameTFS() + "/_queries?id=" + wi["Id"].ToString();
+
                             listWorkItems.Add(new WorkItemSerialized()
                             {
                                 Id = wi["Id"].ToString(),
                                 Title = wi["Title"].ToString(),
                                 StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                                Description = wi["Description"].ToString(),
+                                Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
                                 CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
                                 WorkItemsLinked = _workItemsLinked,
-                                State = wi.State
-                            });
+                                State = wi.State,
+                                LinkUrl = _urlTFS + projectName + "/_queries?id=" + wi["Id"].ToString()
+                        });
                         }
                     }
                 }
@@ -189,7 +168,8 @@ namespace TimesheetScheduler.Controllers
                         Description = "Description-" + i,
                         CompletedHours = i + 1,
                         WorkItemsLinked = "#321321 #654654",
-                        State = "Closed"
+                        State = "Closed",
+                        LinkUrl = "www.google.com"
                     });
                 }
             }
@@ -208,7 +188,6 @@ namespace TimesheetScheduler.Controllers
 
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
-                //var _userLogged = GetUserName();
 
                 WorkItemCollection WIC = WIS.Query(
                     " SELECT [System.Id], " +
@@ -268,11 +247,10 @@ namespace TimesheetScheduler.Controllers
 
         }
 
-        public string CreateTaskOnTFS(string userName, string startDate, string description, string state, float chargeableHours = 7.5f, float nonchargeableHours = 0)//newTimesheetTask
+        public string CreateTaskOnTFS(string userName, string startDate, string title, string state, string description, float chargeableHours = 7.5f, float nonchargeableHours = 0)//newTimesheetTask
         {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
-            //var _userLogged = GetUserName();
 
             Uri tfsUri = new Uri(GetUrlTfs());
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
@@ -282,11 +260,12 @@ namespace TimesheetScheduler.Controllers
             WorkItemType workItemType = teamProject.WorkItemTypes["Task"];
 
             WorkItem newWI = new WorkItem(workItemType);
-            newWI.Title = description;
-            newWI.Fields["System.AssignedTo"].Value = userName; // _userLogged;
+            newWI.Title = title;
+            newWI.Fields["System.AssignedTo"].Value = userName;
             newWI.Fields["System.TeamProject"].Value = projectName;
             newWI.Fields["Iteration Path"].Value = _iterationPath;
             newWI.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
+            newWI.Fields["Description"].Value = description;
             newWI.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
             newWI.State = state;
             var _valid = newWI.Validate();
@@ -300,7 +279,7 @@ namespace TimesheetScheduler.Controllers
             return newWI.Fields["ID"].Value.ToString();
         }
 
-        public int EditTaskOnTFS(int workItemNumber, string startDate, string description, float chargeableHours, float nonchargeableHours, string state)
+        public int EditTaskOnTFS(int workItemNumber, string startDate, string title, float chargeableHours, float nonchargeableHours, string state, string description)
         {
             Uri tfsUri = new Uri(GetUrlTfs());
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
@@ -319,9 +298,10 @@ namespace TimesheetScheduler.Controllers
 
             WorkItem _wi = WIC.OfType<WorkItem>().FirstOrDefault();
             _wi.Open();
-            _wi.Title = description;
+            _wi.Title = title;
             _wi.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
             _wi.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
+            _wi.Fields["Description"].Value = description;
             _wi.State = state;
 
             var _valid = _wi.Validate();
@@ -1068,8 +1048,8 @@ public class WorkItemSerialized
     public string Description { get; set; }
     public double? CompletedHours { get; set; }
     public string WorkItemsLinked { get; set; }
-
     public string State { get; set; }
+    public string LinkUrl { get; set; }
 
 }
 

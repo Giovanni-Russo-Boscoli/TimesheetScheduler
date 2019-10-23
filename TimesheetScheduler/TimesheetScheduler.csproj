@@ -417,10 +417,17 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Images\arrow_down_icon.png" />
     <Content Include="Images\calendarView.png" />
+    <Content Include="Images\clock_icon.png" />
     <Content Include="Images\giphy.gif" />
+    <Content Include="Images\info_icon_dark.png" />
+    <Content Include="Images\info_icon_light.png" />
     <Content Include="Images\list.png" />
+    <Content Include="Images\pacman_animated.gif" />
     <Content Include="Images\plus.png" />
+    <Content Include="Images\sad_face_icon.png" />
+    <Content Include="Images\xsl_icon.png" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Content\progressBarAnimation.less" />

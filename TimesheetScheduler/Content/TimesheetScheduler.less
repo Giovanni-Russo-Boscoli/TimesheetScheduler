@@ -1,5 +1,25 @@
-﻿#divStatDateNotDefined {
-    height: 435px;
+﻿// ----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------
+.modalPleaseWait {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba( 255, 255, 255, .8 ) url(../Images/pacman_animated.gif) no-repeat;
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+}
+
+body.loading .modalPleaseWait {
+    display: block;
+    overflow: hidden;
+}
+// ----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------
+
+#divStatDateNotDefined {
+    height: 428px;
     max-height: 500px;
     border: 1px solid #ddd;
     padding: 7px;
@@ -46,15 +66,10 @@
 }
 
 #calendar {
-    height: 750px !important;
-    max-height: 750px !important;
+    height: 800px !important;
+    max-height: 800px !important;
     overflow: auto;
 }
-
-/*.fc-basic-view .fc-body .fc-row {
-    min-height: 4em;
-    height: 100px;
-}*/
 
 .form-group {
     margin-bottom: 5px !important;
@@ -63,28 +78,6 @@
 input {
     max-width: none !important;
 }
-
-/*.tableHighlighted {
-    border: 13px solid yellow;
-}
-
-.row-intial {
-    border: none !important;
-    color: black;
-}
-
-.row-active {
-    border: 5px solid green !important;
-}
-
-.row-inactive *:not(.radioTd) {
-    color: #b9b9b9;
-}
-
-.weekendRow {
-    background-color: #4c4949 !important;
-    color: #b9b9b9;
-}*/
 
 table th, td {
     margin: auto !important;
@@ -99,31 +92,13 @@ table th, td {
     display: none;
 }
 
-/*.customBtn {
-    display: flex;
-    margin-top: 3px;
-}*/
-
-/*.floatRight {
-    float: right;
-}*/
-
-/*.h2RightAligned {
-    position: absolute;
-    right: 0;
-}*/
-
-/*#btnView {
-    padding-top: 4px;
-    margin-left: 6px;
-}*/
-
 #eventModal {
     label {
         width: 160px !important;
     }
 
     input:not([type="checkbox"]),
+    textarea,
     select {
         width: 380px !important;
         max-width: none;
@@ -132,18 +107,15 @@ table th, td {
 
 .tooltip-inner {
     max-width: 100%;
+    *{
+        color: white !important;
+    }
 }
 
 .loadBarContainer {
     max-width: 95%;
     padding-left: 2.5%;
 }
-
-/*.userNameSelect {
-    margin-top: 5px;
-    margin-right: 15px;
-    width: 250px;
-}*/
 
 .fc-list-item-marker,
 .fc-list-item-time {
@@ -154,28 +126,30 @@ table th, td {
     padding-right: 40px !important;
 }
 
-// ----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------
-/* Start by setting display:none to make this hidden.
-   Then we position it in relation to the viewport window
-   with position:fixed. Width, height, top and left speak
-   for themselves. Background we set to 80% white with
-   our animation centered, and no-repeating */
-.modalPleaseWait {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: rgba( 255, 255, 255, .8 ) url(../Images/giphy.gif) no-repeat;
-    background-position: center; /* Center the image */
-    background-repeat: no-repeat; /* Do not repeat the image */
+#btnSaveExcelFile {
+    background: url(../Images/xsl_icon.png) no-repeat;
+    cursor: pointer;
+    width: 55px;
+    height: 65px;
+    border: none;
 }
-/* When the body has the loading class, we turn
-   the scrollbar off with overflow:hidden */
-body.loading .modalPleaseWait {
-    display: block;
-    overflow: hidden;
+
+#btnInfo {
+    background: url(../Images/info_icon_light.png) no-repeat;
+    cursor: pointer;
+    width: 65px;
+    height: 65px;
+    border: none;
 }
-// ----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------
+
+.leftContent {
+    /*border: 1px solid lightgrey;*/
+}
+
+._footer{
+    height:2vh;
+}
+
+.urlLinkTfs {
+    padding-top: 10px;
+}

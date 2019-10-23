@@ -1,4 +1,4 @@
-﻿var _bypassTFS = true;
+﻿var _bypassTFS = false;
 
 $(document).ready(function ($) {
     registerTriggerAjax();
@@ -29,15 +29,15 @@ function eventsCalendar(_events, dateCalendar) {
     $('#calendar').fullCalendar({
         defaultView: 'month',
         firstDay: 1,
-        height: 750,
+        height: 800,
         contentHeight: "auto",
         weekMode: 'liquid',
         weekends: false,
         fixedWeekCount: true,
         header: { left: 'title', center: ' ', right: 'month, listMonth' },
-        defaultDate: _formatDate(dateCalendar, "yyyymmdd", "-"), //'2019-09-16',
+        defaultDate: _formatDate(dateCalendar, "yyyymmdd", "-"),
         events: _events,
-        eventLimit: 4, // for all non-TimeGrid views
+        eventLimit: 10,
         eventClick: function (event) {
             //if (event.url) {
             //    window.open(event.url, "_blank");
@@ -49,7 +49,6 @@ function eventsCalendar(_events, dateCalendar) {
 
         },
         eventRender: function (event, element) {
-            event.state
             $(element).attr("data-html", "true");
             $(element).attr("data-container", "body");
             $(element).tooltip({
@@ -59,7 +58,7 @@ function eventsCalendar(_events, dateCalendar) {
                     "<br> Description: " + event.description +
                     "<br> Work Items Linked: " + event.comments + 
                     "<br> State: " + event.state,
-                placement: "bottom",
+                placement: "bottom"
             });
         },
         dayClick: function (date, jsEvent, view) {
@@ -145,13 +144,14 @@ function formatTFSEventsForCalendar(_obj) {
             allDay: false,
             day: _startDate,
             workItem: _obj[i].Id,
-            description: _obj[i].Description,
+            description: $($.parseHTML(_obj[i].Description)).text(),
             chargeableHours: _chargeableHours,
             nonchargeableHours: _nonchargeableHours,
             comments: _obj[i].WorkItemsLinked,
             state: _obj[i].State,
-            color: returnEventColor(_obj[i].State)
-            //url: 'http://google.com/'
+            color: returnEventColor(_obj[i].State),
+            linkUrl: _obj[i].LinkUrl
+            //url: _obj[i].LinkUrl
         });
     }
     return _calendarEvents;
@@ -355,11 +355,6 @@ function getYearFromPage() {
 
 function bindUserNameDropdown() {
     $("#userNameTimesheet").on("change", function () {
-        //$body = $("body");
-        //$(document).on({
-        //    ajaxStart: function () { $body.addClass("loading"); },
-        //    ajaxStop: function () { $body.removeClass("loading"); }
-        //});
         connectToTFS();
     });
 }
@@ -447,24 +442,26 @@ function ModalEvent(event, eventCreation) {
         $("#userNameModal").val(getUserNameFromPage());
         $("#workItemTimesheet").val(event.workItem);
         $("#dayTimesheet").val(_formatDate(event.day, "ddmmyyyy", "/")),        
-        $("#descriptionTimesheet").val(event.titleOriginal);
+        $("#titleTimesheet").val(event.titleOriginal);
         $("#chargeableTimesheet").val(event.chargeableHours);
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
+        $("#descriptionTimesheet").val(event.description);
         $("#workItemsLinkedTimesheet").val(event.comments);
+        $("#linkOriginalUrlTimesheet").attr("href", event.linkUrl);
         populateStateTask(event.state);
         setModalTitle("Event Info");
     } else {
         //NEW/CREATE
         $("#dayTimesheet").prop("disabled", true);
         $("#dayTimesheet").val(_formatDate(event, "ddmmyyyy", "/"));
-        $("#descriptionTimesheet").val("Timesheet - "); //TODO - make it variable
+        $("#titleTimesheet").val("Timesheet - "); //TODO - make it variable
         $("#chargeableTimesheet").val(7.5);
         $("#nonchargeableTimesheet").val(0);
         populateStateTask(event.state);
         setModalTitle("Event Creation");
         //to resolve problems trying to do stuff when the modal is loading
         $("#eventModal").on('shown.bs.modal', function () {
-            $('#descriptionTimesheet').focus();
+            $('#titleTimesheet').focus();
         });
     }
 }
@@ -489,10 +486,12 @@ function cleanModal() {
     $("#userNameModal").val("");
     $("#dayTimesheet").val(""),
     $("#workItemTimesheet").val("");
-    $("#descriptionTimesheet").val("");
+    $("#titleTimesheet").val("");
     $("#chargeableTimesheet").val("");
     $("#nonchargeableTimesheet").val("");
     $("#workItemsLinkedTimesheet").val("");
+    $("#descriptionTimesheet").val("");
+    $("#linkOriginalUrlTimesheet").attr("href", "");
     $("#closeTaskTimesheet").find("option").remove();
     $("#closeTaskTimesheet").attr("disabled", false);
 }
@@ -548,10 +547,11 @@ function saveEvent() {
                 data: {
                     workItemNumber: _workItemNumber,
                     startDate: $("#dayTimesheet").val(),
-                    description: $("#descriptionTimesheet").val(),
+                    title: $("#titleTimesheet").val(),
                     chargeableHours: $("#chargeableTimesheet").val(),
                     nonchargeableHours: $("#nonchargeableTimesheet").val(),
-                    state: $("#closeTaskTimesheet").children("option:selected").val()
+                    state: $("#closeTaskTimesheet").children("option:selected").val(),
+                    description: $("#descriptionTimesheet").val()
                 },
                 success: function (data) {
                     toastrMessage("Saved -> Workitem: [" + data + "]", "success");
@@ -570,8 +570,9 @@ function saveEvent() {
                 data: {
                     userName: getUserNameFromPage(),
                     startDate: $("#dayTimesheet").val(),
-                    description: $("#descriptionTimesheet").val(),
+                    title: $("#titleTimesheet").val(),
                     state: $("#closeTaskTimesheet").children("option:selected").val(),
+                    description: $("#descriptionTimesheet").val(),
                     chargeableHours: $("#chargeableTimesheet").val(),
                     nonchargeableHours: $("#nonchargeableTimesheet").val()                    
                 },
@@ -635,16 +636,14 @@ function changeColor() {
 }
 
 function connectToTFS() {
+    var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
     $.ajax({
         url: "/Home/ConnectTFS",
         type: "GET",
         dataType: "json",
         data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         success: function (data) {
-
-            var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
             var eventsTFSFormatted = formatTFSEventsForCalendar(data[0]);
-
             eventsCalendar(eventsTFSFormatted, dateCalendar);
             eventsCalendarStartDateNotDefined(data[1]);
             listViewActive(eventsTFSFormatted);
@@ -668,6 +667,7 @@ function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
             "</div>";
         $("#divStatDateNotDefined").append(_item);
     });
+    $(".spanCountStartDateNotDefined").empty().append("(" + eventsStartDateNotDefined.length + ")");
     tooltipStartDateNotDefined();
 }
 
@@ -924,15 +924,3 @@ function fakeTFSObj() {
     ];
     return fakeTFS;
 }
-
-//function ShowHiddenTimesheetCalendarView() {
-//    $("#btnInputColor").on("click", function () {
-//        $("#inputColor").click();
-//    });
-
-//    $("#inputColor").change(
-//        function (e) {
-//            $(".fc-day-grid-event").css("background-color", e.target.value);
-//        }
-//    );
-//}
