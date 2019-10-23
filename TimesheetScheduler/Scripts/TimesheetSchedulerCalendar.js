@@ -447,16 +447,19 @@ function ModalEvent(event, eventCreation) {
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
         $("#descriptionTimesheet").val(event.description);
         $("#workItemsLinkedTimesheet").val(event.comments);
+        $(".urlLinkTfs").removeClass("displayNone");
         $("#linkOriginalUrlTimesheet").attr("href", event.linkUrl);
         populateStateTask(event.state);
         setModalTitle("Event Info");
     } else {
         //NEW/CREATE
+        $("#userNameModal").val(getUserNameFromPage());
         $("#dayTimesheet").prop("disabled", true);
         $("#dayTimesheet").val(_formatDate(event, "ddmmyyyy", "/"));
         $("#titleTimesheet").val("Timesheet - "); //TODO - make it variable
         $("#chargeableTimesheet").val(7.5);
         $("#nonchargeableTimesheet").val(0);
+        $(".urlLinkTfs").addClass("displayNone");
         populateStateTask(event.state);
         setModalTitle("Event Creation");
         //to resolve problems trying to do stuff when the modal is loading
