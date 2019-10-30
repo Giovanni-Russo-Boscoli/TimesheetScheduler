@@ -131,3 +131,8 @@ td {
 .displayNone {
   display: none;
 }
+.dayOutOfTheOffice {
+  padding-top: 50px;
+  /*padding-top:35%;
+    background-color:yellow;*/
+}

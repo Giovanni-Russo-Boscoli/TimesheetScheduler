@@ -61,6 +61,17 @@ function eventsCalendar(_events, dateCalendar) {
                 placement: "bottom"
             });
         },
+        dayRender: function (date, cell) {
+            if (date._d.setHours(0, 0, 0, 0) < new Date($.now()).setHours(0, 0, 0, 0)) { //ONLY FOR PAST DAYS
+                cell.append('<div class="dayOutOfTheOffice">Out Of The Office</div>');
+            }
+        },
+        eventAfterAllRender: function (view) {
+            $('#calendar').fullCalendar('clientEvents', function (event) {
+                var td = $('td.fc-day[data-date="' + event.start.format('YYYY-MM-DD') + '"]');
+                td.find('div:first').remove();
+            });
+        },
         dayClick: function (date, jsEvent, view) {
             prevTime = typeof currentTime === 'undefined' || currentTime === null
                 ? new Date().getTime() - 1000000
@@ -75,12 +86,12 @@ function eventsCalendar(_events, dateCalendar) {
         viewRender: function (view, element) {
             calculateLoadBarEvents(_events);
         }
-
     });
 
     $(".fc-other-month").each(function () {
         $(this).html("");
     });
+    $(".dayOutOfTheOffice").parent().css("background-color", "#FFF0F1"); //change the color for days without event
 }
 
 function toggleClass(_class) {
@@ -306,7 +317,7 @@ function LoadUserNames(_userName) {
 
     //select the user logged as default
     $("#userNameTimesheet option").filter(function () {
-        return $(this).text() == _userName;
+        return $(this).text() === _userName;
     }).prop('selected', true);
 
     connectToTFS();
@@ -667,11 +678,13 @@ function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
             "<label class='lblTooltip lblStartDateNotDefinedTitle'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
             "<label class='lblTooltip lblStartDateNotDefinedState'>" + value.State + "</label>" + 
             "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" + 
+            "<label class='lblTooltip lblStartDateNotDefinedWorkItem'>" + value.Id + "</label>" + 
             "</div>";
         $("#divStatDateNotDefined").append(_item);
     });
     $(".spanCountStartDateNotDefined").empty().append("(" + eventsStartDateNotDefined.length + ")");
     tooltipStartDateNotDefined();
+    onClickEventsStartDateNotDefined();
 }
 
 function tooltipStartDateNotDefined() {
@@ -683,6 +696,12 @@ function tooltipStartDateNotDefined() {
                 "Date Created: " + $(this).find(".lblStartDateNotDefinedDateCreated").text(),
             placement: "bottom"
         });
+    });
+}
+
+function onClickEventsStartDateNotDefined() {
+    $(".eventStartDateNofDefined").on("click", function () {
+        alert($(this).find(".lblStartDateNotDefinedWorkItem").text());
     });
 }
 

@@ -55,3 +55,12 @@
 - remove classes from HomeController
 
 - add Description field for Modal when creating/editing
+
+- allow close a task without saving as ACTIVE (from NEW to CLOSED) - callback function to save as ACTIVE and then as CLOSED once the TFS doesn't allow
+to save as CLOSED without saving as ACTIVE.
+
+	- header in EXCEL file changes: Description -> Title / Comments -> Work items linked
+
+- Create accordion to collapse "Start Date Not Defined" section (allows expand only if have items)
+
+- App knows how to manage a task with more than 7.5 hours but doesn't know how to manage more than 1 task reaching more than 7.5 hours worked

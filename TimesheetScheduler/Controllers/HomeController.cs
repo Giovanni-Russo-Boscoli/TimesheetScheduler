@@ -719,7 +719,7 @@ namespace TimesheetScheduler.Controllers
             CellHeaderTableDescription = new CellObject
             {
                 CellPosition = "D5",
-                CellValue = "Description",
+                CellValue = "Title",//"Description",
                 FormatParams = new ParamsFormatCell()
                 {
                     fontSize = 12,
@@ -751,7 +751,7 @@ namespace TimesheetScheduler.Controllers
             CellHeaderTableNonChargeableHours = new CellObject
             {
                 CellPosition = "F5",
-                CellValue = "Non-Chargeable Hours",
+                CellValue = "Non-Charg. Hours", //"Non-Chargeable Hours",
                 FormatParams = new ParamsFormatCell()
                 {
                     fontSize = 12,
@@ -767,7 +767,7 @@ namespace TimesheetScheduler.Controllers
             CellHeaderTableComments = new CellObject
             {
                 CellPosition = "G5",
-                CellValue = "Comments",
+                CellValue = "Work Items Linked", //"Comments",
                 FormatParams = new ParamsFormatCell()
                 {
                     fontSize = 12,
@@ -837,6 +837,9 @@ namespace TimesheetScheduler.Controllers
 
                 if (_table[j].IsWeekend)
                 {
+                    worksheet.Cells[i, 3] = ""; //WorkItemNumber
+                    worksheet.Cells[i, 5] = ""; //ChargeableHours
+                    worksheet.Cells[i, 6] = ""; //NonChargeableHours
                     worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Interior.Color = Color.DarkGray; //TODO
                     worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = true;
                 }
