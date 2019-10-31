@@ -15,11 +15,23 @@
         <div class="row">
             <div class="form-group col-xs-2 leftContent">
 
-                <br />
+                <div class="dropdown dropdownActions">
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    Actions
+                  </button>
+                  <div class="dropdown-menu">
+                      <input id="btnInfo" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Month Info" onclick="Info();" />
+                      <div class="dropdown-divider"></div>
+                      <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
+                      <div class="dropdown-divider"></div>
+                      <input id="btnCloseAllTasks" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Close All Opened Tasks For Specified Month" onclick="alert('not defined yet');" />
 
-                <div>
-                    <input id="btnSaveExcelFile" title="Export to Excel file" type="submit" name="" value="">
-                    <input id="btnInfo" title="Show month info (days and hours worked)" type="submit" name="" value="">
+                      <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
+                      <div class="dropdown-divider"></div>
+                      <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
+                      <div class="dropdown-divider2"></div>
+                      <input id="btnCloseAllTasks2" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Another Action" onclick="alert('not defined yet');" />
+                  </div>
                 </div>
 
                 <br />
@@ -171,64 +183,3 @@
 </div>
 
 <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
-
-<script id="templateTimesheetTable" type="x-tmpl-mustache">
-    <table id="timesheetTable" class="table table-striped">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Day</th>
-                <th>Work Item</th>
-                <th>Description</th>
-                <th>Chargeable Hours</th>
-                <th>Non Chargeable Hours</th>
-                <th>Comment</th>
-            </tr>
-        </thead>
-
-        {{#rows}}
-        <tbody>
-            <tr data-toggle='tooltip' id="row{{Id}}" title='{{tooltipDay}}' class='{{classRow}}' data>
-
-                @*RADIOBUTTON*@
-                <td class='radioTd'>
-                    <div class='radio'>
-                        <label><input type='radio' name='optradio' class='chk-day' id='{{Id}}' {{disableFlag}}></label>
-                    </div>
-                </td>
-
-                @*DAY*@
-                <td>
-                    <div><label class="dayListView" data-toggle='tooltip' --title='{{day}}' id='dayTimesheet{{Id}}'>{{dayShortFormat}}</label></div>
-                </td>
-
-                @*WORKITEM*@
-                <td>
-                    <div><label id='workitem{{Id}}'>{{workItem}}</label></div>
-                </td>
-
-                @*DESCRIPTION*@
-                <td>
-                    <div><label id='description{{Id}}'>{{description}}</label></div>
-                </td>
-
-                @*CHARGEABLE HOURS*@
-                <td>
-                    <div><label class="chargeablehoursCls" id='chargeablehours{{Id}}'>{{chargeableHours}}</label></div>
-                </td>
-
-                @*NON-CHARGEABLE HOURS*@
-                <td>
-                    <div><label class="nonchargeablehoursCls" id='nonchargeablehours{{Id}}'>{{nonchargeableHours}}</label></div>
-                </td>
-
-                @*COMMENTS*@
-                <td>
-                    <div><label id='comments{{Id}}'>{{comments}}</label></div>
-                </td>
-            </tr>
-        </tbody>
-        {{/rows}}
-
-    </table>
-</script>

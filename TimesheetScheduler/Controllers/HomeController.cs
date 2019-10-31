@@ -302,13 +302,28 @@ namespace TimesheetScheduler.Controllers
             _wi.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
             _wi.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
             _wi.Fields["Description"].Value = description;
+
+            if (_wi.State.Equals("New") && state.Equals("Closed")) {
+                _wi.State = "Active";
+
+                var _validInternal = _wi.Validate();
+
+                if (_validInternal.Count > 0)
+                {
+                    throw new Exception("Errors when validating object [EditTaskOnTFS]");
+                }
+
+                _wi.Save();
+                return EditTaskOnTFS(workItemNumber, startDate, title, chargeableHours, nonchargeableHours, state, description);
+            }
+
             _wi.State = state;
 
             var _valid = _wi.Validate();
 
             if (_valid.Count > 0)
             {
-                throw new Exception("Errors when validating object [CreateTaskOnTFS]");
+                throw new Exception("Errors when validating object [EditTaskOnTFS]");
             }
 
             _wi.Save();

@@ -1,4 +1,6 @@
 ﻿var _bypassTFS = false;
+var totalChargeableHours = 0;
+var totalNonChargeableHours = 0;
 
 $(document).ready(function ($) {
     registerTriggerAjax();
@@ -6,11 +8,15 @@ $(document).ready(function ($) {
     LoadYears();
     bindUserNameDropdown();
     bindMonthDropdown();
-    Info();
-    SaveExcelFile();
     getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
     saveEvent();
+    applyBtnClassesInActionsSelect();
 });
+
+function clearMonthInfoVariables() {
+    totalChargeableHours = 0;
+    totalNonChargeableHours = 0;
+}
 
 function registerTriggerAjax() {
     jQuery.ajaxSetup({
@@ -25,6 +31,7 @@ function registerTriggerAjax() {
 }
 
 function eventsCalendar(_events, dateCalendar) {
+    clearMonthInfoVariables();
     $('#calendar').fullCalendar('destroy');
     $('#calendar').fullCalendar({
         defaultView: 'month',
@@ -39,10 +46,6 @@ function eventsCalendar(_events, dateCalendar) {
         events: _events,
         eventLimit: 10,
         eventClick: function (event) {
-            //if (event.url) {
-            //    window.open(event.url, "_blank");
-            //    return false;
-            //}
             ModalEvent(event, false);
         },
         eventMouseover: function (event) {
@@ -60,6 +63,8 @@ function eventsCalendar(_events, dateCalendar) {
                     "<br> State: " + event.state,
                 placement: "bottom"
             });
+            totalChargeableHours += event.chargeableHours;
+            totalNonChargeableHours += event.nonchargeableHours;
         },
         dayRender: function (date, cell) {
             if (date._d.setHours(0, 0, 0, 0) < new Date($.now()).setHours(0, 0, 0, 0)) { //ONLY FOR PAST DAYS
@@ -124,15 +129,12 @@ function _formatDate(date, format, separator) {
     switch (format) {
         case "yyyymmdd": {
             return year + separator + month + separator + day;
-            //break;
         }
         case "ddmmyyyy": {
             return day + separator + month + separator + year;
-            //break;
         }
         default: {
             return day + separator + month + separator + year;
-            //break;
         }
     }
 }
@@ -177,7 +179,7 @@ function returnEventColor(state) {
         case 'New':
             return '#3a87ad';
         default:
-            return '#3a87ad'
+            return '#3a87ad';
     }
 }
 
@@ -305,7 +307,9 @@ function LoadUserNames(_userName) {
         "Eoin OToole",
         "Ian O'Brien",
         "Niall Murphy",
-        "Doireann Hanley"];
+        "Doireann Hanley",
+        "Renan Camara",
+        "Disha Virk"];
 
     names.sort();//ordering A-Z
 
@@ -352,12 +356,11 @@ function getCurrentYear() {
 }
 
 function getUserNameFromPage() {
-    //return $("#userNameTimesheet").text();
     return $('#userNameTimesheet').find(":selected").text();
 }
 
 function getMonthFromPage() {
-    return ($("#monthTimesheet").val() - 1);
+    return $("#monthTimesheet").val() - 1;
 }
 
 function getYearFromPage() {
@@ -395,25 +398,25 @@ function getLastDayMonthFullDate(year, month) {
 }
 
 function getFirstDayMonthFromPage() {
-    var date = new Date($("#yearTimesheet").val(), ($("#monthTimesheet").val() - 1));
+    var date = new Date($("#yearTimesheet").val(), $("#monthTimesheet").val() - 1);
     var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
     return firstDay;
 }
 
 function getLastDayMonthFullDateFromPage() {
-    var date = new Date($("#yearTimesheet").val(), ($("#monthTimesheet").val() - 1));
+    var date = new Date($("#yearTimesheet").val(), $("#monthTimesheet").val() - 1);
     var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     return lastDay;
 }
 
 function getLastDayMonthFromPage() {
-    var date = new Date($("#yearTimesheet").val(), ($("#monthTimesheet").val() - 1));
+    var date = new Date($("#yearTimesheet").val(), $("#monthTimesheet").val() - 1);
     var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     return lastDay.getDate();
 }
 
 function formatDate(date) {
-    return (date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear());
+    return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
 }
 
 function dateMaskById(id, mask) {
@@ -425,22 +428,30 @@ function dateMaskById(id, mask) {
 
 function IsWeekend(date) {
     var day = date.getDay();
-    return (day === 6) || (day === 0);
+    return day === 6 || day === 0;
 }
 
 function Info() {
-    $("#btnInfo").click(function () {
         $("#infoModal").modal();
         if ($(".infoMonthLabel").length < 1) {
-            $(".H4tTitleInfoModal").text($(".H4tTitleInfoModal").text() + " - " + $(".fc-left").find("h2").text());
+            $(".H4tTitleInfoModal").text("Info - " + $(".fc-left").find("h2").text());
             $(".H4tTitleInfoModal").addClass("infoMonthLabel");
         }
 
-        $("#dayWorkedInfoTxt").text(calculateDaysWorked()); //populate this field while rendering events - (no needs to retrieve data again - modal is not being shown but is static html)
-        $("#chargeableHoursInfoTxt").text(getChargeableHours()); //populate this field while rendering events -  (no needs to retrieve data again - modal is not being shown but is static html)
-        $("#nonchargeableHoursInfoTxt").text(getNonChargeableHours()); //populate this field while rendering events -  (no needs to retrieve data again - modal is not being shown but is static html)
-    });
+        $("#dayWorkedInfoTxt").text((totalChargeableHours / 7.5).toFixed(2));
+        $("#chargeableHoursInfoTxt").text(totalChargeableHours); 
+        $("#nonchargeableHoursInfoTxt").text(totalNonChargeableHours); 
+        closeDialogActions();
+}
 
+function applyBtnClassesInActionsSelect() {
+    $(".dropdownActions input").each(function (index, value) {
+        if (index % 2 === 0) {
+            $(value).addClass("btn-success");
+        } else {
+            $(value).addClass("btn-primary");
+        }
+    });
 }
 
 function ModalEvent(event, eventCreation) {
@@ -473,7 +484,7 @@ function ModalEvent(event, eventCreation) {
         $(".urlLinkTfs").addClass("displayNone");
         populateStateTask(event.state);
         setModalTitle("Event Creation");
-        //to resolve problems trying to do stuff when the modal is loading
+        //to resolve problems when trying to do stuff when the modal is loading
         $("#eventModal").on('shown.bs.modal', function () {
             $('#titleTimesheet').focus();
         });
@@ -482,7 +493,7 @@ function ModalEvent(event, eventCreation) {
 
 function populateStateTask(state) {
     switch (state) {
-        case 'New': { addOptionToTaskState("New|Active"); break; }
+        case 'New': { addOptionToTaskState("New|Active|Closed"); break; }
         case 'Active': { addOptionToTaskState("Active|Closed"); break; }
         case 'Closed': { addOptionToTaskState("Closed"); $("#closeTaskTimesheet").attr("disabled", true); break; }
         default: { addOptionToTaskState("New"); $("#closeTaskTimesheet").attr("disabled", true); break; } //no event - creation
@@ -512,35 +523,6 @@ function cleanModal() {
 
 function setModalTitle(title) {
     $("#eventModal .modal-title").text(title);
-}
-
-function getChargeableHours() {
-    var chargeableHours = 0;
-    //$(".chargeablehoursCls").each(function () {
-
-    //USE CALLBACK IN THIS CALL => returnEventsFromTFS
-    var _chargeableHours = _bypassTFS ? fakeTFSObj() : returnEventsFromTFS();
-
-    $(_chargeableHours[0]).each(function () {
-        chargeableHours += this.CompletedHours === null ? 0 : (this.CompletedHours > 7.5 ? 7.5 : this.CompletedHours);
-    });
-    return chargeableHours;
-}
-
-function getNonChargeableHours() {
-    var nonchargeableHours = 0;
-
-    //USE CALLBACK IN THIS CALL => returnEventsFromTFS
-    var _nonchargeableHours = _bypassTFS ? fakeTFSObj() : returnEventsFromTFS();
-
-    $(_nonchargeableHours[0]).each(function () {
-        nonchargeableHours += (this.CompletedHours === null || this.CompletedHours <= 7.5) ? 0 : this.CompletedHours - 7.5;
-    });
-    return nonchargeableHours;
-}
-
-function calculateDaysWorked() {
-    return (getChargeableHours() / (7.5)).toFixed(2);
 }
 
 function returnTopPage() {
@@ -709,7 +691,6 @@ function returnEventsFromTFS() {
     $.ajax({
         url: "/Home/ConnectTFS",
         type: "GET",
-        //contentType: "application/json; charset=utf-8",
         dataType: "json",
         data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         success: function (data) {
@@ -718,12 +699,6 @@ function returnEventsFromTFS() {
         error: function (error) {
             alert("error: " + JSON.stringify(error));
         }
-    });
-}
-
-function SaveExcelFile() {
-    $("#btnSaveExcelFile").on("click", function () {
-        confirmationSavePath();
     });
 }
 
@@ -737,14 +712,14 @@ function confirmationSavePath() {
                 $.ajax({
                     url: "/Home/SaveExcelFile",
                     type: "GET",
-                    //contentType: "application/json; charset=utf-8",
-                    //dataType: "json",
                     data: { userName: getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
                     success: function (data) {
                         toastrMessage("File saved! " + data, "success");
+                        closeDialogActions();
                     },
                     error: function (error) {
                         alert("error: " + JSON.stringify(error));
+                        closeDialogActions();
                     }
                 });
             }
@@ -755,9 +730,14 @@ function confirmationSavePath() {
         error: function (error) {
             toastrMessage("Not saved.", "warning");
             alert("error: " + JSON.stringify(error));
+            closeDialogActions();
             return false;
         }
     });
+}
+
+function closeDialogActions() {
+    $(".dropdownActions").removeClass("open");
 }
 
 function fakeTFSObj() {

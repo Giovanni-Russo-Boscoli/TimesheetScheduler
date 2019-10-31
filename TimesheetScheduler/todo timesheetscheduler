@@ -2,13 +2,13 @@
 
 - do something with workitems without startdate
 
-- create a background-color/message for days "out of the office" (without task) in calendar view
+	- create a background-color/message for days "out of the office" (without task) in calendar view
 
 	- allow creates task for another person/user
 
 - block user dropdown in calendar view page (unblock only for specific user)
 
-- create multiple tasks
+- create multiple tasks ? not sure if should
 
 - INFO button not working for TFS events (working fine for fake data)
 - Info() should get populated while rendering events (no needs to retrieve data again - modal is not being shown but is static html)
@@ -33,7 +33,7 @@
 
 	- allow close tasks; when a task is not closed should has a color different when it's closed (add status field in edit mode)
 
-- give an option for tasks without 'StartDate' to apply the 'Creation Date' as 'StartDate' (and Close tasks)
+- give an option for tasks without 'StartDate' to apply the 'Creation Date' as 'StartDate' (and Close tasks) - not sure if should
 
 - counter time to update each X minutes (when missing 2 min to update show a loading bar saying is going to update 
 ->	- prevents lose any work done by updating the page without inform)
@@ -46,7 +46,7 @@
 
 - feature to close tasks (monthly - close all tasks for specific month)
 
-- apply event color when in listview mode (task closed, new or active) - ? not shure if should
+- apply event color when in listview mode (task closed, new or active) - ? not sure if should
 
 	- refactor footer (layout)
 
@@ -54,13 +54,17 @@
 
 - remove classes from HomeController
 
-- add Description field for Modal when creating/editing
+	- add Description field for Modal when creating/editing
 
-- allow close a task without saving as ACTIVE (from NEW to CLOSED) - callback function to save as ACTIVE and then as CLOSED once the TFS doesn't allow
-to save as CLOSED without saving as ACTIVE.
+	- allow close a task without saving as ACTIVE (from NEW to CLOSED) - callback function to save as ACTIVE and then as CLOSED once the TFS doesn't allow
+	to save as CLOSED without saving as ACTIVE.
 
 	- header in EXCEL file changes: Description -> Title / Comments -> Work items linked
 
 - Create accordion to collapse "Start Date Not Defined" section (allows expand only if have items)
 
 - App knows how to manage a task with more than 7.5 hours but doesn't know how to manage more than 1 task reaching more than 7.5 hours worked
+
+- Change "select actions button" for a modal with all options
+
+- Create some way to store USERS and their respectively information such as project, iteration path a.s.o.
