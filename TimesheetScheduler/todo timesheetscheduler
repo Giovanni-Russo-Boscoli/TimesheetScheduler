@@ -63,8 +63,15 @@
 
 - Create accordion to collapse "Start Date Not Defined" section (allows expand only if have items)
 
-- App knows how to manage a task with more than 7.5 hours but doesn't know how to manage more than 1 task reaching more than 7.5 hours worked
+	- App knows how to manage a task with more than 7.5 hours but doesn't know how to manage more than 1 task reaching more than 7.5 hours worked
 
 - Change "select actions button" for a modal with all options
 
 - Create some way to store USERS and their respectively information such as project, iteration path a.s.o.
+
+	- apply 2 decimal points in "Days worked" in excel file (e.g. 18.46 instead 18.46666666666)
+
+- Disparar e-mail com as planilhas consolidadas para os usuários pertinentes. 
+Caso seja necessário uma validacao previa, que envie notificacao para aprovar o envio da planilha (RENAN)
+
+- keep loading gif protecting until finish the excel file creation 

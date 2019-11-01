@@ -345,7 +345,6 @@ namespace TimesheetScheduler.Controllers
         public string TimesheetFileName(string userName, char separator, int _month, int _year)
         {
             var _monthFormatted = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
-            //return "Timesheet" + separator + NameSplittedByUnderscore(FormatDomainUserName(GetDomainUserName()), separator.ToString()) + separator + _monthFormatted + separator + _year;
             return "Timesheet" + separator + NameSplittedByUnderscore(userName, separator.ToString()) + separator + _monthFormatted + separator + _year;
         }
 
@@ -451,8 +450,7 @@ namespace TimesheetScheduler.Controllers
 
         public void InitExcelVariables(string userName, int _month, int _year)
         {
-            //UserName = FormatDomainUserName(GetDomainUserName()); //GetUserName();
-            UserName = userName; //GetUserName();
+            UserName = userName;
             MonthTimesheet = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
             YearTimesheet = _year.ToString();
 
@@ -838,7 +836,7 @@ namespace TimesheetScheduler.Controllers
             {
                 j = i - firstRow;
                 worksheet.Cells[i, 1] = _table[j].Id;
-                worksheet.Cells[i, 2] = _table[j].Date;
+                worksheet.Cells[i, 2] = _table[j].Date.ToShortDateString();
                 worksheet.Cells[i, 3] = _table[j].WorkItemNumber;
                 worksheet.Cells[i, 4] = _table[j].Description;
                 worksheet.Cells[i, 5] = _table[j].ChargeableHours;
@@ -847,8 +845,9 @@ namespace TimesheetScheduler.Controllers
 
                 worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].HorizontalAlignment = XlHAlign.xlHAlignCenter;
                 worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].VerticalAlignment = XlHAlign.xlHAlignCenter;
-
-                worksheet.Cells[i, 3].EntireColumn.NumberFormat = "0";
+                
+                worksheet.Cells[i, 2].NumberFormat = "MM/DD/YYYY"; //date in american format
+                worksheet.Cells[i, 3].NumberFormat = "0"; //workitem formatted as number
 
                 if (_table[j].IsWeekend)
                 {
@@ -864,6 +863,12 @@ namespace TimesheetScheduler.Controllers
                     worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = false;
                 }
             }
+
+            worksheet.Cells[1, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Working Days In Month)
+            worksheet.Cells[2, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Hours)
+            worksheet.Cells[3, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Chargeable Hours)
+            worksheet.Cells[4, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Non-Chargeable Hours)
+
             return _table.Count;
         }
 
@@ -872,18 +877,18 @@ namespace TimesheetScheduler.Controllers
             IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
             var _days = DateTime.DaysInMonth(_year, _month);
             DateTime day;
-            //var _index = 0;
-
+            var countTasks = 0;
             //loop for all days in the month but doesn't include weekends
             //allow more then 1 task per day
             for (int i = 0; i < _days; i++) //_events.Count; i++) //
             {
+
                 day = new DateTime(_year, _month, i + 1);
                 if (IsWeekend(day))
                 {
                     timesheetRecords.Add(new WorkItemRecord
                     {
-                        Id = (i + 1),
+                        Id = ++countTasks, 
                         Date = day,
                         WorkItemNumber = 0,
                         Description = "",
@@ -892,22 +897,62 @@ namespace TimesheetScheduler.Controllers
                         Comments = "",
                         IsWeekend = IsWeekend(day)
                     });
+                    ;
                 }
                 else
                 {
                     var _itemEvent = _events.Where(x => x.StartDate.Value.ToShortDateString() == day.ToShortDateString());
                     if (_itemEvent.Count() > 0)
                     {
+                        var _currentChargeableHours = 0.0;
+                        var _currentNonChargeableHours = 0.0;
+                        var totalChargeableHoursRemaining = 7.5;
+
                         foreach (var item in _itemEvent)
                         {
+
+                            #region Calculate Chargeable and Non-Chargeable hours
+                            if (item.CompletedHours.HasValue){
+                                if (item.CompletedHours.Value > 7.5) {
+
+                                    _currentChargeableHours = 7.5;
+                                    _currentNonChargeableHours = item.CompletedHours.Value - 7.5;
+                                }
+                                else
+                                {
+                                    _currentChargeableHours = item.CompletedHours.Value;
+                                }
+
+                                if (totalChargeableHoursRemaining > 0)
+                                {
+                                    if (totalChargeableHoursRemaining >= _currentChargeableHours)
+                                    {
+                                        totalChargeableHoursRemaining = totalChargeableHoursRemaining - _currentChargeableHours;
+                                    }
+                                    else
+                                    {
+                                        _currentNonChargeableHours = _currentChargeableHours - totalChargeableHoursRemaining;
+                                        _currentChargeableHours = totalChargeableHoursRemaining;
+                                        totalChargeableHoursRemaining = 0;
+                                    }
+                                }
+                                else
+                                {
+                                    _currentNonChargeableHours += _currentChargeableHours;
+                                    _currentChargeableHours = 0;
+                                }
+
+                            }
+                            #endregion Calculate Chargeable and Non-Chargeable hours
+
                             timesheetRecords.Add(new WorkItemRecord
                             {
-                                Id = (i + 1),
+                                Id = ++countTasks, 
                                 Date = item.StartDate.Value,
                                 WorkItemNumber = int.Parse(item.Id),
                                 Description = item.Title, //item.Description,
-                                ChargeableHours = item.CompletedHours == null ? 0 : ((float)item.CompletedHours > 7.5 ? 7.5f : (float)item.CompletedHours),
-                                NonChargeableHours = (item.CompletedHours == null || item.CompletedHours <= 7.5) ? 0 : ((float)item.CompletedHours - 7.5f),
+                                ChargeableHours = (float)_currentChargeableHours,
+                                NonChargeableHours = (float)_currentNonChargeableHours,
                                 Comments = item.WorkItemsLinked,
                                 IsWeekend = IsWeekend(item.StartDate.Value)
                             });
@@ -917,7 +962,7 @@ namespace TimesheetScheduler.Controllers
                     {
                         timesheetRecords.Add(new WorkItemRecord
                         {
-                            Id = (i + 1),
+                            Id = ++countTasks,
                             Date = day,
                             WorkItemNumber = 0,
                             Description = "Out of the office",
