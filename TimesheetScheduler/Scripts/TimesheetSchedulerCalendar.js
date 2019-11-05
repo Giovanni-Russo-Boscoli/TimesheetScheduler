@@ -21,12 +21,15 @@ function clearMonthInfoVariables() {
 function registerTriggerAjax() {
     jQuery.ajaxSetup({
         beforeSend: function () {
+            console.log("show...");
             $('.modalPleaseWait').show();
         },
         complete: function () {
+            console.log("hide...");
             $('.modalPleaseWait').hide();
         },
-        success: function () { }
+        success: function () {
+        }
     });
 }
 
@@ -59,7 +62,7 @@ function eventsCalendar(_events, dateCalendar) {
                     "<br> Chargeable Hours: " + event.chargeableHours +
                     "<br> Non-Chargeable Hours:" + event.nonchargeableHours +
                     "<br> Description: " + event.description +
-                    "<br> Work Items Linked: " + event.comments + 
+                    "<br> Work Items Linked: " + event.comments +
                     "<br> State: " + event.state,
                 placement: "bottom"
             });
@@ -432,16 +435,16 @@ function IsWeekend(date) {
 }
 
 function Info() {
-        $("#infoModal").modal();
-        if ($(".infoMonthLabel").length < 1) {
-            $(".H4tTitleInfoModal").text("Info - " + $(".fc-left").find("h2").text());
-            $(".H4tTitleInfoModal").addClass("infoMonthLabel");
-        }
+    $("#infoModal").modal();
+    if ($(".infoMonthLabel").length < 1) {
+        $(".H4tTitleInfoModal").text("Info - " + $(".fc-left").find("h2").text());
+        $(".H4tTitleInfoModal").addClass("infoMonthLabel");
+    }
 
-        $("#dayWorkedInfoTxt").text((totalChargeableHours / 7.5).toFixed(2));
-        $("#chargeableHoursInfoTxt").text(totalChargeableHours); 
-        $("#nonchargeableHoursInfoTxt").text(totalNonChargeableHours); 
-        closeDialogActions();
+    $("#dayWorkedInfoTxt").text((totalChargeableHours / 7.5).toFixed(2));
+    $("#chargeableHoursInfoTxt").text(totalChargeableHours);
+    $("#nonchargeableHoursInfoTxt").text(totalNonChargeableHours);
+    closeDialogActions();
 }
 
 function applyBtnClassesInActionsSelect() {
@@ -463,7 +466,7 @@ function ModalEvent(event, eventCreation) {
         dateMaskById("dayTimesheet");
         $("#userNameModal").val(getUserNameFromPage());
         $("#workItemTimesheet").val(event.workItem);
-        $("#dayTimesheet").val(_formatDate(event.day, "ddmmyyyy", "/")),        
+        $("#dayTimesheet").val(_formatDate(event.day, "ddmmyyyy", "/"));
         $("#titleTimesheet").val(event.titleOriginal);
         $("#chargeableTimesheet").val(event.chargeableHours);
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
@@ -491,6 +494,30 @@ function ModalEvent(event, eventCreation) {
     }
 }
 
+function ModalEventWithoutStartDate(event) {
+
+    var _chargeableHours = event.CompletedHours > 7.5 ? 7.5 : (event.CompletedHours !== null ? event.CompletedHours : 0);
+    var _nonchargeableHours = event.CompletedHours > 7.5 ? event.CompletedHours - 7.5 : 0;
+
+    cleanModal();
+    $("#eventModal").modal();
+
+    $("#dayTimesheet").prop("disabled", false);
+    dateMaskById("dayTimesheet");
+    $("#userNameModal").val(getUserNameFromPage());
+    $("#workItemTimesheet").val(event.Id);
+    $("#titleTimesheet").val(event.Title);
+    $("#chargeableTimesheet").val(_chargeableHours);
+    $("#nonchargeableTimesheet").val(_nonchargeableHours);
+    $("#descriptionTimesheet").val(event.Description);
+    $("#workItemsLinkedTimesheet").val(event.WorkItemsLinked);
+    $(".urlLinkTfs").removeClass("displayNone");
+    $("#linkOriginalUrlTimesheet").attr("href", event.LinkUrl);
+    populateStateTask(event.State);
+    setModalTitle("Event Without Start Date");
+
+}
+
 function populateStateTask(state) {
     switch (state) {
         case 'New': { addOptionToTaskState("New|Active|Closed"); break; }
@@ -510,7 +537,7 @@ function addOptionToTaskState(textOption) {
 function cleanModal() {
     $("#userNameModal").val("");
     $("#dayTimesheet").val(""),
-    $("#workItemTimesheet").val("");
+        $("#workItemTimesheet").val("");
     $("#titleTimesheet").val("");
     $("#chargeableTimesheet").val("");
     $("#nonchargeableTimesheet").val("");
@@ -530,7 +557,7 @@ function returnTopPage() {
 }
 
 function saveEvent() {
-    
+
     $("#btnSaveEvent").on("click", function () {
 
         var _workItemNumber = $("#workItemTimesheet").val();
@@ -570,7 +597,7 @@ function saveEvent() {
                     state: $("#closeTaskTimesheet").children("option:selected").val(),
                     description: $("#descriptionTimesheet").val(),
                     chargeableHours: $("#chargeableTimesheet").val(),
-                    nonchargeableHours: $("#nonchargeableTimesheet").val()                    
+                    nonchargeableHours: $("#nonchargeableTimesheet").val()
                 },
                 success: function (data) {
                     toastrMessage("Saved -> Workitem: [" + data + "]", "success");
@@ -656,11 +683,11 @@ function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
     $(eventsStartDateNotDefined).each(function (index, value) {
         var _creationDate = _formatDate(new Date(parseInt(value.CreationDate.substr(6))).toDateString(), "/");
         var _item = "<div class='eventStartDateNofDefined'>" +
-            "<label class='mainLbl'>" + "[" + value.Id + "] - " + value.Title + "</label>" + 
+            "<label class='mainLbl'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
             "<label class='lblTooltip lblStartDateNotDefinedTitle'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
-            "<label class='lblTooltip lblStartDateNotDefinedState'>" + value.State + "</label>" + 
-            "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" + 
-            "<label class='lblTooltip lblStartDateNotDefinedWorkItem'>" + value.Id + "</label>" + 
+            "<label class='lblTooltip lblStartDateNotDefinedState'>" + value.State + "</label>" +
+            "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" +
+            "<label class='lblTooltip lblStartDateNotDefinedWorkItem'>" + value.Id + "</label>" +
             "</div>";
         $("#divStatDateNotDefined").append(_item);
     });
@@ -683,57 +710,59 @@ function tooltipStartDateNotDefined() {
 
 function onClickEventsStartDateNotDefined() {
     $(".eventStartDateNofDefined").on("click", function () {
-        alert($(this).find(".lblStartDateNotDefinedWorkItem").text());
-    });
-}
-
-function returnEventsFromTFS() {
-    $.ajax({
-        url: "/Home/ConnectTFS",
-        type: "GET",
-        dataType: "json",
-        data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
-        success: function (data) {
-            return data;
-        },
-        error: function (error) {
-            alert("error: " + JSON.stringify(error));
-        }
+        $.ajax({
+            url: "/Home/GetWorkItemById",
+            type: "GET",
+            dataType: "json",
+            data: { workItemId: $(this).find(".lblStartDateNotDefinedWorkItem").text() },
+            success: function (data) {
+                ModalEventWithoutStartDate(data);
+            },
+            error: function (error) {
+                toastrMessage("error (onClickEventsStartDateNotDefined): " + JSON.stringify(error), "warning");
+            }
+        });
     });
 }
 
 function confirmationSavePath() {
-    $.ajax({
-        url: "/Home/TimesheetSaveLocationAndFileName",
-        type: "GET",
-        data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
-        success: function (data) {
-            if (confirm("The Excel file will be saved in the following directory: " + data + ".xlsx")) {
-                $.ajax({
-                    url: "/Home/SaveExcelFile",
-                    type: "GET",
-                    data: { userName: getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
-                    success: function (data) {
-                        toastrMessage("File saved! " + data, "success");
-                        closeDialogActions();
-                    },
-                    error: function (error) {
-                        alert("error: " + JSON.stringify(error));
-                        closeDialogActions();
-                    }
-                });
+    $.when(
+        $.ajax({
+            url: "/Home/TimesheetSaveLocationAndFileName",
+            type: "GET",
+            async: false,
+            data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+            error: function (error) {
+                toastrMessage("Not saved. (confirmationSavePath function) \n" + error, "warning");
+                closeDialogActions();
+                return false;
             }
-            else {
-                toastrMessage("Not saved.", "warning");
-            }
-        },
-        error: function (error) {
-            toastrMessage("Not saved.", "warning");
-            alert("error: " + JSON.stringify(error));
-            closeDialogActions();
-            return false;
-        }
+        })
+    ).then(function (data, textStatus, jqXHR) {
+        SaveExcelFile(data);
     });
+}
+
+function SaveExcelFile(strPath) {
+    if (confirm("The Excel file will be saved in the following directory: " + strPath + ".xlsx")) {
+        $.ajax({
+            url: "/Home/SaveExcelFile",
+            type: "GET",
+            cache: false,
+            data: { userName: getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+            success: function (data) {
+                toastrMessage(data, "success");
+                closeDialogActions();
+            },
+            error: function (error) {
+                toastrMessage("error (SaveExcelFile function): " + JSON.stringify(error), "warning");
+                closeDialogActions();
+            }
+        });
+    }
+    else {
+        toastrMessage("Not saved.", "warning");
+    }
 }
 
 function closeDialogActions() {

@@ -74,4 +74,12 @@
 - Disparar e-mail com as planilhas consolidadas para os usuários pertinentes. 
 Caso seja necessário uma validacao previa, que envie notificacao para aprovar o envio da planilha (RENAN)
 
-- keep loading gif protecting until finish the excel file creation 
+	- keep loading gif protecting until finish the excel file creation 
+
+- routine to create all excel files (from selected list of users/team) + report
+
+- MASK IS NOT WORKING
+
+- INCLUDE IN INFO MONTH MODAL RATES 
+
+- FINAL REPORT WITH RATES AND CHARGES FOR EACH ONE AND SEPARATED TEAMS (CORE/DRAWDOWN)

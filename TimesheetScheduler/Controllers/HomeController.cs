@@ -94,7 +94,6 @@ namespace TimesheetScheduler.Controllers
 
         public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, string userName, int _month, int _year)
         {
-
             IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
 
             if (!_bypass)
@@ -331,6 +330,40 @@ namespace TimesheetScheduler.Controllers
             return (int)_wi.Fields["ID"].Value;
         }
 
+        [HttpGet]
+        public JsonResult GetWorkItemById(int workItemId)
+        {
+            var _urlTFS = GetUrlTfs();
+            Uri tfsUri = new Uri(_urlTFS);
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+
+            WorkItem workItem = WIS.GetWorkItem(workItemId);
+
+            var _workItemsLinked = "";
+            for (int i = 0; i < workItem.WorkItemLinks.Count; i++)
+            {
+                _workItemsLinked += "#" + workItem.WorkItemLinks[i].TargetId + " ";
+            }
+
+            WorkItemSerialized _workItemSerialized = new WorkItemSerialized()
+            {
+                Id = workItem["Id"].ToString(),
+                Title = workItem["Title"].ToString(),
+                StartDate = workItem["Start Date"] != null ? (DateTime)workItem["Start Date"] : (DateTime?)null,
+                Description = WebUtility.HtmlDecode(workItem["Description"].ToString()),
+                CompletedHours = workItem["Completed Work"] != null ? (double)workItem["Completed Work"] : (double?)null,
+                WorkItemsLinked = _workItemsLinked,
+                State = workItem.State,
+                LinkUrl = _urlTFS + projectName + "/_queries?id=" + workItem["Id"].ToString()
+            };
+
+            return Json(_workItemSerialized, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion TFS
 
         #region EXCEL
@@ -467,8 +500,6 @@ namespace TimesheetScheduler.Controllers
                     cellBackgroundColor = Color.Transparent,
                     aligment = XlHAlign.xlHAlignLeft,
                     lockCell = true
-                    //borderLineStyle = XlLineStyle.xlContinuous,
-                    //borderColor = Color.Gray
                 }
             };
 
@@ -635,7 +666,7 @@ namespace TimesheetScheduler.Controllers
             CellTotalChargeableHoursInput = new CellObject
             {
                 CellPosition = "E3",
-                CellValue = "=SUM(E6:E50)", //TODO: apply formula
+                //CellValue = "=SUM(E6:E50)", //TODO: apply formula // it gets set in CreateTable method (868)
                 FormatParams = new ParamsFormatCell()
                 {
                     fontSize = 11,
@@ -668,7 +699,7 @@ namespace TimesheetScheduler.Controllers
             CellTotalNonChargeableHoursInput = new CellObject
             {
                 CellPosition = "E4",
-                CellValue = "=SUM(F6:F50)", //TODO: apply formula
+                //CellValue = "=SUM(F6:F50)", //TODO: apply formula // it gets set in CreateTable method (868)
                 FormatParams = new ParamsFormatCell()
                 {
                     fontSize = 11,
@@ -832,6 +863,9 @@ namespace TimesheetScheduler.Controllers
             int lastRow = _table.Count + firstRow;
             int j;
 
+            worksheet.get_Range(CellTotalChargeableHoursInput.CellPosition).Value = "=SUM(E" + firstRow + ":E" + lastRow + ")";
+            worksheet.get_Range(CellTotalNonChargeableHoursInput.CellPosition).Value = "=SUM(F" + firstRow + ":F" + lastRow + ")";
+
             for (int i = firstRow; i < lastRow; i++) //ROW
             {
                 j = i - firstRow;
@@ -843,9 +877,6 @@ namespace TimesheetScheduler.Controllers
                 worksheet.Cells[i, 6] = _table[j].NonChargeableHours;
                 worksheet.Cells[i, 7] = _table[j].Comments;
 
-                worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].HorizontalAlignment = XlHAlign.xlHAlignCenter;
-                worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].VerticalAlignment = XlHAlign.xlHAlignCenter;
-                
                 worksheet.Cells[i, 2].NumberFormat = "MM/DD/YYYY"; //date in american format
                 worksheet.Cells[i, 3].NumberFormat = "0"; //workitem formatted as number
 
@@ -863,6 +894,9 @@ namespace TimesheetScheduler.Controllers
                     worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = false;
                 }
             }
+
+            worksheet.Range[worksheet.Cells[firstRow, 1], worksheet.Cells[lastRow, 7]].HorizontalAlignment = XlHAlign.xlHAlignCenter;
+            worksheet.Range[worksheet.Cells[firstRow, 1], worksheet.Cells[lastRow, 7]].VerticalAlignment = XlHAlign.xlHAlignCenter;
 
             worksheet.Cells[1, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Working Days In Month)
             worksheet.Cells[2, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Hours)
@@ -992,6 +1026,8 @@ namespace TimesheetScheduler.Controllers
 
             try
             {
+                userName = userName.Replace("'", "''");
+
                 excel = new Application();
                 excel.Visible = false;
                 excel.DisplayAlerts = false;
@@ -1001,7 +1037,7 @@ namespace TimesheetScheduler.Controllers
                 InitExcelVariables(userName, _month, _year);
 
                 worksheet = (Worksheet)worKbooK.ActiveSheet;
-                worksheet.Name = "Timesheet"; //TODO: create a better file name using month and year
+                worksheet.Name = "Timesheet_" + userName.Replace(" ", "_"); 
 
                 CreateHeader(worksheet);
                 tableEventCount = CreateTable(worksheet, _bypassTFS, userName, _month, _year);
@@ -1023,7 +1059,7 @@ namespace TimesheetScheduler.Controllers
                 excel.Quit();
                 Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
                 Marshal.ReleaseComObject(worKbooK);
-                return "OK from backend";
+                return "File saved sucessfully!"; // - Path: " + saveParams;
             }
             catch (Exception ex)
             {
