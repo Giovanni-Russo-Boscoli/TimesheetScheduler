@@ -1,4 +1,4 @@
-﻿var _bypassTFS = false;
+﻿var _bypassTFS = true;
 var totalChargeableHours = 0;
 var totalNonChargeableHours = 0;
 
@@ -11,7 +11,40 @@ $(document).ready(function ($) {
     getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
     saveEvent();
     applyBtnClassesInActionsSelect();
+    btnActionClick();
+
+
+
+    //$('#body-row .collapse').collapse('hide');
+
+    // Collapse/Expand icon
+    $('#collapse-icon').addClass('fa-angle-double-left');
+
+    // Collapse click
+    $('[data-toggle=sidebar-colapse]').click(function () {
+        SidebarCollapse();
+    });
+
+    
 });
+
+function SidebarCollapse() {
+    $('.menu-collapsed').toggleClass('d-none');
+    $('.sidebar-submenu').toggleClass('d-none');
+    $('.submenu-icon').toggleClass('d-none');
+    $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
+
+    // Treating d-flex/d-none on separators with title
+    var SeparatorTitle = $('.sidebar-separator-title');
+    if (SeparatorTitle.hasClass('d-flex')) {
+        SeparatorTitle.removeClass('d-flex');
+    } else {
+        SeparatorTitle.addClass('d-flex');
+    }
+
+    // Collapse/Expand icon
+    $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
+}
 
 function clearMonthInfoVariables() {
     totalChargeableHours = 0;
@@ -954,4 +987,24 @@ function fakeTFSObj() {
         ]
     ];
     return fakeTFS;
+}
+
+function btnActionClick() {
+    $("#btnActions").on("click", function () {
+        $("#actionsModal").modal();
+        //$("#actionsModal").dialog({
+        //    width: 500,
+        //    autoOpen: false,
+        //    show: {
+        //        effect: "blind",
+        //        duration: 1000
+        //    },
+        //    hide: {
+        //        effect: "blind",
+        //        duration: 1000
+        //    }
+        //});
+
+        //$("#actionsModal").dialog("open");
+    });
 }

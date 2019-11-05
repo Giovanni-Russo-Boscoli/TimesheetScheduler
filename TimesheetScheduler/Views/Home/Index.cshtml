@@ -15,24 +15,26 @@
         <div class="row">
             <div class="form-group col-xs-2 leftContent">
 
-                <div class="dropdown dropdownActions">
-                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    Actions
-                  </button>
-                  <div class="dropdown-menu">
-                      <input id="btnInfo" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Month Info" onclick="Info();" />
-                      <div class="dropdown-divider"></div>
-                      <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
-                      <div class="dropdown-divider"></div>
-                      <input id="btnCloseAllTasks" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Close All Opened Tasks For Specified Month" onclick="alert('not defined yet');" />
+                <button id="btnActions" class="btn btn-primary dropdownActions">Actions</button>
 
-                      <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
-                      <div class="dropdown-divider"></div>
-                      <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
-                      <div class="dropdown-divider2"></div>
-                      <input id="btnCloseAllTasks2" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Another Action" onclick="alert('not defined yet');" />
-                  </div>
-                </div>
+                @*<div class="dropdown dropdownActions">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            Actions
+                        </button>
+                        <div class="dropdown-menu">
+                            <input id="btnInfo" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Month Info" onclick="Info();" />
+                            <div class="dropdown-divider"></div>
+                            <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
+                            <div class="dropdown-divider"></div>
+                            <input id="btnCloseAllTasks" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Close All Opened Tasks For Specified Month" onclick="alert('not defined yet');" />
+
+                            <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
+                            <div class="dropdown-divider"></div>
+                            <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
+                            <div class="dropdown-divider2"></div>
+                            <input id="btnCloseAllTasks2" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Another Action" onclick="alert('not defined yet');" />
+                        </div>
+                    </div>*@
 
                 <br />
 
@@ -64,6 +66,8 @@
             </div>
         </div>
     </div>
+
+
 
 </body>
 
@@ -182,4 +186,41 @@
     </div>
 </div>
 
+<!-- Modal Actions -->
+<div class="modal fade" id="actionsModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            @*<div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title H4tTitleInfoModal">INFO</h4>
+                </div>*@
+            <div class="modal-body">
+                @*<form class="form-inline">
+                        <div class="form-group">
+                            <label id="dayWorkedInfoLbl" class="modalLbl" for="dayWorkedInfoTxt">Days Worked: </label>
+                            <label id="dayWorkedInfoTxt"></label>
+                        </div>
+                    </form>*@
+                @*<form class="form-inline">
+                        <div class="form-group">
+                            <label id="chargeableHoursInfoLbl" class="modalLbl" for="chargeableHoursInfoTxt">Chargeable Hours: </label>
+                            <label id="chargeableHoursInfoTxt"></label>
+                        </div>
+                    </form>
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label id="nonchargeableHoursInfoLbl" class="modalLbl" for="nonchargeableHoursInfoTxt">Non-Chargeable Hours: </label>
+                            <label id="nonchargeableHoursInfoTxt"></label>
+                        </div>
+                    </form>*@
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
+
