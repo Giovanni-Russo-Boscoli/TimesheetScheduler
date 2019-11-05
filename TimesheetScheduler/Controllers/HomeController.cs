@@ -358,9 +358,9 @@ namespace TimesheetScheduler.Controllers
                 CompletedHours = workItem["Completed Work"] != null ? (double)workItem["Completed Work"] : (double?)null,
                 WorkItemsLinked = _workItemsLinked,
                 State = workItem.State,
+                CreationDate = workItem.CreatedDate,
                 LinkUrl = _urlTFS + projectName + "/_queries?id=" + workItem["Id"].ToString()
             };
-
             return Json(_workItemSerialized, JsonRequestBehavior.AllowGet);
         }
 

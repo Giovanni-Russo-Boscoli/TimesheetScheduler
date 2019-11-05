@@ -1,4 +1,4 @@
-﻿var _bypassTFS = true;
+﻿var _bypassTFS = false;
 var totalChargeableHours = 0;
 var totalNonChargeableHours = 0;
 
@@ -175,6 +175,15 @@ function _formatDate(date, format, separator) {
     }
 }
 
+function formatDate(date) {
+    return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+}
+
+//Format = /Date(1560330289910)/ to DD/MM/YYYY
+function fromJsonDateToDateStringFormatted(strDate) {
+    return _formatDate(new Date(parseInt(strDate.substr(6))).toDateString(), "/");
+}
+
 function generateRandomNumber(min, max) {
     return Math.random() * (+max - +min) + +min;
 }
@@ -182,7 +191,8 @@ function generateRandomNumber(min, max) {
 function formatTFSEventsForCalendar(_obj) {
     var _calendarEvents = [];
     for (i = 0; i < _obj.length; i++) {
-        var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
+        //var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
+        var _startDate = fromJsonDateToDateStringFormatted(_obj[i].StartDate);
         var _chargeableHours = _obj[i].CompletedHours > 7.5 ? 7.5 : (_obj[i].CompletedHours !== null ? _obj[i].CompletedHours : 0);
         var _nonchargeableHours = _obj[i].CompletedHours > 7.5 ? _obj[i].CompletedHours - 7.5 : 0;
         _calendarEvents.push({
@@ -193,7 +203,8 @@ function formatTFSEventsForCalendar(_obj) {
             allDay: false,
             day: _startDate,
             workItem: _obj[i].Id,
-            description: $($.parseHTML(_obj[i].Description)).text(),
+            //description: $($.parseHTML(_obj[i].Description)).text(),
+            description: removeHTMLTagsFromString(_obj[i].Description),
             chargeableHours: _chargeableHours,
             nonchargeableHours: _nonchargeableHours,
             comments: _obj[i].WorkItemsLinked,
@@ -451,10 +462,6 @@ function getLastDayMonthFromPage() {
     return lastDay.getDate();
 }
 
-function formatDate(date) {
-    return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
-}
-
 function dateMaskById(id, mask) {
     if (!mask) {
         mask = 'DD/MM/YYYY';
@@ -527,30 +534,6 @@ function ModalEvent(event, eventCreation) {
     }
 }
 
-function ModalEventWithoutStartDate(event) {
-
-    var _chargeableHours = event.CompletedHours > 7.5 ? 7.5 : (event.CompletedHours !== null ? event.CompletedHours : 0);
-    var _nonchargeableHours = event.CompletedHours > 7.5 ? event.CompletedHours - 7.5 : 0;
-
-    cleanModal();
-    $("#eventModal").modal();
-
-    $("#dayTimesheet").prop("disabled", false);
-    dateMaskById("dayTimesheet");
-    $("#userNameModal").val(getUserNameFromPage());
-    $("#workItemTimesheet").val(event.Id);
-    $("#titleTimesheet").val(event.Title);
-    $("#chargeableTimesheet").val(_chargeableHours);
-    $("#nonchargeableTimesheet").val(_nonchargeableHours);
-    $("#descriptionTimesheet").val(event.Description);
-    $("#workItemsLinkedTimesheet").val(event.WorkItemsLinked);
-    $(".urlLinkTfs").removeClass("displayNone");
-    $("#linkOriginalUrlTimesheet").attr("href", event.LinkUrl);
-    populateStateTask(event.State);
-    setModalTitle("Event Without Start Date");
-
-}
-
 function populateStateTask(state) {
     switch (state) {
         case 'New': { addOptionToTaskState("New|Active|Closed"); break; }
@@ -569,8 +552,10 @@ function addOptionToTaskState(textOption) {
 
 function cleanModal() {
     $("#userNameModal").val("");
-    $("#dayTimesheet").val(""),
-        $("#workItemTimesheet").val("");
+    $("#wrapperCreationDate").hide();
+    $("#creationDateTimesheet").val("");
+    $("#dayTimesheet").val("");
+    $("#workItemTimesheet").val("");
     $("#titleTimesheet").val("");
     $("#chargeableTimesheet").val("");
     $("#nonchargeableTimesheet").val("");
@@ -714,7 +699,8 @@ function connectToTFS() {
 function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
     $("#divStatDateNotDefined").empty();
     $(eventsStartDateNotDefined).each(function (index, value) {
-        var _creationDate = _formatDate(new Date(parseInt(value.CreationDate.substr(6))).toDateString(), "/");
+        //var _creationDate = _formatDate(new Date(parseInt(value.CreationDate.substr(6))).toDateString(), "/");
+        var _creationDate = fromJsonDateToDateStringFormatted(value.CreationDate);
         var _item = "<div class='eventStartDateNofDefined'>" +
             "<label class='mainLbl'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
             "<label class='lblTooltip lblStartDateNotDefinedTitle'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
@@ -756,6 +742,40 @@ function onClickEventsStartDateNotDefined() {
             }
         });
     });
+}
+
+function ModalEventWithoutStartDate(event) {
+    alert(event.CreationDate);
+    var _chargeableHours = event.CompletedHours > 7.5 ? 7.5 : (event.CompletedHours !== null ? event.CompletedHours : 0);
+    var _nonchargeableHours = event.CompletedHours > 7.5 ? event.CompletedHours - 7.5 : 0;
+    //var _creationDate = _formatDate(new Date(parseInt(event.CreationDate.substr(6))).toDateString(), "/");
+    var _creationDate = fromJsonDateToDateStringFormatted(event.CreationDate);
+    var _description = removeHTMLTagsFromString(event.Description);
+
+    cleanModal();
+    $("#eventModal").modal();
+    $("#dayTimesheet").prop("disabled", false);
+    dateMaskById("dayTimesheet");
+    $("#userNameModal").val(getUserNameFromPage());
+    $("#workItemTimesheet").val(event.Id);
+    $("#wrapperCreationDate").show();
+    $("#creationDateTimesheet").val(_creationDate);
+    $("#titleTimesheet").val(event.Title);
+    $("#chargeableTimesheet").val(_chargeableHours);
+    $("#nonchargeableTimesheet").val(_nonchargeableHours);
+    $("#descriptionTimesheet").val(_description);
+    $("#workItemsLinkedTimesheet").val(event.WorkItemsLinked);
+    $(".urlLinkTfs").removeClass("displayNone");
+    $("#linkOriginalUrlTimesheet").attr("href", event.LinkUrl);
+    populateStateTask(event.State);
+    setModalTitle("Event Without Start Date");
+    $("#eventModal").on('shown.bs.modal', function () {
+        $('#creationDateTimesheet').focus();
+    });
+}
+
+function removeHTMLTagsFromString(str) {
+    return $($.parseHTML(str)).text();
 }
 
 function confirmationSavePath() {
