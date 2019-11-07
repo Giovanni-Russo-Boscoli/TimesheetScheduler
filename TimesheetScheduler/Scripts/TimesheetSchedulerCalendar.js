@@ -13,8 +13,6 @@ $(document).ready(function ($) {
     applyBtnClassesInActionsSelect();
     btnActionClick();
 
-
-
     //$('#body-row .collapse').collapse('hide');
 
     // Collapse/Expand icon
@@ -54,11 +52,11 @@ function clearMonthInfoVariables() {
 function registerTriggerAjax() {
     jQuery.ajaxSetup({
         beforeSend: function () {
-            console.log("show...");
+            //console.log("show...");
             $('.modalPleaseWait').show();
         },
         complete: function () {
-            console.log("hide...");
+            //console.log("hide...");
             $('.modalPleaseWait').hide();
         },
         success: function () {
@@ -179,7 +177,7 @@ function formatDate(date) {
     return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
 }
 
-//Format = /Date(1560330289910)/ to DD/MM/YYYY
+// From /Date(1560330289910)/ to DD/MM/YYYY
 function fromJsonDateToDateStringFormatted(strDate) {
     return _formatDate(new Date(parseInt(strDate.substr(6))).toDateString(), "/");
 }
@@ -191,8 +189,8 @@ function generateRandomNumber(min, max) {
 function formatTFSEventsForCalendar(_obj) {
     var _calendarEvents = [];
     for (i = 0; i < _obj.length; i++) {
-        //var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
-        var _startDate = fromJsonDateToDateStringFormatted(_obj[i].StartDate);
+        var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
+        //var _startDate = fromJsonDateToDateStringFormatted(_obj[i].StartDate); //DOES NOT WORK
         var _chargeableHours = _obj[i].CompletedHours > 7.5 ? 7.5 : (_obj[i].CompletedHours !== null ? _obj[i].CompletedHours : 0);
         var _nonchargeableHours = _obj[i].CompletedHours > 7.5 ? _obj[i].CompletedHours - 7.5 : 0;
         _calendarEvents.push({
@@ -713,6 +711,7 @@ function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
     $(".spanCountStartDateNotDefined").empty().append("(" + eventsStartDateNotDefined.length + ")");
     tooltipStartDateNotDefined();
     onClickEventsStartDateNotDefined();
+    collapseDivStartDateNotDefined(eventsStartDateNotDefined.length);
 }
 
 function tooltipStartDateNotDefined() {
@@ -745,7 +744,6 @@ function onClickEventsStartDateNotDefined() {
 }
 
 function ModalEventWithoutStartDate(event) {
-    alert(event.CreationDate);
     var _chargeableHours = event.CompletedHours > 7.5 ? 7.5 : (event.CompletedHours !== null ? event.CompletedHours : 0);
     var _nonchargeableHours = event.CompletedHours > 7.5 ? event.CompletedHours - 7.5 : 0;
     //var _creationDate = _formatDate(new Date(parseInt(event.CreationDate.substr(6))).toDateString(), "/");
@@ -770,7 +768,19 @@ function ModalEventWithoutStartDate(event) {
     populateStateTask(event.State);
     setModalTitle("Event Without Start Date");
     $("#eventModal").on('shown.bs.modal', function () {
-        $('#creationDateTimesheet').focus();
+        $('#dayTimesheet').focus();
+    });
+}
+
+function collapseDivStartDateNotDefined(eventsCount) {
+    $(".collapseDivStartDateNotDefined").off("click");
+    $("#divStatDateNotDefined").hide();
+    $(".collapseDivStartDateNotDefined").on("click", function () {
+        if (eventsCount > 0) {
+            $("#divStatDateNotDefined").toggle();
+        } else {
+            toastrMessage("No events without 'Start Date'!", "warning");
+        }
     });
 }
 

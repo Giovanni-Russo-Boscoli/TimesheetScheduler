@@ -15,7 +15,7 @@
 
 - reports end of the month
 
-- link workitems (using autocomplete or search field) when creating/editing workitem
+- link workitems (using autocomplete or search field) when creating/editing workitem (*1)
 
 - REMOVE LINK FROM LAYOUT.CSHTML (input mask - install in project)
 
@@ -83,3 +83,18 @@ Caso seja necessário uma validacao previa, que envie notificacao para aprovar o 
 - INCLUDE IN INFO MONTH MODAL RATES 
 
 - FINAL REPORT WITH RATES AND CHARGES FOR EACH ONE AND SEPARATED TEAMS (CORE/DRAWDOWN)
+
+- reorganize architecture //https://www.codeproject.com/Articles/1009532/Learn-Csharp-Design-patterns-step-by-step-with-a-p
+
+- Add files to Git Ignore
+
+
+
+
+
+(*1)
+Adding a link is simple. You create a link and add it to the collection, then save the work item
+WorkItem wiFeatureGroup = WIStore.GetWorkItem(9999);
+WorkItemLink wiLink = new WorkItemLink(WIStore.WorkItemLinkTypes["Is Produced By"], 9999, 8888);
+wiFeatureGroup.WorkItemLinks.Add(wiLink);
+wiFeatureGroup.Save();

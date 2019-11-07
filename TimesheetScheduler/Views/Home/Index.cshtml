@@ -15,26 +15,26 @@
         <div class="row">
             <div class="form-group col-xs-2 leftContent">
 
-                <button id="btnActions" class="btn btn-primary dropdownActions">Actions</button>
+                @*<button id="btnActions" class="btn btn-primary dropdownActions">Actions</button>*@
 
-                @*<div class="dropdown dropdownActions">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            Actions
-                        </button>
-                        <div class="dropdown-menu">
-                            <input id="btnInfo" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Month Info" onclick="Info();" />
-                            <div class="dropdown-divider"></div>
-                            <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
-                            <div class="dropdown-divider"></div>
-                            <input id="btnCloseAllTasks" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Close All Opened Tasks For Specified Month" onclick="alert('not defined yet');" />
+                <div class="dropdown dropdownActions">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        Actions
+                    </button>
+                    <div class="dropdown-menu">
+                        <input id="btnInfo" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Month Info" onclick="Info();" />
+                        <div class="dropdown-divider"></div>
+                        <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
+                        <div class="dropdown-divider"></div>
+                        <input id="btnCloseAllTasks" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Close All Opened Tasks For Specified Month" onclick="alert('not defined yet');" />
 
-                            <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
-                            <div class="dropdown-divider"></div>
-                            <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
-                            <div class="dropdown-divider2"></div>
-                            <input id="btnCloseAllTasks2" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Another Action" onclick="alert('not defined yet');" />
-                        </div>
-                    </div>*@
+                        <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
+                        <div class="dropdown-divider"></div>
+                        <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
+                        <div class="dropdown-divider2"></div>
+                        <input id="btnCloseAllTasks2" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Another Action" onclick="alert('not defined yet');" />
+                    </div>
+                </div>
 
                 <br />
 
@@ -50,14 +50,21 @@
 
                 <label for="yearTimesheet">Year</label>
                 <select class="form-control" id="yearTimesheet"></select>
-
+                
                 <br />
 
-                <label for="divStatDateNotDefined" title="This list show all the items without 'Start Date' in the timesheet path and signed to a specific user">
-                    Start Date not defined <span class="spanCountStartDateNotDefined">(0)</span>
-                </label>
+                <button id="btnActions" class="btn btn-primary dropdownActions">Actions</button>
 
-                <div class="" id="divStatDateNotDefined">
+                <br />
+                <br />
+
+                <div id="wrapperDivStartDateNotDefined">
+                    <h4 class="collapseDivStartDateNotDefined"
+                        title="Show all the items without 'Start Date' in the timesheet path and signed to a specific user">
+                        Start Date not defined <span class="spanCountStartDateNotDefined">(0)</span>
+                    </h4>
+                    <div class="" id="divStatDateNotDefined" style="display:none;">
+                    </div>
                 </div>
 
             </div>
@@ -137,8 +144,8 @@
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
-                        <label for="dayTimesheet">Day</label>
-                        <input class="form-control" id="dayTimesheet" disabled />
+                        <label for="dayTimesheet" title="Start Date">Day</label>
+                        <input class="form-control" title="Start Date" id="dayTimesheet" disabled />
                     </div>
                 </form>
                 <form class="form-inline">
@@ -197,33 +204,25 @@
     <div class="modal-dialog">
         <!-- Modal content-->
         <div class="modal-content">
+
             @*<div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title H4tTitleInfoModal">INFO</h4>
-                </div>*@
-            <div class="modal-body">
-                @*<form class="form-inline">
-                        <div class="form-group">
-                            <label id="dayWorkedInfoLbl" class="modalLbl" for="dayWorkedInfoTxt">Days Worked: </label>
-                            <label id="dayWorkedInfoTxt"></label>
-                        </div>
-                    </form>*@
-                @*<form class="form-inline">
-                        <div class="form-group">
-                            <label id="chargeableHoursInfoLbl" class="modalLbl" for="chargeableHoursInfoTxt">Chargeable Hours: </label>
-                            <label id="chargeableHoursInfoTxt"></label>
-                        </div>
-                    </form>
-                    <form class="form-inline">
-                        <div class="form-group">
-                            <label id="nonchargeableHoursInfoLbl" class="modalLbl" for="nonchargeableHoursInfoTxt">Non-Chargeable Hours: </label>
-                            <label id="nonchargeableHoursInfoTxt"></label>
-                        </div>
-                    </form>*@
+            
+            </div>*@
+
+            <div class="modal-body" style="background-color:antiquewhite;">
+                <div class="grid-container">
+                    <div class="item1">Excel Export</div>
+                    <div class="item2">Month Info</div>
+                    <div class="item3">Close Tasks</div>
+                    <div class="item4">Close Tasks (Start Date Not Defined)</div>
+                    <div class="item5">Report</div>
+                    <div class="item6">Test</div>
+                </div>
             </div>
-            <div class="modal-footer">
+
+            @*<div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
+            </div>*@
         </div>
     </div>
 </div>

@@ -1,4 +1,9 @@
-﻿// ----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------
+﻿
+.body-content {
+    min-width: 1250px !important;
+}
+
+// ----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------
 .modalPleaseWait {
     display: none;
     position: fixed;
@@ -17,18 +22,20 @@ body.loading .modalPleaseWait {
     overflow: hidden;
 }
 // ----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------
+// ----------------------------------------- StartDateNotDefined INIT ------------------------------------------------
 
 #divStatDateNotDefined {
-    height: 428px;
-    max-height: 500px;
+    height: auto; //428px;
+    max-height: 437px;
     border: 1px solid #ddd;
-    padding: 7px;
+    padding: 15px 7px;
     overflow: auto;
 
     .eventStartDateNofDefined {
         border: 1px solid #ddd;
-        width: 100%;
-        min-width: 200px;
+        /*width: 100%;
+        min-width: 200px;*/
+        width: auto;
         height: 18px;
         background-color: saddlebrown;
         border-radius: 4px;
@@ -65,32 +72,56 @@ body.loading .modalPleaseWait {
     }
 }
 
-#calendar {
-    height: 800px !important;
-    max-height: 800px !important;
-    overflow: auto;
+.collapseDivStartDateNotDefined {
+    background-color: #337ab7;
+    color: white;
+    padding: 10px;
+    margin: 0;
+    position: relative;
+    border-radius: 4px;
+
+    &:after {
+        display: inline-block;
+        position: absolute;
+        top: 18px;
+        right: 15px;
+        vertical-align: .255em;
+        content: "";
+        border-top: .3em solid;
+        border-right: .3em solid transparent;
+        border-bottom: 0;
+        border-left: .3em solid transparent;
+    }
 }
 
-.form-group {
-    margin-bottom: 5px !important;
+@media (max-width: 1700px) {
+    .collapseDivStartDateNotDefined {
+        background-color: #337ab7;
+        color: white;
+        padding: 10px;
+        margin: 0;
+        position: relative;
+        border-radius: 5px;
+        font-size: 12px;
+
+        &:after {
+            display: inline-block;
+            position: absolute;
+            top: 14px;
+            right: 6px;
+            vertical-align: .255em;
+            content: "";
+            border-top: .3em solid;
+            border-right: .3em solid transparent;
+            border-bottom: 0;
+            border-left: .3em solid transparent;
+        }
+    }
 }
 
-input {
-    max-width: none !important;
-}
 
-table th, td {
-    margin: auto !important;
-    text-align: center;
-}
-
-.modalLbl {
-    min-width: 200px !important;
-}
-
-.fc-time {
-    display: none;
-}
+// ----------------------------------------- StartDateNotDefined END -------------------------------------------------
+// ----------------------------------------- MODAL INIT --------------------------------------------------------------
 
 #eventModal {
     label {
@@ -105,6 +136,27 @@ table th, td {
     }
 }
 
+.modalLbl {
+    min-width: 200px !important;
+}
+
+.modal-footer {
+    padding-right: 40px !important;
+}
+
+// ----------------------------------------- MODAL END --------------------------------------------------------------
+// ----------------------------------------- CALENDAR INIT --------------------------------------------------------------
+
+#calendar {
+    height: 800px !important;
+    max-height: 800px !important;
+    overflow: auto;
+}
+
+.fc-time {
+    display: none;
+}
+
 .tooltip-inner {
     max-width: 100%;
 
@@ -113,41 +165,91 @@ table th, td {
     }
 }
 
-.loadBarContainer {
-    max-width: 95%;
-    padding-left: 2.5%;
-}
-
 .fc-list-item-marker,
 .fc-list-item-time {
     display: none !important;
-}
-
-.modal-footer {
-    padding-right: 40px !important;
-}
-
-.leftContent {
-    /*border: 1px solid lightgrey;*/
-}
-
-._footer {
-    height: 2vh;
 }
 
 .urlLinkTfs {
     padding-top: 10px;
 }
 
-.displayNone {
-    display: none;
-}
-
 .dayOutOfTheOffice {
     padding-top: 50px;
 }
 
+
+// ----------------------------------------- CALENDAR END --------------------------------------------------------------
+// ----------------------------------------- FOOTER INIT --------------------------------------------------------------
+
+._footer {
+    height: 2vh;
+}
+
+// ----------------------------------------- FOOTER END --------------------------------------------------------------
+// ----------------------------------------- GRID AREA INIT --------------------------------------------------------------
+
+.item1 {
+    grid-area: excelExport;
+}
+
+.item2 {
+    grid-area: monthInfo;
+}
+
+.item3 {
+    grid-area: CloseTasks;
+}
+
+.item4 {
+    grid-area: CloseTasksStartDateNotDefined;
+}
+
+.item5 {
+    grid-area: Report;
+}
+
+.item6 {
+    grid-area: Test;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: 'excelExport monthInfo CloseTasks' 'CloseTasksStartDateNotDefined Report Test';
+    grid-gap: 10px;
+    background-color: #2196F3;
+    padding: 10px;
+    height: 100%;
+}
+
+.grid-container > div {
+    background-color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    padding: 20px 0;
+    font-size: 30px;
+}
+// ----------------------------------------- GRID AREA END --------------------------------------------------------------
+
+.form-group {
+    margin-bottom: 5px !important;
+}
+
+input {
+    max-width: none !important;
+}
+
+table th, td {
+    margin: auto !important;
+    text-align: center;
+}
+
+.displayNone {
+    display: none;
+}
+
 .dropdownActions {
+    width: 100%;
 
     a {
         white-space: nowrap;
@@ -182,19 +284,19 @@ table th, td {
     }
 }
 
+
 /*---------------------------------------------------NEW ??? KEEP???*/
 
 #actionsModal {
-    //width: 80% !important;
-    //height: 80% !important;
     margin: auto;
 
     .modal-dialog {
         width: 50vw;
+        height:auto;
     }
 
     .modal-body {
-        height:53vh;
+        height: 100%;
     }
 
     .modal-content {
@@ -204,12 +306,7 @@ table th, td {
 
 
 
-
-
-
-
-
-
+// --------------------------------------------------  SIDE MENU INIT ----------------------------------------------
 
 
 @import url('https://fonts.googleapis.com/css?family=Montserrat');
@@ -218,7 +315,7 @@ table th, td {
 #body-row {
     margin-left: 0;
     margin-right: 0;
-    display:flex;
+    display: flex;
 }
 
 #sidebar-container {
@@ -289,3 +386,5 @@ a.bg-dark {
     padding-right: 0px !important;
     margin-right: 0px !important;
 }
+
+// --------------------------------------------------  SIDE MENU END ----------------------------------------------
