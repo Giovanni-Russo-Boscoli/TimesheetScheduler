@@ -103,6 +103,9 @@ body.loading .modalPleaseWait {
     border-bottom: 0;
     border-left: 0.3em solid transparent;
   }
+  #btnActions.dropdownActions {
+    font-size: 12px;
+  }
 }
 #eventModal label {
   width: 160px !important;
@@ -148,6 +151,14 @@ body.loading .modalPleaseWait {
 }
 .item1 {
   grid-area: excelExport;
+}
+.item1 #btnSaveExcelFile {
+  width: 23%;
+  height: 53%;
+  margin: auto;
+  background: url(../Images/xsl_icon.png) no-repeat center;
+  background-size: 5vw;
+  cursor: pointer;
 }
 .item2 {
   grid-area: monthInfo;
@@ -195,6 +206,7 @@ td {
 }
 .dropdownActions {
   width: 100%;
+  font-size: 18px;
 }
 .dropdownActions a {
   white-space: nowrap;

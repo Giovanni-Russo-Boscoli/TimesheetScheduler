@@ -807,7 +807,9 @@ function confirmationSavePath() {
 }
 
 function SaveExcelFile(strPath) {
-    if (confirm("The Excel file will be saved in the following directory: " + strPath + ".xlsx")) {
+    var msgPath = "The Excel file will be saved in the following directory: " + strPath + ".xls";
+    if (confirm(msgPath)) {
+        closeModalActions();
         $.ajax({
             url: "/Home/SaveExcelFile",
             type: "GET",
@@ -1022,19 +1024,9 @@ function fakeTFSObj() {
 function btnActionClick() {
     $("#btnActions").on("click", function () {
         $("#actionsModal").modal();
-        //$("#actionsModal").dialog({
-        //    width: 500,
-        //    autoOpen: false,
-        //    show: {
-        //        effect: "blind",
-        //        duration: 1000
-        //    },
-        //    hide: {
-        //        effect: "blind",
-        //        duration: 1000
-        //    }
-        //});
-
-        //$("#actionsModal").dialog("open");
     });
+}
+
+function closeModalActions() {
+    $("#actionsModal").modal('toggle');
 }

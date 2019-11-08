@@ -88,6 +88,7 @@ Caso seja necessário uma validacao previa, que envie notificacao para aprovar o 
 
 - Add files to Git Ignore
 
+- confirm dialog with breaklines unwanted (export to excel file the path where will save the file is breaking lines in a wrong way)
 
 
 

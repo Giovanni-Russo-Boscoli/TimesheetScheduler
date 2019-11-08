@@ -211,7 +211,10 @@
 
             <div class="modal-body" style="background-color:antiquewhite;">
                 <div class="grid-container">
-                    <div class="item1">Excel Export</div>
+                    <div class="item1">
+                        <label for="btnExcelExport">Excel Export</label>
+                        <div id="btnSaveExcelFile" onclick="confirmationSavePath();"></div>
+                    </div>
                     <div class="item2">Month Info</div>
                     <div class="item3">Close Tasks</div>
                     <div class="item4">Close Tasks (Start Date Not Defined)</div>
@@ -228,4 +231,6 @@
 </div>
 
 <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
+
+<div id="dialog-confirm"></div>
 
