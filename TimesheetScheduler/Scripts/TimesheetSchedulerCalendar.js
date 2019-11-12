@@ -1,6 +1,7 @@
-﻿var _bypassTFS = false;
+﻿var _bypassTFS = true;
 var totalChargeableHours = 0;
 var totalNonChargeableHours = 0;
+var timerID = 0;
 
 $(document).ready(function ($) {
     registerTriggerAjax();
@@ -13,7 +14,7 @@ $(document).ready(function ($) {
     saveEvent();
     applyBtnClassesInActionsSelect();
     btnActionClick();
-
+    reminderNoEventCreationForToday();
     //$('#body-row .collapse').collapse('hide');
 
     // Collapse/Expand icon
@@ -24,7 +25,7 @@ $(document).ready(function ($) {
         SidebarCollapse();
     });
 
-    
+
 });
 
 function SidebarCollapse() {
@@ -506,6 +507,7 @@ function ModalEvent(event, eventCreation) {
     $("#eventModal").modal();
     if (!eventCreation) {
         //EDIT
+        unsavedForm(true);
         $("#dayTimesheet").prop("disabled", false);
         dateMaskById("dayTimesheet");
         $("#userNameModal").val(getUserNameFromPage());
@@ -519,9 +521,10 @@ function ModalEvent(event, eventCreation) {
         $(".urlLinkTfs").removeClass("displayNone");
         $("#linkOriginalUrlTimesheet").attr("href", event.linkUrl);
         populateStateTask(event.state);
-        setModalTitle("Event Info");
+        setModalTitle("Event Update");
     } else {
         //NEW/CREATE
+        unsavedForm(false);
         $("#userNameModal").val(getUserNameFromPage());
         $("#dayTimesheet").prop("disabled", true);
         $("#dayTimesheet").val(_formatDate(event, "ddmmyyyy", "/"));
@@ -555,6 +558,7 @@ function addOptionToTaskState(textOption) {
 }
 
 function cleanModal() {
+    $(".fieldChanged").removeClass("fieldChanged");//clean up all changed fields
     $("#userNameModal").val("");
     $("#wrapperCreationDate").hide();
     $("#creationDateTimesheet").val("");
@@ -701,7 +705,7 @@ function connectToTFS() {
 }
 
 function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
-    $("#divStatDateNotDefined").empty();
+    $("#divStartDateNotDefined").empty();
     $(eventsStartDateNotDefined).each(function (index, value) {
         //var _creationDate = _formatDate(new Date(parseInt(value.CreationDate.substr(6))).toDateString(), "/");
         var _creationDate = fromJsonDateToDateStringFormatted(value.CreationDate);
@@ -712,7 +716,7 @@ function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
             "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" +
             "<label class='lblTooltip lblStartDateNotDefinedWorkItem'>" + value.Id + "</label>" +
             "</div>";
-        $("#divStatDateNotDefined").append(_item);
+        $("#divStartDateNotDefined").append(_item);
     });
     $(".spanCountStartDateNotDefined").empty().append("(" + eventsStartDateNotDefined.length + ")");
     tooltipStartDateNotDefined();
@@ -734,18 +738,19 @@ function tooltipStartDateNotDefined() {
 
 function onClickEventsStartDateNotDefined() {
     $(".eventStartDateNofDefined").on("click", function () {
-        $.ajax({
-            url: "/Home/GetWorkItemById",
-            type: "GET",
-            dataType: "json",
-            data: { workItemId: $(this).find(".lblStartDateNotDefinedWorkItem").text() },
-            success: function (data) {
-                ModalEventWithoutStartDate(data);
-            },
-            error: function (error) {
-                toastrMessage("error (onClickEventsStartDateNotDefined): " + JSON.stringify(error), "warning");
-            }
-        });
+        getWorkItemById($(this).find(".lblStartDateNotDefinedWorkItem").text());
+        //$.ajax({
+        //    url: "/Home/GetWorkItemById",
+        //    type: "GET",
+        //    dataType: "json",
+        //    data: { workItemId: $(this).find(".lblStartDateNotDefinedWorkItem").text() },
+        //    success: function (data) {
+        //        ModalEventWithoutStartDate(data);
+        //    },
+        //    error: function (error) {
+        //        toastrMessage("error (onClickEventsStartDateNotDefined): " + JSON.stringify(error), "warning");
+        //    }
+        //});
     });
 }
 
@@ -780,10 +785,10 @@ function ModalEventWithoutStartDate(event) {
 
 function collapseDivStartDateNotDefined(eventsCount) {
     $(".collapseDivStartDateNotDefined").off("click");
-    $("#divStatDateNotDefined").hide();
+    $("#divStartDateNotDefined").hide();
     $(".collapseDivStartDateNotDefined").on("click", function () {
         if (eventsCount > 0) {
-            $("#divStatDateNotDefined").toggle();
+            $("#divStartDateNotDefined").toggle();
         } else {
             toastrMessage("No events without 'Start Date'!", "warning");
         }
@@ -1032,9 +1037,68 @@ function closeModalActions() {
 }
 
 function closeAllTasksCurrentMonth() {
-    toastrMessage("All " + getNameSelectedMonthFromPage() + " Tasks Will End", "success");
+    closeModalActions();//End all November tasks
+    toastrMessage("Close All " + getNameSelectedMonthFromPage() + " Tasks", "success");
 }
 
 function closeAllTasksCurrentMonth_Tooltip() {
-    $("#btnCloseAllTasks").attr("title", "All " + getNameSelectedMonthFromPage() + " Tasks Will End");
+    $("#btnCloseAllTasks").attr("title", "Close All  " + getNameSelectedMonthFromPage() + " Tasks");
+}
+
+function unsavedForm(onoff) {
+    if (onoff) {
+        $("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet, #closeTaskTimesheet, #dayTimesheet").on("change", function () {
+            $(this).addClass("fieldChanged");
+        });
+    }
+    else {
+        $("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet, #closeTaskTimesheet, #dayTimesheet").off();
+    }
+}
+
+function reminderNoEventCreationForToday() {
+    var _interval = (60 * 1000) * 15; //15 minutes
+    timerID = setInterval(function () {
+        if (timerID === 123) {//check if has event created for today, if yes clearReminderInterval()
+            if (confirm("You don't have a event created for today, would like to create now?")) {
+                var a = "";
+            }
+        } else {
+            clearReminderInterval();
+        }
+    }, _interval);
+}
+
+function clearReminderInterval() {
+    clearInterval(timerID);
+}
+
+function getWorkItemById(_workItemId) {
+    $.ajax({
+        url: "/Home/GetWorkItemById",
+        type: "GET",
+        dataType: "json",
+        data: { workItemId: _workItemId },
+        success: function (data) {
+            return data;
+        },
+        error: function (error) {
+            toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
+        }
+    });
+}
+
+function getWorkItemByDay(_day) {
+    $.ajax({
+        url: "/Home/GetWorkItemByDay",
+        type: "GET",
+        dataType: "json",
+        data: { day: _day },
+        success: function (data) {
+            return data;
+        },
+        error: function (error) {
+            toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
+        }
+    });
 }

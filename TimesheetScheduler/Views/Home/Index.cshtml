@@ -18,22 +18,22 @@
                 @*<button id="btnActions" class="btn btn-primary dropdownActions">Actions</button>*@
 
                 @*<div class="dropdown dropdownActions">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                        Actions
-                    </button>
-                    <div class="dropdown-menu">
-                        <input id="btnInfo" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Month Info" onclick="Info();" />
-                        <div class="dropdown-divider"></div>
-                        <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
-                        <div class="dropdown-divider"></div>
-                        <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
-                        <div class="dropdown-divider"></div>
-                        <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
-                        <div class="dropdown-divider2"></div>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            Actions
+                        </button>
+                        <div class="dropdown-menu">
+                            <input id="btnInfo" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Month Info" onclick="Info();" />
+                            <div class="dropdown-divider"></div>
+                            <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
+                            <div class="dropdown-divider"></div>
+                            <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
+                            <div class="dropdown-divider"></div>
+                            <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
+                            <div class="dropdown-divider2"></div>
+                        </div>
                     </div>
-                </div>
 
-                <br />*@
+                    <br />*@
 
                 <label for="userNameTimesheet">User</label>
                 <select class="form-control" id="userNameTimesheet"></select>
@@ -47,7 +47,7 @@
 
                 <label for="yearTimesheet">Year</label>
                 <select class="form-control" id="yearTimesheet"></select>
-                
+
                 <br />
 
                 <button id="btnActions" class="btn btn-primary">Actions</button>
@@ -60,7 +60,7 @@
                         title="Show all the items without 'Start Date' in the timesheet path and signed to a specific user">
                         Start Date not defined <span class="spanCountStartDateNotDefined">(0)</span>
                     </h4>
-                    <div class="" id="divStatDateNotDefined" style="display:none;">
+                    <div class="" id="divStartDateNotDefined" style="display:none;">
                     </div>
                 </div>
 
@@ -205,7 +205,7 @@
                 <div class="grid-container">
                     <div class="item1">
                         <label for="btnExcelExport">Excel Export</label>
-                        <div id="btnSaveExcelFile"  title="Creates an Excel File"  onclick="confirmationSavePath();"></div>
+                        <div id="btnSaveExcelFile" title="Creates an Excel File" onclick="confirmationSavePath();"></div>
                     </div>
                     <div class="item2">
                         <label for="btnInfo">Month Info</label>

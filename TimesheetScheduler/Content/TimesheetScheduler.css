@@ -19,14 +19,14 @@ body.loading .modalPleaseWait {
   display: block;
   overflow: hidden;
 }
-#divStatDateNotDefined {
+#divStartDateNotDefined {
   height: auto;
-  max-height: 437px;
-  border: 1px solid #ddd;
+  max-height: 464px;
+  border: 1px solid #337ab7;
   padding: 15px 7px;
   overflow: auto;
 }
-#divStatDateNotDefined .eventStartDateNofDefined {
+#divStartDateNotDefined .eventStartDateNofDefined {
   border: 1px solid #ddd;
   /*width: 100%;
         min-width: 200px;*/
@@ -38,7 +38,7 @@ body.loading .modalPleaseWait {
   margin: 2px;
   cursor: pointer !important;
 }
-#divStatDateNotDefined .eventStartDateNofDefined label {
+#divStartDateNotDefined .eventStartDateNofDefined label {
   color: white;
   font-size: 0.85em;
   margin: 0 auto !important;
@@ -51,13 +51,13 @@ body.loading .modalPleaseWait {
   text-overflow: ellipsis;
   overflow: hidden;
 }
-#divStatDateNotDefined .eventStartDateNofDefined .lblTooltip {
+#divStartDateNotDefined .eventStartDateNofDefined .lblTooltip {
   display: none;
 }
-#divStatDateNotDefined .eventStartDateNofDefined:hover {
+#divStartDateNotDefined .eventStartDateNofDefined:hover {
   opacity: 0.5;
 }
-#divStatDateNotDefined .tooltip-inner {
+#divStartDateNotDefined .tooltip-inner {
   max-width: 300%;
   white-space: nowrap;
 }
@@ -240,6 +240,9 @@ td {
 .displayNone {
   display: none;
 }
+.displayFlex {
+  display: flex;
+}
 /*.dropdownActions {
     width: 100%;
     font-size:18px;
@@ -344,4 +347,8 @@ a.bg-dark {
   padding-left: 0px !important;
   padding-right: 0px !important;
   margin-right: 0px !important;
+}
+.fieldChanged {
+  background-color: rgba(255, 0, 0, 0.02);
+  font-style: italic;
 }

@@ -10,8 +10,8 @@
 
 - create multiple tasks ? not sure if should
 
-- INFO button not working for TFS events (working fine for fake data)
-- Info() should get populated while rendering events (no needs to retrieve data again - modal is not being shown but is static html)
+	- INFO button not working for TFS events (working fine for fake data)
+	- Info() should get populated while rendering events (no needs to retrieve data again - modal is not being shown but is static html)
 
 - reports end of the month
 
@@ -19,9 +19,9 @@
 
 - REMOVE LINK FROM LAYOUT.CSHTML (input mask - install in project)
 
-- register user (Name (exactly as in windows authentication), project, iteration path, etc...) [this will allow us to use with in multiple teams]
+- register user (Name (exactly as in windows authentication), project, iteration path, etc...) [this will allow us to use for multiple teams]
 
-- feature to copy the previous task (give options if is there more than one) [ONLY FOR CREATION - NOT WHEN EDITING]
+- feature to copy task by work item number [ONLY FOR CREATION - NOT WHEN EDITING]
 
 - reminder when change anything in a task and try to close without saving
 
@@ -33,7 +33,7 @@
 
 	- allow close tasks; when a task is not closed should has a color different when it's closed (add status field in edit mode)
 
-- give an option for tasks without 'StartDate' to apply the 'Creation Date' as 'StartDate' (and Close tasks) - not sure if should
+	- give an option for tasks without 'StartDate' to apply the 'Creation Date' as 'StartDate' (and Close tasks) - not sure if should
 
 - counter time to update each X minutes (when missing 2 min to update show a loading bar saying is going to update 
 ->	- prevents lose any work done by updating the page without inform)
@@ -90,6 +90,7 @@ Caso seja necessário uma validacao previa, que envie notificacao para aprovar o 
 
 - confirm dialog with breaklines unwanted (export to excel file the path where will save the file is breaking lines in a wrong way)
 
+- create themes (dark)
 
 
 
