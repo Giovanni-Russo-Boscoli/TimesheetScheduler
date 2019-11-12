@@ -118,8 +118,12 @@ body.loading .modalPleaseWait {
         }
     }
 
-    #btnActions.dropdownActions {
-        font-size: 12px;
+    #btnActions{
+        font-size: 12px !important;
+    }
+
+    .modal-dialog {
+        width: 60vw !important;
     }
 }
 
@@ -192,25 +196,48 @@ body.loading .modalPleaseWait {
 // ----------------------------------------- FOOTER END --------------------------------------------------------------
 // ----------------------------------------- GRID AREA INIT --------------------------------------------------------------
 
+#btnActions{
+    width: 100%;
+    font-size:18px;
+}
+
 .item1 {
     grid-area: excelExport;
-    //#btnExcelExport {
+
     #btnSaveExcelFile {
         width: 23%;
         height: 53%;
         margin: auto;
-        background: url(../Images/xsl_icon.png) no-repeat center;
-        background-size: 5vw;
-        cursor:pointer;
+        background: url(../Images/xlsx_icon.svg.png) no-repeat center;
+        background-size: 3.5vw;
+        cursor: pointer;
     }
 }
 
 .item2 {
     grid-area: monthInfo;
+
+    #btnInfo {
+        width: 23%;
+        height: 53%;
+        margin: auto;
+        background: url(../Images/info_icon_light.png) no-repeat center;
+        background-size: 3.5vw;
+        cursor: pointer;
+    }
 }
 
 .item3 {
     grid-area: CloseTasks;
+
+    #btnCloseAllTasks {
+        width: 23%;
+        height: 53%;
+        margin: auto;
+        background: url(../Images/lock-icon.png) no-repeat center;
+        background-size: 3.5vw;
+        cursor: pointer;
+    }
 }
 
 .item4 {
@@ -230,17 +257,35 @@ body.loading .modalPleaseWait {
     grid-template-columns: repeat(3, 1fr);
     grid-template-areas: 'excelExport monthInfo CloseTasks' 'CloseTasksStartDateNotDefined Report Test';
     grid-gap: 10px;
-    background-color: #2196F3;
+    background-color: lightgrey;
     padding: 10px;
     height: 100%;
 }
 
 .grid-container > div {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.6);
     text-align: center;
     padding: 20px 0;
     font-size: 30px;
 }
+
+#actionsModal {
+    margin: auto;
+
+    .modal-dialog {
+        width: 50vw;
+        height: auto;
+    }
+
+    .modal-body {
+        height: 100%;
+    }
+
+    .modal-content {
+        height: 55vh;
+    }
+}
+
 // ----------------------------------------- GRID AREA END --------------------------------------------------------------
 
 .form-group {
@@ -260,7 +305,7 @@ table th, td {
     display: none;
 }
 
-.dropdownActions {
+/*.dropdownActions {
     width: 100%;
     font-size:18px;
 
@@ -295,27 +340,11 @@ table th, td {
         padding: 5px;
         border-color: darkgrey;
     }
-}
+}*/
 
 
 /*---------------------------------------------------NEW ??? KEEP???*/
 
-#actionsModal {
-    margin: auto;
-
-    .modal-dialog {
-        width: 50vw;
-        height: auto;
-    }
-
-    .modal-body {
-        height: 100%;
-    }
-
-    .modal-content {
-        height: 55vh;
-    }
-}
 
 
 

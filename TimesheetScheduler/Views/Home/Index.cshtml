@@ -17,7 +17,7 @@
 
                 @*<button id="btnActions" class="btn btn-primary dropdownActions">Actions</button>*@
 
-                <div class="dropdown dropdownActions">
+                @*<div class="dropdown dropdownActions">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                         Actions
                     </button>
@@ -26,17 +26,14 @@
                         <div class="dropdown-divider"></div>
                         <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
                         <div class="dropdown-divider"></div>
-                        <input id="btnCloseAllTasks" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Close All Opened Tasks For Specified Month" onclick="alert('not defined yet');" />
-
                         <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
                         <div class="dropdown-divider"></div>
                         <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
                         <div class="dropdown-divider2"></div>
-                        <input id="btnCloseAllTasks2" class="btn" type="button" title="Popup a dialog which allows you to bulk close tasks for the referenced month" value="Another Action" onclick="alert('not defined yet');" />
                     </div>
                 </div>
 
-                <br />
+                <br />*@
 
                 <label for="userNameTimesheet">User</label>
                 <select class="form-control" id="userNameTimesheet"></select>
@@ -53,7 +50,7 @@
                 
                 <br />
 
-                <button id="btnActions" class="btn btn-primary dropdownActions">Actions</button>
+                <button id="btnActions" class="btn btn-primary">Actions</button>
 
                 <br />
                 <br />
@@ -204,33 +201,29 @@
     <div class="modal-dialog">
         <!-- Modal content-->
         <div class="modal-content">
-
-            @*<div class="modal-header">
-            
-            </div>*@
-
-            <div class="modal-body" style="background-color:antiquewhite;">
+            <div class="modal-body" style="background-color:#4f5052;">
                 <div class="grid-container">
                     <div class="item1">
                         <label for="btnExcelExport">Excel Export</label>
-                        <div id="btnSaveExcelFile" onclick="confirmationSavePath();"></div>
+                        <div id="btnSaveExcelFile"  title="Creates an Excel File"  onclick="confirmationSavePath();"></div>
                     </div>
-                    <div class="item2">Month Info</div>
-                    <div class="item3">Close Tasks</div>
+                    <div class="item2">
+                        <label for="btnInfo">Month Info</label>
+                        <div id="btnInfo" title="Shows Amount of Days/Hours Worked" onclick="Info();"></div>
+                    </div>
+                    <div class="item3">
+                        <label for="btnCloseAllTasks">Close Tasks</label>
+                        <div id="btnCloseAllTasks" onclick="closeAllTasksCurrentMonth();"></div>
+                    </div>
                     <div class="item4">Close Tasks (Start Date Not Defined)</div>
                     <div class="item5">Report</div>
                     <div class="item6">Test</div>
                 </div>
             </div>
-
-            @*<div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>*@
         </div>
     </div>
 </div>
 
 <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
 
-<div id="dialog-confirm"></div>
 

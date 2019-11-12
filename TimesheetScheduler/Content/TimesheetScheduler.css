@@ -103,8 +103,11 @@ body.loading .modalPleaseWait {
     border-bottom: 0;
     border-left: 0.3em solid transparent;
   }
-  #btnActions.dropdownActions {
-    font-size: 12px;
+  #btnActions {
+    font-size: 12px !important;
+  }
+  .modal-dialog {
+    width: 60vw !important;
   }
 }
 #eventModal label {
@@ -149,6 +152,10 @@ body.loading .modalPleaseWait {
 ._footer {
   height: 2vh;
 }
+#btnActions {
+  width: 100%;
+  font-size: 18px;
+}
 .item1 {
   grid-area: excelExport;
 }
@@ -156,15 +163,31 @@ body.loading .modalPleaseWait {
   width: 23%;
   height: 53%;
   margin: auto;
-  background: url(../Images/xsl_icon.png) no-repeat center;
-  background-size: 5vw;
+  background: url(../Images/xlsx_icon.svg.png) no-repeat center;
+  background-size: 3.5vw;
   cursor: pointer;
 }
 .item2 {
   grid-area: monthInfo;
 }
+.item2 #btnInfo {
+  width: 23%;
+  height: 53%;
+  margin: auto;
+  background: url(../Images/info_icon_light.png) no-repeat center;
+  background-size: 3.5vw;
+  cursor: pointer;
+}
 .item3 {
   grid-area: CloseTasks;
+}
+.item3 #btnCloseAllTasks {
+  width: 23%;
+  height: 53%;
+  margin: auto;
+  background: url(../Images/lock-icon.png) no-repeat center;
+  background-size: 3.5vw;
+  cursor: pointer;
 }
 .item4 {
   grid-area: CloseTasksStartDateNotDefined;
@@ -180,15 +203,28 @@ body.loading .modalPleaseWait {
   grid-template-columns: repeat(3, 1fr);
   grid-template-areas: 'excelExport monthInfo CloseTasks' 'CloseTasksStartDateNotDefined Report Test';
   grid-gap: 10px;
-  background-color: #2196F3;
+  background-color: lightgrey;
   padding: 10px;
   height: 100%;
 }
 .grid-container > div {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.6);
   text-align: center;
   padding: 20px 0;
   font-size: 30px;
+}
+#actionsModal {
+  margin: auto;
+}
+#actionsModal .modal-dialog {
+  width: 50vw;
+  height: auto;
+}
+#actionsModal .modal-body {
+  height: 100%;
+}
+#actionsModal .modal-content {
+  height: 55vh;
 }
 .form-group {
   margin-bottom: 5px !important;
@@ -204,51 +240,43 @@ td {
 .displayNone {
   display: none;
 }
-.dropdownActions {
-  width: 100%;
-  font-size: 18px;
-}
-.dropdownActions a {
-  white-space: nowrap;
-}
-.dropdownActions input {
-  width: 100%;
-  margin-bottom: 5px;
-}
-.dropdownActions button {
-  width: 100%;
-  text-align: left;
-}
-.dropdownActions button:after {
-  display: inline-block;
-  position: absolute;
-  top: 15px;
-  right: 5px;
-  vertical-align: 0.255em;
-  content: "";
-  border-top: 0.3em solid;
-  border-right: 0.3em solid transparent;
-  border-bottom: 0;
-  border-left: 0.3em solid transparent;
-}
-.dropdownActions .dropdown-menu {
-  padding: 5px;
-  border-color: darkgrey;
-}
+/*.dropdownActions {
+    width: 100%;
+    font-size:18px;
+
+    a {
+        white-space: nowrap;
+    }
+
+    input {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    button {
+        width: 100%;
+        text-align: left;
+
+        &:after {
+            display: inline-block;
+            position: absolute;
+            top: 15px;
+            right: 5px;
+            vertical-align: .255em;
+            content: "";
+            border-top: .3em solid;
+            border-right: .3em solid transparent;
+            border-bottom: 0;
+            border-left: .3em solid transparent;
+        }
+    }
+
+    .dropdown-menu {
+        padding: 5px;
+        border-color: darkgrey;
+    }
+}*/
 /*---------------------------------------------------NEW ??? KEEP???*/
-#actionsModal {
-  margin: auto;
-}
-#actionsModal .modal-dialog {
-  width: 50vw;
-  height: auto;
-}
-#actionsModal .modal-body {
-  height: 100%;
-}
-#actionsModal .modal-content {
-  height: 55vh;
-}
 @font-face {
   font-family: 'Montserrat';
   font-style: normal;

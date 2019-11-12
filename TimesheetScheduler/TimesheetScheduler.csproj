@@ -424,9 +424,11 @@
     <Content Include="Images\info_icon_dark.png" />
     <Content Include="Images\info_icon_light.png" />
     <Content Include="Images\list.png" />
+    <Content Include="Images\lock-icon.png" />
     <Content Include="Images\pacman_animated.gif" />
     <Content Include="Images\plus.png" />
     <Content Include="Images\sad_face_icon.png" />
+    <Content Include="Images\xlsx_icon.svg.png" />
     <Content Include="Images\xsl_icon.png" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

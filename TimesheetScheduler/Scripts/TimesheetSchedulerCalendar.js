@@ -8,6 +8,7 @@ $(document).ready(function ($) {
     LoadYears();
     bindUserNameDropdown();
     bindMonthDropdown();
+    closeAllTasksCurrentMonth_Tooltip();
     getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
     saveEvent();
     applyBtnClassesInActionsSelect();
@@ -408,6 +409,10 @@ function getMonthFromPage() {
     return $("#monthTimesheet").val() - 1;
 }
 
+function getNameSelectedMonthFromPage() {
+    return $("#monthTimesheet").children("option:selected").text();
+}
+
 function getYearFromPage() {
     return $("#yearTimesheet").val();
 }
@@ -421,6 +426,7 @@ function bindUserNameDropdown() {
 function bindMonthDropdown() {
     $("#monthTimesheet").on("change", function () {
         connectToTFS();
+        closeAllTasksCurrentMonth_Tooltip();
     });
 }
 
@@ -482,7 +488,7 @@ function Info() {
     $("#dayWorkedInfoTxt").text((totalChargeableHours / 7.5).toFixed(2));
     $("#chargeableHoursInfoTxt").text(totalChargeableHours);
     $("#nonchargeableHoursInfoTxt").text(totalNonChargeableHours);
-    closeDialogActions();
+    closeModalActions();
 }
 
 function applyBtnClassesInActionsSelect() {
@@ -797,7 +803,6 @@ function confirmationSavePath() {
             data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
             error: function (error) {
                 toastrMessage("Not saved. (confirmationSavePath function) \n" + error, "warning");
-                closeDialogActions();
                 return false;
             }
         })
@@ -817,21 +822,16 @@ function SaveExcelFile(strPath) {
             data: { userName: getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
             success: function (data) {
                 toastrMessage(data, "success");
-                closeDialogActions();
             },
             error: function (error) {
                 toastrMessage("error (SaveExcelFile function): " + JSON.stringify(error), "warning");
-                closeDialogActions();
+                closeModalActions();
             }
         });
     }
     else {
         toastrMessage("Not saved.", "warning");
     }
-}
-
-function closeDialogActions() {
-    $(".dropdownActions").removeClass("open");
 }
 
 function fakeTFSObj() {
@@ -1029,4 +1029,12 @@ function btnActionClick() {
 
 function closeModalActions() {
     $("#actionsModal").modal('toggle');
+}
+
+function closeAllTasksCurrentMonth() {
+    toastrMessage("All " + getNameSelectedMonthFromPage() + " Tasks Will End", "success");
+}
+
+function closeAllTasksCurrentMonth_Tooltip() {
+    $("#btnCloseAllTasks").attr("title", "All " + getNameSelectedMonthFromPage() + " Tasks Will End");
 }
