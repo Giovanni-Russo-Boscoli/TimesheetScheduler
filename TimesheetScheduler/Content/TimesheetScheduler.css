@@ -106,16 +106,26 @@ body.loading .modalPleaseWait {
   #btnActions {
     font-size: 12px !important;
   }
-  .modal-dialog {
+  #actionsModal .modal-dialog {
     width: 60vw !important;
   }
 }
-#eventModal label {
+.center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+#eventModal label,
+#copyTaskModal label {
   width: 160px !important;
 }
 #eventModal input:not([type="checkbox"]),
+#copyTaskModal input:not([type="checkbox"]),
 #eventModal textarea,
-#eventModal select {
+#copyTaskModal textarea,
+#eventModal select,
+#copyTaskModal select {
   width: 380px !important;
   max-width: none;
 }

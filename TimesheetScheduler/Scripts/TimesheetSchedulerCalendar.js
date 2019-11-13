@@ -1,4 +1,4 @@
-﻿var _bypassTFS = true;
+﻿var _bypassTFS = false;
 var totalChargeableHours = 0;
 var totalNonChargeableHours = 0;
 var timerID = 0;
@@ -15,6 +15,8 @@ $(document).ready(function ($) {
     applyBtnClassesInActionsSelect();
     btnActionClick();
     reminderNoEventCreationForToday();
+    copyTask();
+
     //$('#body-row .collapse').collapse('hide');
 
     // Collapse/Expand icon
@@ -474,6 +476,11 @@ function dateMaskById(id, mask) {
     $("#" + id).mask("99/99/9999", { placeholder: mask });
 }
 
+function maskWorkItem(id) {
+    var mask = '999999';
+    $("#" + id).mask(mask, { placeholder: mask });
+}
+
 function IsWeekend(date) {
     var day = date.getDay();
     return day === 6 || day === 0;
@@ -504,10 +511,11 @@ function applyBtnClassesInActionsSelect() {
 
 function ModalEvent(event, eventCreation) {
     cleanModal();
-    $("#eventModal").modal();
+    $("#eventModal").modal();    
     if (!eventCreation) {
         //EDIT
         unsavedForm(true);
+        enterKeySaveEvent();
         $("#dayTimesheet").prop("disabled", false);
         dateMaskById("dayTimesheet");
         $("#userNameModal").val(getUserNameFromPage());
@@ -525,6 +533,8 @@ function ModalEvent(event, eventCreation) {
     } else {
         //NEW/CREATE
         unsavedForm(false);
+        enterKeySaveEvent();
+        $("#btnCopyEvent").removeClass("displayNone");
         $("#userNameModal").val(getUserNameFromPage());
         $("#dayTimesheet").prop("disabled", true);
         $("#dayTimesheet").val(_formatDate(event, "ddmmyyyy", "/"));
@@ -572,19 +582,95 @@ function cleanModal() {
     $("#linkOriginalUrlTimesheet").attr("href", "");
     $("#closeTaskTimesheet").find("option").remove();
     $("#closeTaskTimesheet").attr("disabled", false);
+    $("#btnCopyEvent").addClass("displayNone");
+    
 }
 
 function setModalTitle(title) {
     $("#eventModal .modal-title").text(title);
 }
 
-function returnTopPage() {
-    window.scrollTo(0, 0);
+function bindCopyTaskBtn() {
+    $("#btnCopyEvent").on("click", function () {
+        $("#copyTaskModal").modal();
+        $("#workItemIdCopyTask").val("");
+        maskWorkItem("workItemIdCopyTask");
+        //to resolve problems when trying to do stuff when the modal is loading
+        $("#copyTaskModal").on('shown.bs.modal', function () {
+            $('#workItemIdCopyTask').focus();
+        });
+    });
 }
+
+function copyTaskByWorkItemNumber() {
+    $("#btnCopyTask").on("click", function () {
+        //retrieve work item by id
+        getWorkItemBy_Id($("#workItemIdCopyTask").val(), function (data) {
+            var _chargeableHours = data.CompletedHours > 7.5 ? 7.5 : (data.CompletedHours !== null ? data.CompletedHours : 0);
+            var _nonchargeableHours = data.CompletedHours > 7.5 ? data.CompletedHours - 7.5 : 0;
+            var _description = removeHTMLTagsFromString(data.Description);
+            $("#titleTimesheet").val(data.Title); //TODO - make it variable
+            $("#chargeableTimesheet").val(_chargeableHours);
+            $("#nonchargeableTimesheet").val(_nonchargeableHours);
+            $("#descriptionTimesheet").val(_description);
+            closeModalCopyTask();
+        });
+    });
+}
+
+function enableCopyTaskBtn() {
+    $("#workItemIdCopyTask").on("keyup", function () {
+        if ($(this).val().length === 6) {
+            $("#btnCopyTask").attr("disabled", false);
+        } else {
+            $("#btnCopyTask").attr("disabled", true);
+        }
+    });
+}
+
+function enterKeyForCopyTask() {
+    $('#workItemIdCopyTask').keypress(function (e) {
+        var key = e.which;
+        if (key === 13)  // the enter key code
+        {
+            $("#btnCopyTask").click();
+            return false;
+        }
+    });   
+}
+
+function enterKeySaveEvent() {
+    $("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet").keypress(function (e) {
+        var key = e.which;
+        if (key === 13)  // the enter key code
+        {
+            $("#btnSaveEvent").click();
+            return false;
+        }
+    });   
+}
+
+function copyTask() {
+    bindCopyTaskBtn();
+    copyTaskByWorkItemNumber();
+    enableCopyTaskBtn();
+    enterKeyForCopyTask();
+}
+
+//function returnTopPage() {
+//    window.scrollTo(0, 0);
+//}
 
 function saveEvent() {
 
     $("#btnSaveEvent").on("click", function () {
+
+        var _nonValidFields = validationSaveEvent();
+
+        if (_nonValidFields) {
+            toastrMessage("Please fill out the following fields: </br>" + _nonValidFields, "warning");
+            return false;
+        }
 
         var _workItemNumber = $("#workItemTimesheet").val();
         if (_workItemNumber) {
@@ -635,6 +721,25 @@ function saveEvent() {
             });
         }
     });
+}
+
+function validationSaveEvent() { 
+    var _nonValidFields = "";
+
+    if (!$("#dayTimesheet").val()) {
+        _nonValidFields += "Day </br>";
+    }
+    if (!$("#titleTimesheet").val()) {
+        _nonValidFields += " - Title </br>";
+    }
+    if (!$("#chargeableTimesheet").val()) {
+        _nonValidFields += " - Chargeable Hours </br>";
+    }
+    if (!$("#nonchargeableTimesheet").val()) {
+        _nonValidFields += " - Non Chargeable Hours </br>";
+    }
+
+    return _nonValidFields;
 }
 
 function toastrMessage(msg, typeMessage) {
@@ -738,7 +843,7 @@ function tooltipStartDateNotDefined() {
 
 function onClickEventsStartDateNotDefined() {
     $(".eventStartDateNofDefined").on("click", function () {
-        getWorkItemById($(this).find(".lblStartDateNotDefinedWorkItem").text());
+        getWorkItemBy_Id($(this).find(".lblStartDateNotDefinedWorkItem").text(), ModalEventWithoutStartDate);
         //$.ajax({
         //    url: "/Home/GetWorkItemById",
         //    type: "GET",
@@ -1036,6 +1141,10 @@ function closeModalActions() {
     $("#actionsModal").modal('toggle');
 }
 
+function closeModalCopyTask() {
+    $("#copyTaskModal").modal('toggle');
+}
+
 function closeAllTasksCurrentMonth() {
     closeModalActions();//End all November tasks
     toastrMessage("Close All " + getNameSelectedMonthFromPage() + " Tasks", "success");
@@ -1073,32 +1182,37 @@ function clearReminderInterval() {
     clearInterval(timerID);
 }
 
-function getWorkItemById(_workItemId) {
+function getWorkItemBy_Id(_workItemId, callback) {
     $.ajax({
         url: "/Home/GetWorkItemById",
         type: "GET",
         dataType: "json",
         data: { workItemId: _workItemId },
         success: function (data) {
+            callback(data);
             return data;
         },
-        error: function (error) {
-            toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
+        //error: function (error) {
+        //    toastrMessage("error (getWorkItemBy_Id): " + JSON.stringify(error), "warning");
+        //},
+        error: function (xhr, ajaxOptions, thrownError) {
+            var dom_nodes = $($.parseHTML(xhr.responseText));
+            toastrMessage(dom_nodes.filter('title').text(), "warning");
         }
     });
 }
 
-function getWorkItemByDay(_day) {
-    $.ajax({
-        url: "/Home/GetWorkItemByDay",
-        type: "GET",
-        dataType: "json",
-        data: { day: _day },
-        success: function (data) {
-            return data;
-        },
-        error: function (error) {
-            toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
-        }
-    });
-}
+//function getWorkItemByDay(_day) {
+//    $.ajax({
+//        url: "/Home/GetWorkItemByDay",
+//        type: "GET",
+//        dataType: "json",
+//        data: { day: _day },
+//        success: function (data) {
+//            return data;
+//        },
+//        error: function (error) {
+//            toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
+//        }
+//    });
+//}

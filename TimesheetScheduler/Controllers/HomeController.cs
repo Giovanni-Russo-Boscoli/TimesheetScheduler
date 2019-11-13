@@ -341,7 +341,16 @@ namespace TimesheetScheduler.Controllers
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
 
-            WorkItem workItem = WIS.GetWorkItem(workItemId);
+            WorkItem workItem;
+
+            try
+            {
+                workItem = WIS.GetWorkItem(workItemId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("The work item does not exist, or you do not have permission to access it.");
+            }
 
             var _workItemsLinked = "";
             for (int i = 0; i < workItem.WorkItemLinks.Count; i++)
@@ -364,40 +373,40 @@ namespace TimesheetScheduler.Controllers
             return Json(_workItemSerialized, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet]
-        public JsonResult GetWorkItemByDay(DateTime day)
-        {
-            var _urlTFS = GetUrlTfs();
-            Uri tfsUri = new Uri(_urlTFS);
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+        //[HttpGet]
+        //public JsonResult GetWorkItemByDay(DateTime day)
+        //{
+        //    var _urlTFS = GetUrlTfs();
+        //    Uri tfsUri = new Uri(_urlTFS);
+        //    TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+        //    WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
-            var projectName = GetProjectNameTFS();
-            var _iterationPath = GetIterationPathTFS();
+        //    var projectName = GetProjectNameTFS();
+        //    var _iterationPath = GetIterationPathTFS();
 
-            WorkItem workItem = WIS.GetWorkItem(0);
-            //WorkItem workItem = WIS.GetWorkItem(0); //day
+        //    WorkItem workItem = WIS.GetWorkItem(0);
+        //    //WorkItem workItem = WIS.GetWorkItem(0); //day
 
-            var _workItemsLinked = "";
-            for (int i = 0; i < workItem.WorkItemLinks.Count; i++)
-            {
-                _workItemsLinked += "#" + workItem.WorkItemLinks[i].TargetId + " ";
-            }
+        //    var _workItemsLinked = "";
+        //    for (int i = 0; i < workItem.WorkItemLinks.Count; i++)
+        //    {
+        //        _workItemsLinked += "#" + workItem.WorkItemLinks[i].TargetId + " ";
+        //    }
 
-            WorkItemSerialized _workItemSerialized = new WorkItemSerialized()
-            {
-                Id = workItem["Id"].ToString(),
-                Title = workItem["Title"].ToString(),
-                StartDate = workItem["Start Date"] != null ? (DateTime)workItem["Start Date"] : (DateTime?)null,
-                Description = WebUtility.HtmlDecode(workItem["Description"].ToString()),
-                CompletedHours = workItem["Completed Work"] != null ? (double)workItem["Completed Work"] : (double?)null,
-                WorkItemsLinked = _workItemsLinked,
-                State = workItem.State,
-                CreationDate = workItem.CreatedDate,
-                LinkUrl = _urlTFS + projectName + "/_queries?id=" + workItem["Id"].ToString()
-            };
-            return Json(_workItemSerialized, JsonRequestBehavior.AllowGet);
-        }
+        //    WorkItemSerialized _workItemSerialized = new WorkItemSerialized()
+        //    {
+        //        Id = workItem["Id"].ToString(),
+        //        Title = workItem["Title"].ToString(),
+        //        StartDate = workItem["Start Date"] != null ? (DateTime)workItem["Start Date"] : (DateTime?)null,
+        //        Description = WebUtility.HtmlDecode(workItem["Description"].ToString()),
+        //        CompletedHours = workItem["Completed Work"] != null ? (double)workItem["Completed Work"] : (double?)null,
+        //        WorkItemsLinked = _workItemsLinked,
+        //        State = workItem.State,
+        //        CreationDate = workItem.CreatedDate,
+        //        LinkUrl = _urlTFS + projectName + "/_queries?id=" + workItem["Id"].ToString()
+        //    };
+        //    return Json(_workItemSerialized, JsonRequestBehavior.AllowGet);
+        //}
 
         #endregion TFS
 

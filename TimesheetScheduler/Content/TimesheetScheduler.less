@@ -118,19 +118,28 @@ body.loading .modalPleaseWait {
         }
     }
 
-    #btnActions{
+    #btnActions {
         font-size: 12px !important;
     }
 
-    .modal-dialog {
-        width: 60vw !important;
+    #actionsModal {
+        .modal-dialog {
+            width: 60vw !important;
+        }
     }
 }
 
 // ----------------------------------------- StartDateNotDefined END -------------------------------------------------
 // ----------------------------------------- MODAL INIT --------------------------------------------------------------
 
-#eventModal {
+.center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#eventModal, #copyTaskModal {
     label {
         width: 160px !important;
     }
@@ -196,9 +205,9 @@ body.loading .modalPleaseWait {
 // ----------------------------------------- FOOTER END --------------------------------------------------------------
 // ----------------------------------------- GRID AREA INIT --------------------------------------------------------------
 
-#btnActions{
+#btnActions {
     width: 100%;
-    font-size:18px;
+    font-size: 18px;
 }
 
 .item1 {
@@ -305,8 +314,8 @@ table th, td {
     display: none;
 }
 
-.displayFlex{
-    display:flex;
+.displayFlex {
+    display: flex;
 }
 
 /*.dropdownActions {
