@@ -697,10 +697,6 @@ function copyTask() {
     enterKeyForCopyTask();
 }
 
-//function returnTopPage() {
-//    window.scrollTo(0, 0);
-//}
-
 function saveEvent() {
 
     $("#btnSaveEvent").on("click", function () {
@@ -1174,6 +1170,20 @@ function fakeTFSObj() {
 function btnActionClick() {
     $("#btnActions").on("click", function () {
         $("#actionsModal").modal();
+        getUserName(function (data) {
+            if (data !== getUserNameFromPage()) {
+                $("#btnCloseAllTasks").off();
+                $("#btnCloseAllTasks").on("click", function () {
+                    toastrMessage("You are not able to close tasks from another user", "warning");
+                });
+            }
+            else {
+                $("#btnCloseAllTasks").off();
+                $("#btnCloseAllTasks").on("click", function () {
+                    closeAllTasksCurrentMonth();
+                });
+            }
+        });
     });
 }
 
@@ -1188,7 +1198,6 @@ function closeModalCopyTask() {
 function closeAllTasksCurrentMonth() {
     var _month = getNameSelectedMonthFromPage();
     if (confirm("Would you like to close all " + _month + " tasks?")) {
-        //closeModalActions();//End all November tasks
         ajaxCloseAllTasks(function (data) {
             closeModalActions();
             connectToTFS();
