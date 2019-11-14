@@ -69,6 +69,15 @@ function registerTriggerAjax() {
 }
 
 function eventsCalendar(_events, dateCalendar) {
+
+    var dayEvent = "";
+    //var _chargeableHoursPerDay = 0;
+    //var _nonChargeableHoursPerDay = 0;
+
+    //var _currentChargeableHours = 0.0;
+    //var _currentNonChargeableHours = 0.0;
+    var totalChargeableHoursRemaining = 7.5;
+
     clearMonthInfoVariables();
     $('#calendar').fullCalendar('destroy');
     $('#calendar').fullCalendar({
@@ -101,8 +110,38 @@ function eventsCalendar(_events, dateCalendar) {
                     "<br> State: " + event.state,
                 placement: "bottom"
             });
-            totalChargeableHours += event.chargeableHours;
-            totalNonChargeableHours += event.nonchargeableHours;
+
+            //--------- [INIT] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
+
+            if (dayEvent.toString() === event.start.toString() || !dayEvent) {
+                //same day - more than one event
+                if (totalChargeableHoursRemaining > 0) {
+                    if (totalChargeableHoursRemaining >= event.chargeableHours) {
+                        totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
+                        totalChargeableHours += event.chargeableHours;
+                        totalNonChargeableHours += event.nonchargeableHours;
+                    }
+                    else {
+                        totalNonChargeableHours += (event.chargeableHours - totalChargeableHoursRemaining) + event.nonchargeableHours;
+                        totalChargeableHours += totalChargeableHoursRemaining;
+                        totalChargeableHoursRemaining = 0;
+                    }
+                }
+                else {
+                    totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
+                }
+            } else {
+                //only one event on the day
+                totalChargeableHoursRemaining = 7.5;
+                totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
+                totalChargeableHours += event.chargeableHours;
+                totalNonChargeableHours += event.nonchargeableHours;
+            }
+
+            dayEvent = event.start;
+
+            //--------- [END] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
+
         },
         dayRender: function (date, cell) {
             if (date._d.setHours(0, 0, 0, 0) < new Date($.now()).setHours(0, 0, 0, 0)) { //ONLY FOR PAST DAYS
@@ -493,6 +532,7 @@ function Info() {
         $(".H4tTitleInfoModal").addClass("infoMonthLabel");
     }
 
+    $("#totalHoursInfoTxt").text(totalChargeableHours + totalNonChargeableHours);
     $("#dayWorkedInfoTxt").text((totalChargeableHours / 7.5).toFixed(2));
     $("#chargeableHoursInfoTxt").text(totalChargeableHours);
     $("#nonchargeableHoursInfoTxt").text(totalNonChargeableHours);
@@ -511,7 +551,7 @@ function applyBtnClassesInActionsSelect() {
 
 function ModalEvent(event, eventCreation) {
     cleanModal();
-    $("#eventModal").modal();    
+    $("#eventModal").modal();
     if (!eventCreation) {
         //EDIT
         unsavedForm(true);
@@ -583,7 +623,7 @@ function cleanModal() {
     $("#closeTaskTimesheet").find("option").remove();
     $("#closeTaskTimesheet").attr("disabled", false);
     $("#btnCopyEvent").addClass("displayNone");
-    
+
 }
 
 function setModalTitle(title) {
@@ -636,7 +676,7 @@ function enterKeyForCopyTask() {
             $("#btnCopyTask").click();
             return false;
         }
-    });   
+    });
 }
 
 function enterKeySaveEvent() {
@@ -647,7 +687,7 @@ function enterKeySaveEvent() {
             $("#btnSaveEvent").click();
             return false;
         }
-    });   
+    });
 }
 
 function copyTask() {
@@ -723,7 +763,7 @@ function saveEvent() {
     });
 }
 
-function validationSaveEvent() { 
+function validationSaveEvent() {
     var _nonValidFields = "";
 
     if (!$("#dayTimesheet").val()) {
@@ -1146,8 +1186,17 @@ function closeModalCopyTask() {
 }
 
 function closeAllTasksCurrentMonth() {
-    closeModalActions();//End all November tasks
-    toastrMessage("Close All " + getNameSelectedMonthFromPage() + " Tasks", "success");
+    var _month = getNameSelectedMonthFromPage();
+    if (confirm("Would you like to close all " + _month + " tasks?")) {
+        //closeModalActions();//End all November tasks
+        ajaxCloseAllTasks(function (data) {
+            closeModalActions();
+            connectToTFS();
+            if (data === true || data === "True") {
+                toastrMessage("All '" + _month + "' Tasks Were Closed", "success");
+            }
+        }, closeModalActions);
+    }
 }
 
 function closeAllTasksCurrentMonth_Tooltip() {
@@ -1166,15 +1215,27 @@ function unsavedForm(onoff) {
 }
 
 function reminderNoEventCreationForToday() {
-    var _interval = (60 * 1000) * 15; //15 minutes
+    //var tomorrow = new Date();
+    //tomorrow.setDate(tomorrow.getDate() + 1);
+    //var _interval = (60 * 1000) * 60; //1 hour
+    var _interval = (60 * 1000) * 15; //15 sec
     timerID = setInterval(function () {
-        if (timerID === 123) {//check if has event created for today, if yes clearReminderInterval()
-            if (confirm("You don't have a event created for today, would like to create now?")) {
-                var a = "";
+        getWorkItemByDay(new Date(), function (data) {
+            if (jQuery.isEmptyObject(data)) {                
+                window.focus();
+                clearReminderInterval();
+                if (confirm("You don't have a event created for today, would like to create now?")) {
+                    //open creation modal
+                    reminderNoEventCreationForToday();
+                } else {
+                    reminderNoEventCreationForToday();
+                    return false;
+                }
             }
-        } else {
-            clearReminderInterval();
-        }
+            else {
+                clearReminderInterval();
+            }
+        });
     }, _interval);
 }
 
@@ -1202,17 +1263,34 @@ function getWorkItemBy_Id(_workItemId, callback) {
     });
 }
 
-//function getWorkItemByDay(_day) {
-//    $.ajax({
-//        url: "/Home/GetWorkItemByDay",
-//        type: "GET",
-//        dataType: "json",
-//        data: { day: _day },
-//        success: function (data) {
-//            return data;
-//        },
-//        error: function (error) {
-//            toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
-//        }
-//    });
-//}
+function getWorkItemByDay(_day, callback) {
+    $.ajax({
+        url: "/Home/GetWorkItemByDay",
+        type: "GET",
+        dataType: "json",
+        data: { userName: getUserNameFromPage(), day: _day.toUTCString() },
+        success: function (data) {
+            callback(data);
+        },
+        error: function (error) {
+            //alert(JSON.stringify(error));
+            toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
+        }
+    });
+}
+
+function ajaxCloseAllTasks(callback, errorCallback) {
+    $.ajax({
+        url: "/Home/CloseTasksMonth",
+        type: "PUT",
+        dataType: "text",
+        data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage()},
+        success: function (data) {
+            callback(data);
+        },
+        error: function (error) {
+            errorCallback();
+            toastrMessage("error (ajaxCloseAllTasks): " + JSON.stringify(error), "warning");
+        }
+    });
+}
