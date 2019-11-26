@@ -129,6 +129,27 @@ body.loading .modalPleaseWait {
   width: 380px !important;
   max-width: none;
 }
+#eventModal #workItemsLinkedTimesheet,
+#copyTaskModal #workItemsLinkedTimesheet {
+  width: 340px !important;
+}
+#eventModal #btnLinkWorkItem,
+#copyTaskModal #btnLinkWorkItem {
+  width: 35px;
+  height: 35px;
+}
+#eventModal .icon,
+#copyTaskModal .icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+#eventModal .icon--plus > path,
+#copyTaskModal .icon--plus > path {
+  fill: green;
+  stroke: green;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
 .modalLbl {
   min-width: 200px !important;
 }

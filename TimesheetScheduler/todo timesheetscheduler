@@ -1,6 +1,6 @@
 - Organize regions;
 
-- do something with workitems without startdate
+	- do something with workitems without startdate
 
 	- create a background-color/message for days "out of the office" (without task) in calendar view
 
@@ -21,9 +21,9 @@
 
 - register user (Name (exactly as in windows authentication), project, iteration path, etc...) [this will allow us to use for multiple teams]
 
-- feature to copy task by work item number [ONLY FOR CREATION - NOT WHEN EDITING]
+	- feature to copy task by work item number [ONLY FOR CREATION - NOT WHEN EDITING]
 
-- reminder when change anything in a task and try to close without saving
+	- reminder when change anything in a task and try to close without saving
 
 	- apply loading gif for all ajax calls/request
 
@@ -35,16 +35,13 @@
 
 	- give an option for tasks without 'StartDate' to apply the 'Creation Date' as 'StartDate' (and Close tasks) - not sure if should
 
-- counter time to update each X minutes (when missing 2 min to update show a loading bar saying is going to update 
-->	- prevents lose any work done by updating the page without inform)
-
-- create a reminder/alert each x hour if a task isn't created for the current day
+	- create a reminder/alert each x hour if a task isn't created for the current day
 
 	- add status (new/active/closed) for tasks (creation/editing)
 
 	- tasks with 'closed' status has different color
 
-- feature to close tasks (monthly - close all tasks for specific month)
+	- feature to close tasks (monthly - close all tasks for specific month)
 
 - apply event color when in listview mode (task closed, new or active) - ? not sure if should
 
@@ -65,7 +62,7 @@
 
 	- App knows how to manage a task with more than 7.5 hours but doesn't know how to manage more than 1 task reaching more than 7.5 hours worked
 
-- Change "select actions button" for a modal with all options
+	- Change "select actions button" for a modal with all options
 
 - Create some way to store USERS and their respectively information such as project, iteration path a.s.o.
 
@@ -78,20 +75,19 @@ Caso seja necessário uma validacao previa, que envie notificacao para aprovar o 
 
 - routine to create all excel files (from selected list of users/team) + report
 
-- MASK IS NOT WORKING
-
 - INCLUDE IN INFO MONTH MODAL RATES 
 
 - FINAL REPORT WITH RATES AND CHARGES FOR EACH ONE AND SEPARATED TEAMS (CORE/DRAWDOWN)
 
 - reorganize architecture //https://www.codeproject.com/Articles/1009532/Learn-Csharp-Design-patterns-step-by-step-with-a-p
 
-- Add files to Git Ignore
+	- Add files to Git Ignore
 
 - confirm dialog with breaklines unwanted (export to excel file the path where will save the file is breaking lines in a wrong way)
 
 - create themes (dark)
 
+	- suggest event creation if it's not created ONLY for the same user logged.
 
 
 (*1)

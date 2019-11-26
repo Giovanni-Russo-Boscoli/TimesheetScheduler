@@ -16,6 +16,7 @@ $(document).ready(function ($) {
     btnActionClick();
     reminderNoEventCreationForToday();
     copyTask();
+    enterKeySaveEvent();
 
     //$('#body-row .collapse').collapse('hide');
 
@@ -555,7 +556,6 @@ function ModalEvent(event, eventCreation) {
     if (!eventCreation) {
         //EDIT
         unsavedForm(true);
-        enterKeySaveEvent();
         $("#dayTimesheet").prop("disabled", false);
         dateMaskById("dayTimesheet");
         $("#userNameModal").val(getUserNameFromPage());
@@ -573,7 +573,6 @@ function ModalEvent(event, eventCreation) {
     } else {
         //NEW/CREATE
         unsavedForm(false);
-        enterKeySaveEvent();
         $("#btnCopyEvent").removeClass("displayNone");
         $("#userNameModal").val(getUserNameFromPage());
         $("#dayTimesheet").prop("disabled", true);
@@ -680,7 +679,7 @@ function enterKeyForCopyTask() {
 }
 
 function enterKeySaveEvent() {
-    $("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet").keypress(function (e) {
+    $("#dayTimesheet, #titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet").keypress(function (e) {
         var key = e.which;
         if (key === 13)  // the enter key code
         {
@@ -880,18 +879,6 @@ function tooltipStartDateNotDefined() {
 function onClickEventsStartDateNotDefined() {
     $(".eventStartDateNofDefined").on("click", function () {
         getWorkItemBy_Id($(this).find(".lblStartDateNotDefinedWorkItem").text(), ModalEventWithoutStartDate);
-        //$.ajax({
-        //    url: "/Home/GetWorkItemById",
-        //    type: "GET",
-        //    dataType: "json",
-        //    data: { workItemId: $(this).find(".lblStartDateNotDefinedWorkItem").text() },
-        //    success: function (data) {
-        //        ModalEventWithoutStartDate(data);
-        //    },
-        //    error: function (error) {
-        //        toastrMessage("error (onClickEventsStartDateNotDefined): " + JSON.stringify(error), "warning");
-        //    }
-        //});
     });
 }
 
@@ -1224,29 +1211,61 @@ function unsavedForm(onoff) {
 }
 
 function reminderNoEventCreationForToday() {
-    //var tomorrow = new Date();
-    //tomorrow.setDate(tomorrow.getDate() + 1);
-    //var _interval = (60 * 1000) * 60; //1 hour
-    var _interval = (60 * 1000) * 15; //15 sec
+    var _today = new Date();
+    var _interval = (60 * 1000) * 60; //60 min
     timerID = setInterval(function () {
-        getWorkItemByDay(new Date(), function (data) {
-            if (jQuery.isEmptyObject(data)) {                
-                window.focus();
-                clearReminderInterval();
-                if (confirm("You don't have a event created for today, would like to create now?")) {
-                    //open creation modal
-                    reminderNoEventCreationForToday();
-                } else {
-                    reminderNoEventCreationForToday();
-                    return false;
-                }
-            }
-            else {
-                clearReminderInterval();
+        checkUserRequestedActionWithLoggedUser(function (sameUser) {
+            if (sameUser) {
+                getWorkItemByDay(_today, function (data) {
+                    if (jQuery.isEmptyObject(data)) {
+                        window.focus();
+                        clearReminderInterval();
+                        if (confirm("You don't have a event created for today, would like to create now?")) {
+                            ModalEvent(_today, true);
+                            reminderNoEventCreationForToday();
+                        } else {
+                            reminderNoEventCreationForToday();
+                            return false;
+                        }
+                    }
+                    else {
+                        clearReminderInterval();
+                    }
+                });
             }
         });
+       
     }, _interval);
 }
+
+//function reminderNoEventCreationForToday() {
+//    var tomorrow = new Date();
+//    tomorrow.setDate(tomorrow.getDate() + 1);    
+//    var _interval = (60 * 100);
+//    timerID = setInterval(function () {
+//        checkUserRequestedActionWithLoggedUser(function (sameUser) {
+//            if (sameUser) {
+//                getWorkItemByDay(tomorrow, function (data) {
+//                    if (jQuery.isEmptyObject(data)) {
+//                        window.focus();
+//                        clearReminderInterval();
+//                        if (confirm("You don't have a event created for today, would like to create now?")) {
+//                            ModalEvent(tomorrow, true);
+//                            reminderNoEventCreationForToday();
+//                        } else {
+//                            reminderNoEventCreationForToday();
+//                            return false;
+//                        }
+//                    }
+//                    else {
+//                        clearReminderInterval();
+//                    }
+//                });
+//            }
+//        });
+
+//    }, _interval);
+//}
 
 function clearReminderInterval() {
     clearInterval(timerID);
@@ -1301,5 +1320,15 @@ function ajaxCloseAllTasks(callback, errorCallback) {
             errorCallback();
             toastrMessage("error (ajaxCloseAllTasks): " + JSON.stringify(error), "warning");
         }
+    });
+}
+
+function checkUserRequestedActionWithLoggedUser(callback) {
+    var _userPage = getUserNameFromPage();
+    getUserName(function (userLoggedName) {
+        if (_userPage === userLoggedName) {
+            callback(true);
+        }
+        callback(false);
     });
 }
