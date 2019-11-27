@@ -148,13 +148,6 @@
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
-                        <label for="workItemsLinkedTimesheet">Work Items Linked</label>
-                        <input class="form-control" id="workItemsLinkedTimesheet" placeholder="Link work items" disabled />
-                        <button class="form-control" id="btnLinkWorkItem" title="Link work item"></button>
-                    </div>
-                </form>
-                <form class="form-inline">
-                    <div class="form-group">
                         <label for="descriptionTimesheet">Description</label>
                         <textarea class="form-control" id="descriptionTimesheet" placeholder="Description..." rows="4"></textarea>
                     </div>
@@ -165,6 +158,42 @@
                         <select class="form-control" id="closeTaskTimesheet"></select>
                     </div>
                 </form>
+                <hr />
+                @*<form class="form-inline">
+                    <div class="form-group">
+                        <label for="workItemsLinkedTimesheet">Work Items Linked</label>
+                        <input class="form-control" id="workItemsLinkedTimesheet" placeholder="Link work items" disabled />
+                        <button class="form-control" id="btnLinkWorkItem" title="Link Work Item"></button>
+                    </div>
+                </form>*@
+                <form class="form-inline">
+                    <table id="linkWorkItemTable">
+                        <thead>
+                            <tr>
+                                <th class="linkWorkItemHeader">Work Items Linked</th>
+                                <th>
+                                    <button class="form-control" id="btnLinkWorkItem" title="Link Work Item"></button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>357156 - Test tasks from tfs</td>
+                                <td>
+                                    <button class="form-control deleteLinkWorkItemTableRow" title="Link work item"></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>456321 - Timesheet - Prototype WFP Income Assessment</td>
+                                <td>
+                                    <button class="form-control deleteLinkWorkItemTableRow" title="Link work item"></button>
+                                </td>
+                            </tr>
+                            <tr>
+                        </tbody>
+                    </table>
+                </form>
+                <hr />
                 <form class="form-inline urlLinkTfs">
                     <div class="form-group">
                         <label for="linkOriginalUrlTimesheet">Link Original Task</label>

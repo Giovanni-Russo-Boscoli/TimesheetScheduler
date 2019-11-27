@@ -110,6 +110,34 @@ body.loading .modalPleaseWait {
     width: 60vw !important;
   }
 }
+#linkWorkItemTable {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 96%;
+}
+#linkWorkItemTable td,
+#linkWorkItemTable th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+#linkWorkItemTable .linkWorkItemHeader {
+  font-weight: bold;
+  font-size-adjust: 0.58;
+}
+#linkWorkItemTable .deleteLinkWorkItemTableRow {
+  width: 35px;
+  height: 35px;
+  background: url(../Images/delete-icon.jpg) no-repeat center;
+  background-size: 20px;
+}
+#linkWorkItemTable th:nth-child(2) {
+  width: 10%;
+  text-align: center;
+}
+#linkWorkItemTable .hiddenWorkItemId {
+  display: none;
+}
 .center {
   position: absolute;
   left: 50%;

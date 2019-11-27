@@ -566,7 +566,8 @@ function ModalEvent(event, eventCreation) {
         $("#chargeableTimesheet").val(event.chargeableHours);
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
         $("#descriptionTimesheet").val(event.description);
-        $("#workItemsLinkedTimesheet").val(event.comments);
+        populateWorkItemLinkedTable(event.comments);
+        //$("#workItemsLinkedTimesheet").val(event.comments);
         $(".urlLinkTfs").removeClass("displayNone");
         $("#linkOriginalUrlTimesheet").attr("href", event.linkUrl);
         populateStateTask(event.state);
@@ -588,6 +589,24 @@ function ModalEvent(event, eventCreation) {
         $("#eventModal").on('shown.bs.modal', function () {
             $('#titleTimesheet').focus();
         });
+    }
+}
+
+function populateWorkItemLinkedTable(strWorkItemLinks) {
+    if (!strWorkItemLinks) return false;
+    var _items = trimSpaces(strWorkItemLinks);
+    _items = _items.split("#");
+    $(_items).each(function (index, value) {
+        if (value) {
+            getIdAndTitleWorkItemBy_Id(value, appendLinkWorkItemRow);
+        }        
+    });
+}
+
+//removes all white spaces (NOT only begining/end)
+function trimSpaces(str) {
+    if (str) {
+        return str.split(" ").join("");
     }
 }
 
@@ -623,7 +642,7 @@ function cleanModal() {
     $("#closeTaskTimesheet").find("option").remove();
     $("#closeTaskTimesheet").attr("disabled", false);
     $("#btnCopyEvent").addClass("displayNone");
-
+    $("#linkWorkItemTable tbody").html("");
 }
 
 function setModalTitle(title) {
@@ -730,7 +749,7 @@ function saveEvent() {
                     nonchargeableHours: $("#nonchargeableTimesheet").val(),
                     state: $("#closeTaskTimesheet").children("option:selected").val(),
                     description: $("#descriptionTimesheet").val(),
-                    workItemLink: $("#workItemsLinkedTimesheet").val()
+                    workItemLink: getWorkItemsLinkFromPage() //$("#workItemsLinkedTimesheet").val()
                 },
                 success: function (data) {
                     toastrMessage("Saved -> Workitem: [" + data + "]", "success");
@@ -752,7 +771,7 @@ function saveEvent() {
                     title: $("#titleTimesheet").val(),
                     state: $("#closeTaskTimesheet").children("option:selected").val(),
                     description: $("#descriptionTimesheet").val(),
-                    workItemLink: $("#workItemsLinkedTimesheet").val(),
+                    workItemLink: getWorkItemsLinkFromPage(), //$("#workItemsLinkedTimesheet").val(),
                     chargeableHours: $("#chargeableTimesheet").val(),
                     nonchargeableHours: $("#nonchargeableTimesheet").val()
                 },
@@ -766,6 +785,14 @@ function saveEvent() {
             });
         }
     });
+}
+
+function getWorkItemsLinkFromPage() {
+    var _workItems = "";
+    $(".hiddenWorkItemId").each(function (index, value) {
+        _workItems += "#"+ $(value).text();
+    });
+    return _workItems;
 }
 
 function ajaxErrorHandler(xhrError) {
@@ -917,7 +944,9 @@ function ModalEventWithoutStartDate(event) {
     $("#nonchargeableTimesheet").val(_nonchargeableHours);
     $("#descriptionTimesheet").val(_description);
     $("#workItemsLinkedTimesheet").val(event.WorkItemsLinked);
+    populateWorkItemLinkedTable(event.WorkItemsLinked);
     $(".urlLinkTfs").removeClass("displayNone");
+    console.log(event.LinkUrl);
     $("#linkOriginalUrlTimesheet").attr("href", event.LinkUrl);
     populateStateTask(event.State);
     setModalTitle("Event Without Start Date");
@@ -1302,6 +1331,22 @@ function getWorkItemBy_Id(_workItemId, callback) {
     });
 }
 
+function getIdAndTitleWorkItemBy_Id(_workItemId, callback) {
+    $.ajax({
+        url: "/Home/GetIdAndTitleWorkItemById",
+        type: "GET",
+        dataType: "json",
+        data: { workItemId: _workItemId },
+        success: function (data) {
+            callback(data);
+            return data;
+        },
+        error: function (xhr) {
+            ajaxErrorHandler(xhr);
+        }
+    });
+}
+
 function getWorkItemByDay(_day, callback) {
     $.ajax({
         url: "/Home/GetWorkItemByDay",
@@ -1379,21 +1424,50 @@ function enableAddLinkBtn() {
 function addLinkWorkItem() {
     $("#btnSaveLinkWorkItem").on("click", function () {
         var _workItem = $("#linkWorkItemId").val();
-        checkWorkItemExists(_workItem, function (data) {
-            if (data === "False") {
-                toastrMessage("WorkI Item not found! (" + _workItem + ")", "error");
-            }
-            if (data === "True") {
-                var originalVal = $("#workItemsLinkedTimesheet").val();
-                if (originalVal.indexOf(_workItem) < 0) { //avoid duplicate work item number
-                    $("#workItemsLinkedTimesheet").val($("#workItemsLinkedTimesheet").val() + " #" + _workItem);
+        getIdAndTitleWorkItemBy_Id(_workItem, function (data) {
+                if (!isWorkItemLinked(_workItem)) {
+                    appendLinkWorkItemRow(data);
+                }
+                else {
+                    toastrMessage("Work Item already linked (" + _workItem + ")", "warning");
                 }
                 $("#linkWorkItemModal").modal('toggle');
-            }
         });
     });    
 }
 
+function appendLinkWorkItemRow(event) {
+    var newRow =
+        "<tr>" +
+        "<td>" + event.Id + " - " + event.Title +
+        "<span class='hiddenWorkItemId'>" + event.Id + "</span>" +
+        "</td><td>" +
+        "<button class='form-control deleteLinkWorkItemTableRow' title='Link work item'></button>" +
+        "</td>" +
+        "</tr>";
+    $("#linkWorkItemTable").append(newRow);
+    bindDeleteWorkItemLinked();
+}
+
+function isWorkItemLinked(workItemId) {
+    var _isLinked = false;
+    $(".hiddenWorkItemId").each(function (index, value) {
+        if ($(this).text() === workItemId) {
+            _isLinked = true;
+            return false;
+        }
+    });
+    return _isLinked;
+}
+
+function bindDeleteWorkItemLinked() {
+    $(".deleteLinkWorkItemTableRow").off().on("click", function () {
+        $(this).closest("tr").remove();
+        return false;
+    });
+}
+
+//NOT BEING USED
 function checkWorkItemExists(workItemNumber, callback) {
     $.ajax({
         url: "/Home/WorkItemExists",
@@ -1426,6 +1500,7 @@ function linkWorkItem() {
     addLinkWorkItem();
     enterKeyAddWorkItem();
     enableAddLinkBtn();
+    bindDeleteWorkItemLinked();
 }
 
 // --------------------------------------   LINK WORK ITEM END ------------------------------------

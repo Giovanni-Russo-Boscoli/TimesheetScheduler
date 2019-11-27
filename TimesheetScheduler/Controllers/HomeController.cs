@@ -422,6 +422,42 @@ namespace TimesheetScheduler.Controllers
         }
 
         [HttpGet]
+        public JsonResult GetIdAndTitleWorkItemById(int workItemId)
+        {
+            var _urlTFS = GetUrlTfs();
+            Uri tfsUri = new Uri(_urlTFS);
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+
+            WorkItem workItem;
+
+            try
+            {
+                workItem = WIS.GetWorkItem(workItemId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("The work item does not exist, or you do not have permission to access it.");
+            }
+
+            var _workItemsLinked = "";
+            for (int i = 0; i < workItem.WorkItemLinks.Count; i++)
+            {
+                _workItemsLinked += "#" + workItem.WorkItemLinks[i].TargetId + " ";
+            }
+
+            WorkItemSerialized _workItemSerialized = new WorkItemSerialized()
+            {
+                Id = workItem["Id"].ToString(),
+                Title = workItem["Title"].ToString()
+            };
+            return Json(_workItemSerialized, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
         public JsonResult GetWorkItemByDay(string userName, DateTime day)
         {
             var _urlTFS = GetUrlTfs();

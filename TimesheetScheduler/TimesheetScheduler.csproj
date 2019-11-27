@@ -421,6 +421,7 @@
     <Content Include="Images\arrow_down_icon.png" />
     <Content Include="Images\calendarView.png" />
     <Content Include="Images\clock_icon.png" />
+    <Content Include="Images\delete-icon.jpg" />
     <Content Include="Images\giphy.gif" />
     <Content Include="Images\info_icon_dark.png" />
     <Content Include="Images\info_icon_light.png" />
