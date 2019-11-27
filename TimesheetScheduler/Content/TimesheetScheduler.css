@@ -117,34 +117,44 @@ body.loading .modalPleaseWait {
   transform: translate(-50%, -50%);
 }
 #eventModal label,
-#copyTaskModal label {
+#copyTaskModal label,
+#linkWorkItemModal label {
   width: 160px !important;
 }
 #eventModal input:not([type="checkbox"]),
 #copyTaskModal input:not([type="checkbox"]),
+#linkWorkItemModal input:not([type="checkbox"]),
 #eventModal textarea,
 #copyTaskModal textarea,
+#linkWorkItemModal textarea,
 #eventModal select,
-#copyTaskModal select {
+#copyTaskModal select,
+#linkWorkItemModal select {
   width: 380px !important;
   max-width: none;
 }
 #eventModal #workItemsLinkedTimesheet,
-#copyTaskModal #workItemsLinkedTimesheet {
+#copyTaskModal #workItemsLinkedTimesheet,
+#linkWorkItemModal #workItemsLinkedTimesheet {
   width: 340px !important;
 }
 #eventModal #btnLinkWorkItem,
-#copyTaskModal #btnLinkWorkItem {
+#copyTaskModal #btnLinkWorkItem,
+#linkWorkItemModal #btnLinkWorkItem {
   width: 35px;
   height: 35px;
+  background: url(../Images/add.png) no-repeat center;
+  background-size: 20px;
 }
 #eventModal .icon,
-#copyTaskModal .icon {
+#copyTaskModal .icon,
+#linkWorkItemModal .icon {
   display: inline-block;
   vertical-align: middle;
 }
 #eventModal .icon--plus > path,
-#copyTaskModal .icon--plus > path {
+#copyTaskModal .icon--plus > path,
+#linkWorkItemModal .icon--plus > path {
   fill: green;
   stroke: green;
   stroke-width: 1;

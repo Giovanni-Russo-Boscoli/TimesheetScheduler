@@ -246,7 +246,7 @@ namespace TimesheetScheduler.Controllers
 
         }
 
-        public string CreateTaskOnTFS(string userName, string startDate, string title, string state, string description, float chargeableHours = 7.5f, float nonchargeableHours = 0)//newTimesheetTask
+        public string CreateTaskOnTFS(string userName, string startDate, string title, string state, string description, string workItemLink, float chargeableHours = 7.5f, float nonchargeableHours = 0)//newTimesheetTask
         {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
@@ -267,6 +267,9 @@ namespace TimesheetScheduler.Controllers
             newWI.Fields["Description"].Value = description;
             newWI.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
             newWI.State = state;
+
+            LinkWorkItem(ref newWI, workItemLink);
+
             var _valid = newWI.Validate();
 
             if (_valid.Count > 0)
@@ -279,7 +282,7 @@ namespace TimesheetScheduler.Controllers
             return newWI.Fields["ID"].Value.ToString();
         }
 
-        public int EditTaskOnTFS(int workItemNumber, string startDate, string title, float chargeableHours, float nonchargeableHours, string state, string description)
+        public int EditTaskOnTFS(int workItemNumber, string startDate, string title, float chargeableHours, float nonchargeableHours, string state, string description, string workItemLink)
         {
             Uri tfsUri = new Uri(GetUrlTfs());
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
@@ -315,11 +318,13 @@ namespace TimesheetScheduler.Controllers
                 }
 
                 _wi.Save();
-                return EditTaskOnTFS(workItemNumber, startDate, title, chargeableHours, nonchargeableHours, state, description);
+                return EditTaskOnTFS(workItemNumber, startDate, title, chargeableHours, nonchargeableHours, state, description, workItemLink);
             }
 
             _wi.State = state;
 
+            LinkWorkItem(ref _wi, workItemLink);  
+            
             var _valid = _wi.Validate();
 
             if (_valid.Count > 0)
@@ -330,6 +335,47 @@ namespace TimesheetScheduler.Controllers
             _wi.Save();
 
             return (int)_wi.Fields["ID"].Value;
+        }
+
+        private void LinkWorkItem(ref WorkItem _wi, string workItemLink) {
+            var _workItemLink = workItemLink.Split(new string[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
+            var _workItemConverted = 0;
+            var _flagCheckExistsWorItem = false;
+            foreach (var item in _workItemLink)
+            {
+                _flagCheckExistsWorItem = false;
+                var trimItem = item.Trim();
+
+                if (int.TryParse(trimItem, out _workItemConverted))
+                {
+                    try
+                    {
+                        var links = _wi.Links;
+                        foreach (var linkItem in links)
+                        {
+                            if (((RelatedLink)linkItem).RelatedWorkItemId.ToString().Equals(trimItem))
+                            {
+                                //WORK ITEM ALREADY LINKED
+                                _flagCheckExistsWorItem = true;
+                                break;
+                            }
+                        }
+
+                        if (!_flagCheckExistsWorItem)
+                        {
+                            _wi.Links.Add(new RelatedLink(_workItemConverted));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+                else
+                {
+                    throw new Exception("Error while trying to add work item link: " + trimItem);
+                }
+            }
         }
 
         [HttpGet]
@@ -497,6 +543,34 @@ namespace TimesheetScheduler.Controllers
             }
 
             return true;
+        }
+
+        [HttpGet]
+        public bool WorkItemExists(int workItemId)
+        {
+            var _urlTFS = GetUrlTfs();
+            Uri tfsUri = new Uri(_urlTFS);
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+
+            WorkItem workItem;
+
+            try
+            {
+                workItem = WIS.GetWorkItem(workItemId);
+                if(workItem != null)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         #endregion TFS

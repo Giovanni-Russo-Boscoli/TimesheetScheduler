@@ -15,7 +15,9 @@
 
 - reports end of the month
 
-- link workitems (using autocomplete or search field) when creating/editing workitem (*1)
+	- link workitems (using autocomplete or search field) when creating/editing workitem (*1)
+
+- add option to remove workitem linked
 
 - REMOVE LINK FROM LAYOUT.CSHTML (input mask - install in project)
 

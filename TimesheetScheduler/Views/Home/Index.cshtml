@@ -15,26 +15,6 @@
         <div class="row">
             <div class="form-group col-xs-2 leftContent">
 
-                @*<button id="btnActions" class="btn btn-primary dropdownActions">Actions</button>*@
-
-                @*<div class="dropdown dropdownActions">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            Actions
-                        </button>
-                        <div class="dropdown-menu">
-                            <input id="btnInfo" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Month Info" onclick="Info();" />
-                            <div class="dropdown-divider"></div>
-                            <input id="btnSaveExcelFile" class="btn" type="button" title="Creates an Excel File" value="Export To An Excel File" onclick="confirmationSavePath();" />
-                            <div class="dropdown-divider"></div>
-                            <input id="btnInfo2" class="btn" type="button" title="Shows Amount of Days/Hours Worked" value="Pending Action" onclick="alert('not defined yet');" />
-                            <div class="dropdown-divider"></div>
-                            <input id="btnSaveExcelFile2" class="btn" type="button" title="Creates an Excel File" value="Another Extra Action" onclick="alert('not defined yet');" />
-                            <div class="dropdown-divider2"></div>
-                        </div>
-                    </div>
-
-                    <br />*@
-
                 <label for="userNameTimesheet">User</label>
                 <select class="form-control" id="userNameTimesheet"></select>
 
@@ -70,9 +50,6 @@
             </div>
         </div>
     </div>
-
-
-
 </body>
 
 <!-- Modal Info -->
@@ -173,14 +150,7 @@
                     <div class="form-group">
                         <label for="workItemsLinkedTimesheet">Work Items Linked</label>
                         <input class="form-control" id="workItemsLinkedTimesheet" placeholder="Link work items" disabled />
-                        <button class="form-control" id="btnLinkWorkItem">
-                            @*<svg class="icon  icon--plus" viewBox="0 0 5 5">
-            <path d="M2 1 h1 v1 h1 v1 h-1 v1 h-1 v-1 h-1 v-1 h1 z" />
-        </svg>*@
-                            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" viewBox="0 0 250 250">
-                                <path d="M2 1 h1 v1 h1 v1 h-1 v1 h-1 v-1 h-1 v-1 h1 z" />
-                            </svg>
-                        </button>
+                        <button class="form-control" id="btnLinkWorkItem" title="Link work item"></button>
                     </div>
                 </form>
                 <form class="form-inline">
@@ -242,7 +212,7 @@
 
 
 <!-- Modal Copy Task -->
-<div class="modal fade center" id="copyTaskModal" role="dialog">
+<div class="modal fade" id="copyTaskModal" role="dialog">
     <div class="modal-dialog">
         <!-- Modal content-->
         <div class="modal-content">
@@ -254,7 +224,7 @@
                 <form class="form-inline">
                     <div class="form-group">
                         <label for="workItemIdCopyTask">Work Item Number</label>
-                        <input class="form-control" id="workItemIdCopyTask"/>
+                        <input class="form-control" id="workItemIdCopyTask" />
                     </div>
                 </form>
             </div>
@@ -265,6 +235,33 @@
         </div>
     </div>
 </div>
+
+
+<!-- Modal Link Work Item -->
+<div class="modal fade" id="linkWorkItemModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Link Work Item</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <label for="linkWorkItemId">Work Item Number</label>
+                        <input class="form-control" id="linkWorkItemId" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="btnSaveLinkWorkItem" type="button" class="btn btn-success" disabled>Add Link</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
 

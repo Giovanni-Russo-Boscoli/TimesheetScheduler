@@ -417,6 +417,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="Images\add.png" />
     <Content Include="Images\arrow_down_icon.png" />
     <Content Include="Images\calendarView.png" />
     <Content Include="Images\clock_icon.png" />
