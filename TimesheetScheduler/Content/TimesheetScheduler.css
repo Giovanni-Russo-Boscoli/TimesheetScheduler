@@ -138,6 +138,11 @@ body.loading .modalPleaseWait {
 #linkWorkItemTable .hiddenWorkItemId {
   display: none;
 }
+#workItemLinkNotSaved {
+  color: red;
+  font-style: italic;
+  font-size: 12px;
+}
 .center {
   position: absolute;
   left: 50%;

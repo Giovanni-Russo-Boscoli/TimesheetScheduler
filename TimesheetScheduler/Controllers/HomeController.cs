@@ -337,34 +337,55 @@ namespace TimesheetScheduler.Controllers
             return (int)_wi.Fields["ID"].Value;
         }
 
-        private void LinkWorkItem(ref WorkItem _wi, string workItemLink) {
-            var _workItemLink = workItemLink.Split(new string[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
+        private void LinkWorkItem(ref WorkItem _wi, string workItemLink)
+        {
+            IList<string> _workItemLink = workItemLink.Split(new string[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
             var _workItemConverted = 0;
             var _flagCheckExistsWorItem = false;
-            foreach (var item in _workItemLink)
+            IList<RelatedLink> listToRemoveFromWILinks = new List<RelatedLink>();
+            IList<string> listToRemoveFromNewWILinks = new List<string>();
+            
+            //Apply deletion for work items linked (when user remove work item link)
+            foreach (var linkItem in _wi.Links)
             {
                 _flagCheckExistsWorItem = false;
+                foreach (var item in _workItemLink)
+                {
+                    var trimItem = item.Trim();
+
+                    if (((RelatedLink)linkItem).RelatedWorkItemId.ToString().Equals(trimItem))
+                    {
+                        //WORK ITEM ALREADY LINKED
+                        _flagCheckExistsWorItem = true;
+                        listToRemoveFromNewWILinks.Add(_workItemLink.Where(w => w == trimItem).FirstOrDefault());
+                        break;
+                    }
+                }
+                if (!_flagCheckExistsWorItem)
+                {
+                    listToRemoveFromWILinks.Add((RelatedLink)linkItem);
+                }
+            }
+
+            foreach (var item in listToRemoveFromWILinks)
+            {
+                //REMOVE WORK ITEMS NO LONGER IN THE LIST TO BE SAVED
+                _wi.Links.Remove((RelatedLink)item);
+            }
+
+            //REMOVE WORK ITEMS ALREADY SAVED
+            _workItemLink = _workItemLink.Except(listToRemoveFromNewWILinks).ToList();
+
+            //ADD NEW WORK ITEMS LINKED
+            foreach (var item in _workItemLink)
+            {
                 var trimItem = item.Trim();
 
                 if (int.TryParse(trimItem, out _workItemConverted))
                 {
                     try
                     {
-                        var links = _wi.Links;
-                        foreach (var linkItem in links)
-                        {
-                            if (((RelatedLink)linkItem).RelatedWorkItemId.ToString().Equals(trimItem))
-                            {
-                                //WORK ITEM ALREADY LINKED
-                                _flagCheckExistsWorItem = true;
-                                break;
-                            }
-                        }
-
-                        if (!_flagCheckExistsWorItem)
-                        {
-                            _wi.Links.Add(new RelatedLink(_workItemConverted));
-                        }
+                        _wi.Links.Add(new RelatedLink(_workItemConverted));
                     }
                     catch (Exception ex)
                     {
@@ -397,7 +418,7 @@ namespace TimesheetScheduler.Controllers
             }
             catch (Exception ex)
             {
-                throw new Exception("The work item does not exist, or you do not have permission to access it.");
+                throw new Exception("The work item does not exist, or you do not have permission to access it. (" + workItemId + ")");
             }
 
             var _workItemsLinked = "";
@@ -440,7 +461,7 @@ namespace TimesheetScheduler.Controllers
             }
             catch (Exception ex)
             {
-                throw new Exception("The work item does not exist, or you do not have permission to access it.");
+                throw new Exception("The work item does not exist, or you do not have permission to access it. (" + workItemId + ")");
             }
 
             var _workItemsLinked = "";
@@ -452,7 +473,8 @@ namespace TimesheetScheduler.Controllers
             WorkItemSerialized _workItemSerialized = new WorkItemSerialized()
             {
                 Id = workItem["Id"].ToString(),
-                Title = workItem["Title"].ToString()
+                Title = workItem["Title"].ToString(),
+                LinkUrl = _urlTFS + projectName + "/_queries?id=" + workItem["Id"].ToString()
             };
             return Json(_workItemSerialized, JsonRequestBehavior.AllowGet);
         }

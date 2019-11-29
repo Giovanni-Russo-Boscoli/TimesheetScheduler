@@ -643,6 +643,7 @@ function cleanModal() {
     $("#closeTaskTimesheet").attr("disabled", false);
     $("#btnCopyEvent").addClass("displayNone");
     $("#linkWorkItemTable tbody").html("");
+    $("#workItemLinkNotSaved").css("display", "none");
 }
 
 function setModalTitle(title) {
@@ -678,7 +679,8 @@ function copyTaskByWorkItemNumber() {
             $("#chargeableTimesheet").val(_chargeableHours);
             $("#nonchargeableTimesheet").val(_nonchargeableHours);
             $("#descriptionTimesheet").val(_description);
-            $("#workItemsLinkedTimesheet").val(data.WorkItemsLinked);
+            //$("#workItemsLinkedTimesheet").val(data.WorkItemsLinked);
+            populateWorkItemLinkedTable(data.WorkItemsLinked);
             closeModalCopyTask();
         });
     });
@@ -1244,6 +1246,7 @@ function closeAllTasksCurrentMonth_Tooltip() {
 }
 
 function unsavedForm(onoff) {
+    //#linkWorkItemTable managed in a different way (Work Item Link table)
     if (onoff) {
         $("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet, #closeTaskTimesheet, #dayTimesheet").on("change", function () {
             $(this).addClass("fieldChanged");
@@ -1426,7 +1429,7 @@ function addLinkWorkItem() {
         var _workItem = $("#linkWorkItemId").val();
         getIdAndTitleWorkItemBy_Id(_workItem, function (data) {
                 if (!isWorkItemLinked(_workItem)) {
-                    appendLinkWorkItemRow(data);
+                    appendLinkWorkItemRow(data, true);
                 }
                 else {
                     toastrMessage("Work Item already linked (" + _workItem + ")", "warning");
@@ -1436,10 +1439,10 @@ function addLinkWorkItem() {
     });    
 }
 
-function appendLinkWorkItemRow(event) {
+function appendLinkWorkItemRow(event, addedByUser) {
     var newRow =
         "<tr>" +
-        "<td>" + event.Id + " - " + event.Title +
+        "<td> <a href='" + event.LinkUrl +"' target='_blank'>" + event.Id + " - " + event.Title + "</a>" +
         "<span class='hiddenWorkItemId'>" + event.Id + "</span>" +
         "</td><td>" +
         "<button class='form-control deleteLinkWorkItemTableRow' title='Link work item'></button>" +
@@ -1447,6 +1450,9 @@ function appendLinkWorkItemRow(event) {
         "</tr>";
     $("#linkWorkItemTable").append(newRow);
     bindDeleteWorkItemLinked();
+    if (addedByUser) {
+        $("#workItemLinkNotSaved").css("display", "block");
+    }
 }
 
 function isWorkItemLinked(workItemId) {
@@ -1462,6 +1468,7 @@ function isWorkItemLinked(workItemId) {
 
 function bindDeleteWorkItemLinked() {
     $(".deleteLinkWorkItemTableRow").off().on("click", function () {
+        $("#workItemLinkNotSaved").css("display", "block");
         $(this).closest("tr").remove();
         return false;
     });

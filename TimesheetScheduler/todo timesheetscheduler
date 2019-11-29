@@ -17,7 +17,7 @@
 
 	- link workitems (using autocomplete or search field) when creating/editing workitem (*1)
 
-- add option to remove workitem linked
+	- add option to remove workitem linked
 
 - REMOVE LINK FROM LAYOUT.CSHTML (input mask - install in project)
 
@@ -82,6 +82,7 @@ Caso seja necessário uma validacao previa, que envie notificacao para aprovar o 
 - FINAL REPORT WITH RATES AND CHARGES FOR EACH ONE AND SEPARATED TEAMS (CORE/DRAWDOWN)
 
 - reorganize architecture //https://www.codeproject.com/Articles/1009532/Learn-Csharp-Design-patterns-step-by-step-with-a-p
+https://codereview.stackexchange.com/questions/30843/mvc-layered-project-structure
 
 	- Add files to Git Ignore
 
