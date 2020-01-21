@@ -9,15 +9,18 @@ $(document).ready(function ($) {
     LoadYears();
     bindUserNameDropdown();
     bindMonthDropdown();
+    bindYearDropdown();
     closeAllTasksCurrentMonth_Tooltip();
     getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
+    //getUserName(function (data) { alert(data);}); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
     saveEvent();
     applyBtnClassesInActionsSelect();
     btnActionClick();
     reminderNoEventCreationForToday();
     copyTask();
-    enterKeySaveEvent();
     linkWorkItem();
+
+
 
     //$('#body-row .collapse').collapse('hide');
 
@@ -29,7 +32,12 @@ $(document).ready(function ($) {
         SidebarCollapse();
     });
 
-
+    //materializecss INIT 
+    //$('.fixed-action-btn').floatingActionButton({
+    //    direction: 'left',
+    //    hoverEnabled: false
+    //});
+    //materializecss END 
 });
 
 function SidebarCollapse() {
@@ -379,7 +387,7 @@ function calculateLoadBarEventsForListView(calendarEvents) {
 
 function getUserName(callback) {
     $.ajax({
-        url: "/Home/GetUserName",
+        url: "/TimesheetScheduler/Home/GetUserName",
         type: "GET",
         success: function (data) {
             callback(data);
@@ -391,6 +399,7 @@ function getUserName(callback) {
 }
 
 function LoadUserNames(_userName) {
+    
     var names = [
         "Giovanni Boscoli",
         "Amy Kelly",
@@ -429,7 +438,7 @@ function LoadMonths() {
 
 function LoadYears() {
     var _currentYear = getCurrentYear();
-    if (getCurrentMonth() === 12) {
+    if (getCurrentMonth() === 1) {
         $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
     }
     $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
@@ -471,6 +480,12 @@ function bindMonthDropdown() {
     $("#monthTimesheet").on("change", function () {
         connectToTFS();
         closeAllTasksCurrentMonth_Tooltip();
+    });
+}
+
+function bindYearDropdown() {
+    $("#yearTimesheet").on("change", function () {
+        connectToTFS();
     });
 }
 
@@ -529,10 +544,10 @@ function IsWeekend(date) {
 
 function Info() {
     $("#infoModal").modal();
-    if ($(".infoMonthLabel").length < 1) {
-        $(".H4tTitleInfoModal").text("Info - " + $(".fc-left").find("h2").text());
-        $(".H4tTitleInfoModal").addClass("infoMonthLabel");
-    }
+
+    //Modal Header
+    $(".H4tTitleInfoModal").text("Info - " + getNameSelectedMonthFromPage() + " - " + getUserNameFromPage());
+    $(".H4tTitleInfoModal").addClass("infoMonthLabel");
 
     $("#totalHoursInfoTxt").text(totalChargeableHours + totalNonChargeableHours);
     $("#dayWorkedInfoTxt").text((totalChargeableHours / 7.5).toFixed(2));
@@ -557,6 +572,7 @@ function ModalEvent(event, eventCreation) {
     if (!eventCreation) {
         //EDIT
         unsavedForm(true);
+        enterKeySaveEvent();
         $("#dayTimesheet").prop("disabled", false);
         dateMaskById("dayTimesheet");
         $("#userNameModal").val(getUserNameFromPage());
@@ -575,6 +591,7 @@ function ModalEvent(event, eventCreation) {
     } else {
         //NEW/CREATE
         unsavedForm(false);
+        enterKeySaveEvent();
         $("#btnCopyEvent").removeClass("displayNone");
         $("#userNameModal").val(getUserNameFromPage());
         $("#dayTimesheet").prop("disabled", true);
@@ -740,7 +757,7 @@ function saveEvent() {
         if (_workItemNumber) {
             //EDIT
             $.ajax({
-                url: "/Home/EditTaskOnTFS",
+                url: "/TimesheetScheduler/Home/EditTaskOnTFS",
                 type: "POST",
                 dataType: "json",
                 data: {
@@ -764,7 +781,7 @@ function saveEvent() {
         } else {
             //CREATION
             $.ajax({
-                url: "/Home/CreateTaskOnTFS",
+                url: "/TimesheetScheduler/Home/CreateTaskOnTFS",
                 type: "POST",
                 dataType: "json",
                 data: {
@@ -871,7 +888,7 @@ function changeColor() {
 function connectToTFS() {
     var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
     $.ajax({
-        url: "/Home/ConnectTFS",
+        url: "/TimesheetScheduler/Home/ConnectTFS",
         type: "GET",
         dataType: "json",
         data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
@@ -883,7 +900,8 @@ function connectToTFS() {
             tooltipDaysListView();
         },
         error: function (error) {
-            alert("error: " + JSON.stringify(error));
+            //alert("error: " + JSON.stringify(error));
+            ajaxErrorHandler(error);
         }
     });
 }
@@ -976,7 +994,7 @@ function removeHTMLTagsFromString(str) {
 function confirmationSavePath() {
     $.when(
         $.ajax({
-            url: "/Home/TimesheetSaveLocationAndFileName",
+            url: "/TimesheetScheduler/Home/TimesheetSaveLocationAndFileName",
             type: "GET",
             async: false,
             data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
@@ -995,7 +1013,7 @@ function SaveExcelFile(strPath) {
     if (confirm(msgPath)) {
         closeModalActions();
         $.ajax({
-            url: "/Home/SaveExcelFile",
+            url: "/TimesheetScheduler/Home/SaveExcelFile",
             type: "GET",
             cache: false,
             data: { userName: getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
@@ -1207,7 +1225,7 @@ function btnActionClick() {
             if (data !== getUserNameFromPage()) {
                 $("#btnCloseAllTasks").off();
                 $("#btnCloseAllTasks").on("click", function () {
-                    toastrMessage("You are not able to close tasks from another user", "warning");
+                    toastrMessage("You are not authorized to close tasks from another user", "warning");
                 });
             }
             else {
@@ -1230,7 +1248,7 @@ function closeModalCopyTask() {
 
 function closeAllTasksCurrentMonth() {
     var _month = getNameSelectedMonthFromPage();
-    if (confirm("Would you like to close all " + _month + " tasks?")) {
+    if (confirm("Do you want close all " + _month + " tasks?")) {
         ajaxCloseAllTasks(function (data) {
             closeModalActions();
             connectToTFS();
@@ -1320,7 +1338,7 @@ function clearReminderInterval() {
 
 function getWorkItemBy_Id(_workItemId, callback) {
     $.ajax({
-        url: "/Home/GetWorkItemById",
+        url: "/TimesheetScheduler/Home/GetWorkItemById",
         type: "GET",
         dataType: "json",
         data: { workItemId: _workItemId },
@@ -1336,7 +1354,7 @@ function getWorkItemBy_Id(_workItemId, callback) {
 
 function getIdAndTitleWorkItemBy_Id(_workItemId, callback) {
     $.ajax({
-        url: "/Home/GetIdAndTitleWorkItemById",
+        url: "/TimesheetScheduler/Home/GetIdAndTitleWorkItemById",
         type: "GET",
         dataType: "json",
         data: { workItemId: _workItemId },
@@ -1352,7 +1370,7 @@ function getIdAndTitleWorkItemBy_Id(_workItemId, callback) {
 
 function getWorkItemByDay(_day, callback) {
     $.ajax({
-        url: "/Home/GetWorkItemByDay",
+        url: "/TimesheetScheduler/Home/GetWorkItemByDay",
         type: "GET",
         dataType: "json",
         data: { userName: getUserNameFromPage(), day: _day.toUTCString() },
@@ -1368,7 +1386,7 @@ function getWorkItemByDay(_day, callback) {
 
 function ajaxCloseAllTasks(callback, errorCallback) {
     $.ajax({
-        url: "/Home/CloseTasksMonth",
+        url: "/TimesheetScheduler/Home/CloseTasksMonth",
         type: "PUT",
         dataType: "text",
         data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage()},
@@ -1477,7 +1495,7 @@ function bindDeleteWorkItemLinked() {
 //NOT BEING USED
 function checkWorkItemExists(workItemNumber, callback) {
     $.ajax({
-        url: "/Home/WorkItemExists",
+        url: "/TimesheetScheduler/Home/WorkItemExists",
         type: "GET",
         dataType: "text",
         data: { workItemId: workItemNumber },

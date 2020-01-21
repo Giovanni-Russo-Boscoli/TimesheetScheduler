@@ -81,8 +81,12 @@ Caso seja necessário uma validacao previa, que envie notificacao para aprovar o 
 
 - FINAL REPORT WITH RATES AND CHARGES FOR EACH ONE AND SEPARATED TEAMS (CORE/DRAWDOWN)
 
-- reorganize architecture //https://www.codeproject.com/Articles/1009532/Learn-Csharp-Design-patterns-step-by-step-with-a-p
+- reorganize architecture 
+https://www.codeproject.com/Articles/1009532/Learn-Csharp-Design-patterns-step-by-step-with-a-p
 https://codereview.stackexchange.com/questions/30843/mvc-layered-project-structure
+https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures
+
+- CHANGE FOR API (ALLOW TO USE AN ANGULAR INTERFACE)
 
 	- Add files to Git Ignore
 
@@ -91,6 +95,20 @@ https://codereview.stackexchange.com/questions/30843/mvc-layered-project-structu
 - create themes (dark)
 
 	- suggest event creation if it's not created ONLY for the same user logged.
+
+- allow to create partial report (user choice date range for a specific month [Partial billing for December])
+
+- add an option to copy previous task (when copying task - new button beside of "copy" button called "Copy previous task") ???? MAYBE NOT NEED IT
+
+- when copying tasks, get rid all of the linked tasks before ????????????? IGNORE
+
+- study possibly include https://materializecss.com/floating-action-button.html
+
+- ajax class/methods to standardize ajax calls 
+
+- create a login page :(
+
+- duplicate task (open the actual task to be duplicated and then duplicate from there...)
 
 
 (*1)

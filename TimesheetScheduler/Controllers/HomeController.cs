@@ -1,8 +1,15 @@
 ﻿using Microsoft.Office.Interop.Excel;
+using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.Framework.Client;
+using Microsoft.TeamFoundation.Framework.Common;
+using Microsoft.TeamFoundation.TestManagement.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
+using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.DirectoryServices.AccountManagement;
 using System.Drawing;
@@ -11,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Web.Mvc;
 using System.Web.Security;
 using Application = Microsoft.Office.Interop.Excel.Application;
@@ -50,10 +58,62 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
+        public string GetUserName0() {
+
+            //System.Environment.UserName: Windows Account Name
+            //Page.User.Identity.Name: Domain\ Windows Account Name
+            //System.Security.Principal.WindowsIdentity.GetCurrent().Name: Domain\ Windows Account Name
+            var d = HttpContext.User.Identity.Name;
+            var a = System.Environment.UserName;
+            var b = User.Identity.Name;
+            var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+            return "Amy Kelly";
+        }
+
         public string GetUserName()
         {
-            return string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
+            var a = System.Web.HttpContext.Current.User.Identity;
+            Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+            NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
+            //NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
+            Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
+            VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
+            TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri,basicCredentials);
+
+            var aut = tfsColl.HasAuthenticated;
+            tfsColl.Authenticate();
+            aut = tfsColl.HasAuthenticated;
+
+            return tfsColl.AuthorizedIdentity.DisplayName;
         }
+
+        public string GetUserName1()
+        {
+            Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+            TfsTeamProjectCollection teamCollection =
+                new TfsTeamProjectCollection(tfsUri, CredentialCache.DefaultNetworkCredentials);
+
+            VssConnection connection = new VssConnection(tfsUri, new VssCredentials());
+            var _vssDataConnection = connection.GetClient<BuildHttpClient>();
+
+            var displayName = teamCollection.AuthorizedIdentity.DisplayName;
+
+            return displayName;
+        }
+
+
+
+        [HttpGet]
+        public string GetUserName2()
+        {
+            var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+            var b = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
+            var a = string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
+            return a;
+            //return string.IsNullOrEmpty(Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
+        }
+
+        //https://stackoverflow.com/questions/1267071/how-to-get-windows-user-name-when-identity-impersonate-true-in-asp-net
 
         public string GetDomainUserName()
         {
@@ -101,7 +161,18 @@ namespace TimesheetScheduler.Controllers
                 var _urlTFS = GetUrlTfs();
                 Uri tfsUri = new Uri(_urlTFS);
                 TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+                //
+                Uri tfsUri2 = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+                NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
+                //NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
+                Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
+                VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
+                TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
+                //
+
+                //WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+                WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
 
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
@@ -323,8 +394,8 @@ namespace TimesheetScheduler.Controllers
 
             _wi.State = state;
 
-            LinkWorkItem(ref _wi, workItemLink);  
-            
+            LinkWorkItem(ref _wi, workItemLink);
+
             var _valid = _wi.Validate();
 
             if (_valid.Count > 0)
@@ -344,7 +415,7 @@ namespace TimesheetScheduler.Controllers
             var _flagCheckExistsWorItem = false;
             IList<RelatedLink> listToRemoveFromWILinks = new List<RelatedLink>();
             IList<string> listToRemoveFromNewWILinks = new List<string>();
-            
+
             //Apply deletion for work items linked (when user remove work item link)
             foreach (var linkItem in _wi.Links)
             {
@@ -564,7 +635,7 @@ namespace TimesheetScheduler.Controllers
                     if (_startDate.Month == (_month == 0 ? DateTime.Now.Month : _month)
                         && _startDate.Year == (_year == 0 ? DateTime.Now.Year : _year))
                     {
-                        
+
                         if (_wi.State.Equals("Closed"))
                         {
                             continue;
@@ -619,7 +690,7 @@ namespace TimesheetScheduler.Controllers
             try
             {
                 workItem = WIS.GetWorkItem(workItemId);
-                if(workItem != null)
+                if (workItem != null)
                 {
                     return true;
                 }
