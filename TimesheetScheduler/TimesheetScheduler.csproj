@@ -215,6 +215,7 @@
       <HintPath>..\packages\System.Collections.Immutable.1.4.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -323,10 +324,8 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Controllers\AuthenticationController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\NewController.cs" />
-    <Compile Include="Controllers\TimesheetSchedulerController.cs" />
+    <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -344,6 +343,7 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ExcelExport.cs" />
+    <Compile Include="Models\LoginTimesheetScheduler.cs" />
     <Compile Include="Models\TimesheetWorkItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\ITimesheetSchedulerRepository.cs" />
@@ -430,6 +430,7 @@
     <Content Include="Images\lock-icon.png" />
     <Content Include="Images\pacman_animated.gif" />
     <Content Include="Images\plus.png" />
+    <Content Include="Images\poweroff.svg" />
     <Content Include="Images\sad_face_icon.png" />
     <Content Include="Images\xlsx_icon.svg.png" />
     <Content Include="Images\xsl_icon.png" />
@@ -549,6 +550,7 @@
     <Content Include="Scripts\locale\vi.js" />
     <Content Include="Scripts\locale\zh-cn.js" />
     <Content Include="Scripts\locale\zh-tw.js" />
+    <Content Include="Scripts\Login.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\moment-with-locales.js" />
     <Content Include="Scripts\moment-with-locales.min.js" />
@@ -558,6 +560,7 @@
     <Content Include="Scripts\TimesheetSchedulerCalendar.js" />
     <Content Include="Scripts\toastr.js" />
     <Content Include="Scripts\toastr.min.js" />
+    <Content Include="Scripts\Util.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -573,7 +576,7 @@
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\Shared\Login.cshtml" />
+    <Content Include="Views\Login\Index.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\StepsReports.cshtml" />
     <Content Include="todo timesheetscheduler" />

@@ -1,32 +1,27 @@
 ﻿using Microsoft.Office.Interop.Excel;
-using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.Client;
-using Microsoft.TeamFoundation.Framework.Client;
-using Microsoft.TeamFoundation.Framework.Common;
-using Microsoft.TeamFoundation.TestManagement.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
 using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.WebApi;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Configuration;
-using System.DirectoryServices.AccountManagement;
+using System.DirectoryServices;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Web.Mvc;
-using System.Web.Security;
+using TimesheetScheduler.Models;
 using Application = Microsoft.Office.Interop.Excel.Application;
 
 namespace TimesheetScheduler.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
+        //[TimesheetSchedulerAuthorize(Roles="giovanni")]
         public ActionResult Index()
         {
             return View();
@@ -58,21 +53,26 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
-        public string GetUserName0() {
+        //public string GetUserName0() {
 
-            //System.Environment.UserName: Windows Account Name
-            //Page.User.Identity.Name: Domain\ Windows Account Name
-            //System.Security.Principal.WindowsIdentity.GetCurrent().Name: Domain\ Windows Account Name
+        //    //System.Environment.UserName: Windows Account Name
+        //    //Page.User.Identity.Name: Domain\ Windows Account Name
+        //    //System.Security.Principal.WindowsIdentity.GetCurrent().Name: Domain\ Windows Account Name
+        //    var d = HttpContext.User.Identity.Name;
+        //    var a = System.Environment.UserName;
+        //    var b = User.Identity.Name;
+        //    var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+        //    return "Amy Kelly";
+        //}
+
+        public string GetUserName()
+        {
             var d = HttpContext.User.Identity.Name;
             var a = System.Environment.UserName;
             var b = User.Identity.Name;
             var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-            return "Amy Kelly";
-        }
+            var e = System.Web.HttpContext.Current.User.Identity;
 
-        public string GetUserName()
-        {
-            var a = System.Web.HttpContext.Current.User.Identity;
             Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
             NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
             //NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
@@ -87,31 +87,31 @@ namespace TimesheetScheduler.Controllers
             return tfsColl.AuthorizedIdentity.DisplayName;
         }
 
-        public string GetUserName1()
-        {
-            Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-            TfsTeamProjectCollection teamCollection =
-                new TfsTeamProjectCollection(tfsUri, CredentialCache.DefaultNetworkCredentials);
+        //public string GetUserName1()
+        //{
+        //    Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+        //    TfsTeamProjectCollection teamCollection =
+        //        new TfsTeamProjectCollection(tfsUri, CredentialCache.DefaultNetworkCredentials);
 
-            VssConnection connection = new VssConnection(tfsUri, new VssCredentials());
-            var _vssDataConnection = connection.GetClient<BuildHttpClient>();
+        //    VssConnection connection = new VssConnection(tfsUri, new VssCredentials());
+        //    var _vssDataConnection = connection.GetClient<BuildHttpClient>();
 
-            var displayName = teamCollection.AuthorizedIdentity.DisplayName;
+        //    var displayName = teamCollection.AuthorizedIdentity.DisplayName;
 
-            return displayName;
-        }
+        //    return displayName;
+        //}
 
 
 
-        [HttpGet]
-        public string GetUserName2()
-        {
-            var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-            var b = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
-            var a = string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
-            return a;
-            //return string.IsNullOrEmpty(Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
-        }
+        //[HttpGet]
+        //public string GetUserName2()
+        //{
+        //    var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+        //    var b = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
+        //    var a = string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
+        //    return a;
+        //    //return string.IsNullOrEmpty(Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
+        //}
 
         //https://stackoverflow.com/questions/1267071/how-to-get-windows-user-name-when-identity-impersonate-true-in-asp-net
 
@@ -152,6 +152,101 @@ namespace TimesheetScheduler.Controllers
             return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
         }
 
+        //public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, string userName, int _month, int _year)
+        //{
+        //    IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
+
+        //    if (!_bypass)
+        //    {
+        //        var _urlTFS = GetUrlTfs();
+        //        Uri tfsUri = new Uri(_urlTFS);
+        //        TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+
+        //        //
+        //        Uri tfsUri2 = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+        //        NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
+        //        //NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
+        //        Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
+        //        VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
+        //        TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
+        //        //
+
+        //        //WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+        //        WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
+
+        //        var projectName = GetProjectNameTFS();
+        //        var _iterationPath = GetIterationPathTFS();
+
+        //        WorkItemCollection WIC = WIS.Query(
+        //            " SELECT [System.Id], " +
+        //            " [System.WorkItemType], " +
+        //            " [System.State], " +
+        //            " [System.AssignedTo], " +
+        //            " [System.Title], " +
+        //            " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+        //            " [Microsoft.VSTS.Scheduling.StartDate] " +
+        //            " FROM WorkItems " +
+        //            " WHERE [System.TeamProject] = '" + projectName + "'" +
+        //            " AND [Iteration Path] = '" + _iterationPath + "'" +
+        //            " AND [Assigned To] = '" + userName + "'" +
+        //            " ORDER BY [System.Id], [System.WorkItemType]");
+
+        //        foreach (WorkItem wi in WIC)
+        //        {
+        //            if (wi["Start Date"] != null)
+        //            {
+        //                DateTime _startDate = (DateTime)wi["Start Date"];
+        //                if (_startDate.Month == (_month == 0 ? DateTime.Now.Month : _month)
+        //                    && _startDate.Year == (_year == 0 ? DateTime.Now.Year : _year))
+        //                {
+        //                    var _workItemsLinked = "";
+        //                    for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+        //                    {
+        //                        _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+        //                    }
+
+        //                    //http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/BOM_MOD24/_queries?id=318197
+        //                    //var _link = GetUrlTfs() + GetProjectNameTFS() + "/_queries?id=" + wi["Id"].ToString();
+
+        //                    listWorkItems.Add(new WorkItemSerialized()
+        //                    {
+        //                        Id = wi["Id"].ToString(),
+        //                        Title = wi["Title"].ToString(),
+        //                        StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+        //                        Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
+        //                        CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+        //                        WorkItemsLinked = _workItemsLinked,
+        //                        State = wi.State,
+        //                        LinkUrl = _urlTFS + projectName + "/_queries?id=" + wi["Id"].ToString()
+        //                    });
+        //                }
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //---------------------
+        //        for (int i = 0; i < DateTime.DaysInMonth(_year, _month); i++)
+        //        {
+        //            //few days without info to simulate "out of the office"
+        //            if (i == 7 || i == 12 || i == 17 || i == 22 || i == 28) continue;
+        //            listWorkItems.Add(new WorkItemSerialized()
+        //            {
+        //                Id = "35541" + i,
+        //                Title = "Title-" + i,
+        //                StartDate = new DateTime(_year, _month, i + 1),
+        //                Description = "Description-" + i,
+        //                CompletedHours = i + 1,
+        //                WorkItemsLinked = "#321321 #654654",
+        //                State = "Closed",
+        //                LinkUrl = "www.google.com"
+        //            });
+        //        }
+        //    }
+
+        //    return listWorkItems.OrderBy(x => x.StartDate).ToList();
+        //}
+
         public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, string userName, int _month, int _year)
         {
             IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
@@ -161,18 +256,7 @@ namespace TimesheetScheduler.Controllers
                 var _urlTFS = GetUrlTfs();
                 Uri tfsUri = new Uri(_urlTFS);
                 TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-
-                //
-                Uri tfsUri2 = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-                NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
-                //NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
-                Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
-                VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
-                TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
-                //
-
-                //WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-                WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
+                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
@@ -188,7 +272,7 @@ namespace TimesheetScheduler.Controllers
                     " FROM WorkItems " +
                     " WHERE [System.TeamProject] = '" + projectName + "'" +
                     " AND [Iteration Path] = '" + _iterationPath + "'" +
-                    " AND [Assigned To] = '" + userName + "'" +
+                    " AND [Assigned To] = '" + GetUserLogged() + "'" +
                     " ORDER BY [System.Id], [System.WorkItemType]");
 
                 foreach (WorkItem wi in WIC)
@@ -747,6 +831,10 @@ namespace TimesheetScheduler.Controllers
             worksheet.get_Range(cellObj.CellPosition).HorizontalAlignment = cellObj.FormatParams.aligment;
             worksheet.get_Range(cellObj.CellPosition).Locked = cellObj.FormatParams.lockCell;
             //worksheet.get_Range(cellObj.CellPosition).Interior.Color = cellObj.FormatParams.cellBackgroundColor;
+        }
+
+        public string GetUserLogged() {
+            return Session["userLogged"] as String;
         }
 
         #endregion UTIL

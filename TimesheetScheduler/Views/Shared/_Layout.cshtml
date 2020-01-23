@@ -26,16 +26,17 @@
                 </ul>
             </div>
             <div class="userLogged">
-                <ul class="">
-                    <li title=@Html.Action("GetDomainUserName", "Home")>@Html.Action("GetUserName", "Home")</li>
+                <ul class="userLoggedUl">
+                    <li title=@Html.Action("GetDomainUserName", "Home")>@Html.Action("GetUserLogged", "Home")</li>
+                    <li class="logoutUser" title="Logout" onclick="location.href='@Url.Action("Logout", "Login")'"></li>
                 </ul>
             </div>
         </div>
     </div>
 
     <div class="container body-content">
-        @RenderBody()
-        @*<hr />
+            @RenderBody()
+            @*<hr />
             <footer class="_footer">
                 <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
             </footer>*@
@@ -49,6 +50,8 @@
     @Scripts.Render("~/bundles/fullcalendarjs")
     @Scripts.Render("~/bundles/jquerydateformat")
     @Scripts.Render("~/bundles/toastrjs")
+    @Scripts.Render("~/bundles/util")
+    @Scripts.Render("~/bundles/login")
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"></script>
     @RenderSection("scripts", required: false)
 </body>
@@ -61,7 +64,7 @@
 
     .userLogged {
         color: #9d9d9d;
-        padding-top: 14px;
+        padding-top: 16px;
         right: 50px !important;
         position: absolute;
     }
@@ -70,6 +73,17 @@
             display: block !important;
         }
 
+        .userLogged .userLoggedUl {
+            display: flex;
+        }
+
+    .userLoggedUl li{
+        margin-left:10px;
+    }
+
+           .logoutUser:hover {
+            cursor: pointer;
+        }
 
     .container.body-content {
         width: 98% !important;
@@ -78,5 +92,4 @@
     .container {
         width: 98% !important;
     }
-
 </style>

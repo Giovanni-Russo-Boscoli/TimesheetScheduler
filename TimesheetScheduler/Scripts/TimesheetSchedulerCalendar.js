@@ -387,7 +387,7 @@ function calculateLoadBarEventsForListView(calendarEvents) {
 
 function getUserName(callback) {
     $.ajax({
-        url: "/TimesheetScheduler/Home/GetUserName",
+        url: "/TimesheetScheduler/Home/GetUserLogged",
         type: "GET",
         success: function (data) {
             callback(data);
@@ -814,10 +814,10 @@ function getWorkItemsLinkFromPage() {
     return _workItems;
 }
 
-function ajaxErrorHandler(xhrError) {
-    var dom_nodes = $($.parseHTML(xhrError.responseText));
-    toastrMessage(dom_nodes.filter('title').text(), "error");
-}
+//function ajaxErrorHandler(xhrError) {
+//    var dom_nodes = $($.parseHTML(xhrError.responseText));
+//    toastrMessage(dom_nodes.filter('title').text(), "error");
+//}
 
 function validationSaveEvent() {
     var _nonValidFields = "";
@@ -838,48 +838,48 @@ function validationSaveEvent() {
     return _nonValidFields;
 }
 
-function toastrMessage(msg, typeMessage) {
-    toastr.options = {
-        "closeButton": false,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-bottom-right", //"toast-bottom-full-width",
-        "preventDuplicates": true,
-        "onclick": null,
-        "showDuration": "100",
-        "hideDuration": "1000",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "show",
-        "hideMethod": "hide"
-    };
+//function toastrMessage(msg, typeMessage) {
+//    toastr.options = {
+//        "closeButton": false,
+//        "debug": false,
+//        "newestOnTop": false,
+//        "progressBar": true,
+//        "positionClass": "toast-bottom-right", //"toast-bottom-full-width",
+//        "preventDuplicates": true,
+//        "onclick": null,
+//        "showDuration": "100",
+//        "hideDuration": "1000",
+//        "timeOut": "5000",
+//        "extendedTimeOut": "1000",
+//        "showEasing": "swing",
+//        "hideEasing": "linear",
+//        "showMethod": "show",
+//        "hideMethod": "hide"
+//    };
 
-    switch (typeMessage) {
-        case "info": {
-            toastr.info(msg);
-            break;
-        }
-        case "warning": {
-            toastr.warning(msg);
-            break;
-        }
-        case "success": {
-            toastr.success(msg);
-            break;
-        }
-        case "error": {
-            toastr.error(msg);
-            break;
-        }
-        default: {
-            toastr.info(msg);
-            break;
-        }
-    }
-}
+//    switch (typeMessage) {
+//        case "info": {
+//            toastr.info(msg);
+//            break;
+//        }
+//        case "warning": {
+//            toastr.warning(msg);
+//            break;
+//        }
+//        case "success": {
+//            toastr.success(msg);
+//            break;
+//        }
+//        case "error": {
+//            toastr.error(msg);
+//            break;
+//        }
+//        default: {
+//            toastr.info(msg);
+//            break;
+//        }
+//    }
+//}
 
 function changeColor() {
     $("#inputColor").change(function (e) { alert(e.target.value); });
@@ -1009,7 +1009,7 @@ function confirmationSavePath() {
 }
 
 function SaveExcelFile(strPath) {
-    var msgPath = "The Excel file will be saved in the following directory: " + strPath + ".xls";
+    var msgPath = "The Excel file will be saved in the following directory: \n" + strPath + ".xls";
     if (confirm(msgPath)) {
         closeModalActions();
         $.ajax({

@@ -106,10 +106,11 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 
 - ajax class/methods to standardize ajax calls 
 
-- create a login page :(
+- create a login page :( - DONE :)
 
 - duplicate task (open the actual task to be duplicated and then duplicate from there...)
 
+- call ReturnTFSEvents_ListWorkItemsWithoutStartDate only when click the button to display (avoid wasting time loading)
 
 (*1)
 Adding a link is simple. You create a link and add it to the collection, then save the work item
