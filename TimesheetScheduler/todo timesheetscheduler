@@ -112,6 +112,8 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 
 - call ReturnTFSEvents_ListWorkItemsWithoutStartDate only when click the button to display (avoid wasting time loading)
 
+- create less file Login page (login.less)
+
 (*1)
 Adding a link is simple. You create a link and add it to the collection, then save the work item
 WorkItem wiFeatureGroup = WIStore.GetWorkItem(9999);
