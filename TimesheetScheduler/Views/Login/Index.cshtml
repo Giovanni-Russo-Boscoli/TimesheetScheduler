@@ -11,7 +11,7 @@
             <div id="login-column" class="col-md-12">
                 <div id="login-box" class="col-md-12">
 
-                    @using (Html.BeginForm("SignIn", "Login", FormMethod.Post, new { @class = "form-signin", role = "form" }))
+                    @using (Html.BeginForm("SignIn", "Login", FormMethod.Post, new { @class = "form-signin formLogin", role = "form" }))
                     {
                         <h3 class="text-center text-info">Sign in</h3>
 
@@ -19,19 +19,20 @@
                         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
                         <div class="form-group">
-                            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", placeholder = "UserName", @Value = @Html.Action("GetLocalUser", "Login") })
+                            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control userNameInput inputLogin", placeholder = "UserName", @Value = @Html.Action("GetLocalUser", "Login") })
                             @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
                         </div>
 
                         <div class="form-group">
-                            @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Password" })
+                            @Html.PasswordFor(m => m.Password, new { @class = "form-control passwordInput inputLogin", placeholder = "Password" })
                             @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
                         </div>
 
+                        <input type="submit" value="Log in" class="btn btn-lg btn-primary btn-block inputLogin submitLogin" />
+
                         <div class="checkbox">
-                            <label>@Html.CheckBoxFor(m => m.RememberMe) Remember Me?</label>
+                            <label class="rememberMe">@Html.CheckBoxFor(m => m.RememberMe) Remember Me?</label>
                         </div>
-                        <input type="submit" value="Log in" class="btn btn-lg btn-primary btn-block" />
 
                     }
                 </div>
@@ -45,11 +46,11 @@
 <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
 
 <style>
-    
+
     body {
         margin: 0;
         padding: 0;
-        background-color: #0f91a5;
+        background-color: #3f4242; /*#0f91a5;*/
         height: 100vh;
     }
 
@@ -64,12 +65,14 @@
 
     #login .container #login-row #login-column #login-box {
         margin-top: 25%;
-        max-width: 600px;
+        max-width: 315px;
+        height: 355px;
         border: 1px solid #9C9C9C;
         background-color: #EAEAEA;
         margin-left: auto;
         margin-right: auto;
         float: none !important;
+        border-radius: 20px;
     }
 
         #login .container #login-row #login-column #login-box #login-form {
@@ -79,4 +82,40 @@
             #login .container #login-row #login-column #login-box #login-form #register-link {
                 margin-top: -85px;
             }
+
+    #login-column input{
+        border-radius:30px;
+    }
+
+    .rememberMe{
+        font-family: 'Ubuntu', sans-serif;
+        margin-left:30% !important;
+    }
+
+    .formLogin{
+        font-family:monospace !important;
+    }
+
+    .inputLogin{
+        margin:auto !important; /*center align*/
+        width:250px !important;
+        align-content:center !important;
+        text-align:center !important;
+    }
+
+    .userNameInput{
+        margin-top:60px !important;   
+        margin-bottom:20px !important;   
+    }
+
+    .passwordInput{
+        margin:auto !important; /*center align*/
+        margin-bottom:40px !important;   
+    }
+
+    .submitLogin{
+        width: 150px !important;
+        margin-top: 55px !important;
+    }
+
 </style>

@@ -112,6 +112,8 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 
 - call ReturnTFSEvents_ListWorkItemsWithoutStartDate only when click the button to display (avoid wasting time loading)
 
+- create less file Login page (login.less)
+
 - prepare environment to work with different TFS url's 
 
 - retrieve all usedr LDAP/TFS for the dropdown ???ai no 
