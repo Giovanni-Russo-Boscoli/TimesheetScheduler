@@ -10,9 +10,11 @@ using TimesheetScheduler.Models;
 
 namespace TimesheetScheduler.Controllers
 {
+    [Authorize]
     public class LoginController : Controller
     {
         // GET: Login
+        [AllowAnonymous]
         public ActionResult Index()
         {
 
@@ -99,6 +101,7 @@ namespace TimesheetScheduler.Controllers
             return View("Index", model);
         }
 
+        [AllowAnonymous]
         public bool IsAuthenticated(string userName, string pwd)
         {
             //var domainName = "DESKTOP-A7IHSEN";
@@ -125,6 +128,7 @@ namespace TimesheetScheduler.Controllers
             Session["userLogged"] = de.Properties["FullName"].Value.ToString();
         }
 
+        [AllowAnonymous]
         public string GetLocalUser()
         {
             DirectoryEntry de = new DirectoryEntry("WinNT://" + Environment.UserDomainName + "/" + Environment.UserName);

@@ -1,0 +1,80 @@
+﻿body {
+  margin: 0;
+  padding: 0;
+  background-color: #3f4242 !important;
+  /*#0f91a5;*/
+  height: 100vh;
+}
+container div {
+  border-right: 5px solid black !important;
+  border-top: 5px solid black !important;
+  padding: 20px !important;
+  display: flex !important;
+  /* make children flex too for centering */
+  align-items: center !important;
+  /* vertical center */
+  justify-content: center !important;
+  /* horizontal center */
+}
+#login .container #login-row #login-column #login-box {
+  margin-top: 25%;
+  max-width: 315px;
+  height: 355px;
+  border: 1px solid #9C9C9C;
+  background-color: #EAEAEA;
+  margin-left: auto;
+  margin-right: auto;
+  float: none !important;
+  border-radius: 20px;
+}
+#login .container #login-row #login-column #login-box #login-form {
+  padding: 20px;
+}
+#login .container #login-row #login-column #login-box #login-form #register-link {
+  margin-top: -85px;
+}
+#login-column input {
+  border-radius: 30px;
+}
+.rememberMe {
+  font-family: 'Ubuntu', sans-serif;
+  margin-left: 30% !important;
+}
+.formLogin {
+  font-family: monospace !important;
+}
+.inputLogin {
+  margin: auto !important;
+  /*center align*/
+  width: 250px !important;
+  align-content: center !important;
+  text-align: center !important;
+}
+.userNameInput {
+  margin-top: 60px !important;
+  margin-bottom: 20px !important;
+}
+.passwordInput {
+  margin: auto !important;
+  /*center align*/
+  /*margin-bottom: 40px !important;*/
+}
+.submitLogin {
+  width: 150px !important;
+  margin-top: 25px !important;
+}
+.formCapsLock {
+  visibility: hidden;
+  display: flex !important;
+  position: relative;
+  text-align: center !important;
+}
+.formCapsLock span {
+  margin: auto;
+}
+.formCapsLock .warningIcon {
+  color: red;
+  position: absolute;
+  top: -3px;
+  margin-left: 10px;
+}

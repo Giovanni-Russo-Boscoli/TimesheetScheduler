@@ -58,6 +58,11 @@ namespace TimesheetScheduler
             bundles.Add(new StyleBundle("~/Content/timesheetscheduler").Include(
                       "~/Content/progressBarAnimation.css",
                       "~/Content/TimesheetScheduler.css"));
+
+            bundles.Add(new StyleBundle("~/Content/login").Include(
+                      "~/Content/Login.css"));
+
+            BundleTable.EnableOptimizations = true;
         }
     }
 }

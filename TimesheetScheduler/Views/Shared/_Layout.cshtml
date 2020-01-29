@@ -35,8 +35,8 @@
     </div>
 
     <div class="container body-content">
-            @RenderBody()
-            @*<hr />
+        @RenderBody()
+        @*<hr />
             <footer class="_footer">
                 <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
             </footer>*@
@@ -51,7 +51,7 @@
     @Scripts.Render("~/bundles/jquerydateformat")
     @Scripts.Render("~/bundles/toastrjs")
     @Scripts.Render("~/bundles/util")
-    @Scripts.Render("~/bundles/login")
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"></script>
     @RenderSection("scripts", required: false)
 </body>

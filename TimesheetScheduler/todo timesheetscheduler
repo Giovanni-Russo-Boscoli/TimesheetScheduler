@@ -118,6 +118,8 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 
 - retrieve all usedr LDAP/TFS for the dropdown ???ai no 
 
+- CAPSLOCK warning login page
+
 (*1)
 Adding a link is simple. You create a link and add it to the collection, then save the work item
 WorkItem wiFeatureGroup = WIStore.GetWorkItem(9999);
