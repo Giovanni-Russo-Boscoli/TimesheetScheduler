@@ -15,6 +15,20 @@ using System.Runtime.InteropServices;
 using System.Web.Mvc;
 using TimesheetScheduler.Models;
 using Application = Microsoft.Office.Interop.Excel.Application;
+//
+using Microsoft.TeamFoundation.Framework.Client;
+using Microsoft.TeamFoundation.Framework.Common;
+using Microsoft.TeamFoundation.Server;
+using Microsoft.TeamFoundation.VersionControl.Client;
+using System.Web.Security;
+using Microsoft.VisualStudio.Services.WebApi;
+using Microsoft.VisualStudio.Services.Client;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
+using System.Threading.Tasks;
+//
+using Microsoft.TeamFoundation.Core.WebApi;
+using ProjectInfo = Microsoft.TeamFoundation.Server.ProjectInfo;
+using System.DirectoryServices.AccountManagement;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -67,24 +81,25 @@ namespace TimesheetScheduler.Controllers
 
         public string GetUserName()
         {
-            var d = HttpContext.User.Identity.Name;
-            var a = System.Environment.UserName;
-            var b = User.Identity.Name;
-            var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-            var e = System.Web.HttpContext.Current.User.Identity;
+            //var d = HttpContext.User.Identity.Name;
+            //var a = System.Environment.UserName;
+            //var b = User.Identity.Name;
+            //var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+            //var e = System.Web.HttpContext.Current.User.Identity;
 
-            Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-            NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
-            //NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
-            Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
-            VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
-            TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri,basicCredentials);
+            //Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+            //NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
+            ////NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
+            //Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
+            //VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
+            //TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
 
-            var aut = tfsColl.HasAuthenticated;
-            tfsColl.Authenticate();
-            aut = tfsColl.HasAuthenticated;
+            //var aut = tfsColl.HasAuthenticated;
+            //tfsColl.Authenticate();
+            //aut = tfsColl.HasAuthenticated;
 
-            return tfsColl.AuthorizedIdentity.DisplayName;
+            //return tfsColl.AuthorizedIdentity.DisplayName;
+            return string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
         }
 
         //public string GetUserName1()
@@ -144,6 +159,12 @@ namespace TimesheetScheduler.Controllers
 
         public JsonResult ConnectTFS(bool bypassTFS, string userName, int _month, int _year)
         {
+            //ListUserByProject(GetProjectNameTFS());
+            //test();
+            //printMemberList();
+            //printMemberList2();
+            //printMemberList3();
+            //test2();
             IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
             userName = userName.Replace("'", "''");
             joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(bypassTFS, userName, _month, _year));
@@ -247,6 +268,147 @@ namespace TimesheetScheduler.Controllers
         //    return listWorkItems.OrderBy(x => x.StartDate).ToList();
         //}
 
+        public void printMemberList()
+        {
+            List<string> users = new List<string>();
+            string teamProject = "BOM_MOD24";
+            var _uri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+            TfsTeamProjectCollection tpc = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(_uri);
+            tpc.EnsureAuthenticated();
+            var vcs = tpc.GetService<VersionControlServer>();
+
+            Microsoft.TeamFoundation.VersionControl.Client.TeamProject tp = vcs.GetTeamProject(teamProject);
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(_uri);
+            IGroupSecurityService sec = (IGroupSecurityService)projCollection.GetService(typeof(IGroupSecurityService));
+            Identity[] appGroups = sec.ListApplicationGroups(tp.ArtifactUri.AbsoluteUri);
+            var membersBOM = appGroups.Where(x => x.AccountName.Contains("BOM_MOD24"));
+            foreach (Identity group in membersBOM)//appGroups)
+            {
+                Identity[] groupMembers = sec.ReadIdentities(SearchFactor.Sid, new string[] { group.Sid }, QueryMembership.Expanded);
+                foreach (Identity member in groupMembers)
+                {
+                    //Console.WriteLine(member.DisplayName);
+                    if (member.Members != null)
+                    {
+                        foreach (string memberSid in member.Members)
+                        {
+                            Identity memberInfo = sec.ReadIdentity(SearchFactor.Sid, memberSid, QueryMembership.None);
+                            users.Add(memberInfo.DisplayName);
+                        }
+                    }
+                }
+            }
+            users = users.OrderBy(x => x).Distinct().ToList();
+        }
+
+        [HttpGet]
+        public JsonResult ListUserByProject(string projectName) {
+
+            if (string.IsNullOrEmpty(projectName))
+            {
+                projectName = GetProjectNameTFS();
+            }
+
+            var tfsUri = new Uri(GetUrlTfs());
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+
+            ICommonStructureService Iss = (ICommonStructureService)projCollection.GetService(typeof(ICommonStructureService));
+            ProjectInfo[] ProjInfo = Iss.ListProjects();
+            var bomi_24 = ProjInfo.Where(x => x.Name.Equals(projectName)).FirstOrDefault().Uri;
+
+            TfsTeamService teamService = projCollection.GetService<TfsTeamService>();
+            TeamFoundationTeam defaultTeam = teamService.GetDefaultTeam(bomi_24, null);
+            var allMembersBomi = defaultTeam.GetMembers(projCollection, MembershipQuery.Expanded).Where(m => !m.IsContainer);
+            var names = allMembersBomi.Select(x => x.DisplayName).OrderBy(x => x).Distinct();
+
+            return Json(names, JsonRequestBehavior.AllowGet);
+        }
+
+        public void test()
+        {
+            var tfsUri = new Uri(GetUrlTfs());
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+
+            ICommonStructureService Iss = (ICommonStructureService)projCollection.GetService(typeof(ICommonStructureService));
+            var projectUri = "vstfs:///Classification/TeamProject/83822731-bd6e-4624-a6cf-45032d6c302a";
+
+            ProjectInfo[] ProjInfo = Iss.ListProjects();
+            var bomi_24 = ProjInfo[32].Uri;
+
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+            TfsTeamProjectCollection collection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            //TfsTeamProjectCollection collection2 = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            TfsTeamService teamService = collection.GetService<TfsTeamService>();
+            TeamFoundationTeam defaultTeam = teamService.GetDefaultTeam(projectUri, null);
+            TeamFoundationTeam defaultTeam2 = teamService.GetDefaultTeam(bomi_24, null);
+            ISecurityService securityService = collection.GetService<ISecurityService>();
+            SecurityNamespace securityNamespace = securityService.GetSecurityNamespace(FrameworkSecurity.IdentitiesNamespaceId);
+
+            //TeamFoundationTeam defaultTeam = teamService.GetDefaultTeam(projectUri, null);
+
+            // Retrieve an ACL object for all the team members.
+            var allMembers = defaultTeam.GetMembers(collection, MembershipQuery.Expanded).Where(m => !m.IsContainer);
+            var allMembersBomi = defaultTeam2.GetMembers(collection, MembershipQuery.Expanded).Where(m => !m.IsContainer);
+
+            var names = allMembers.Select(x => x.DisplayName);
+            var names2 = allMembersBomi.Select(x => x.DisplayName);
+
+            List<string> groupsList = new List<string>();
+            System.Collections.ArrayList groups = new System.Collections.ArrayList();
+            foreach (System.Security.Principal.IdentityReference group in System.Security.Principal.WindowsIdentity.GetCurrent().Groups)
+            {
+                var a = group.Translate(typeof(System.Security.Principal.NTAccount));
+                groupsList.Add(group.Translate(typeof(System.Security.Principal.NTAccount)).ToString());
+            }
+
+            //BLOCK 5 INIT
+            using (TfsTeamProjectCollection tpc = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/")))
+            {
+                tpc.EnsureAuthenticated();
+                var wiStore = tpc.GetService<WorkItemStore>();
+                var vcs = tpc.GetService<VersionControlServer>();
+                var a = vcs.GetAllTeamProjects(true);
+
+                var b = vcs.GetTeamProject("BOM_MOD24");
+                var c = b.TeamProjectCollection;
+                var d = b.TeamProjectCollection.GetService<WorkItemStore>();
+            }
+            //BLOCK 5 END
+
+            //BLOCK 6 INIT
+            //Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+            string teamProjectName = "BOM_MOD24";
+            TfsTeamProjectCollection projectCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            var css3 = projectCollection.GetService<ICommonStructureService3>();
+            ProjectInfo projectInfo = css3.GetProjectFromName(teamProjectName);
+            TfsTeamService teamService2 = projectCollection.GetService<TfsTeamService>();
+            var allItems = teamService2.QueryTeams(projectInfo.Uri);
+            //TeamFoundationTeam foundationTeam = projectCollection.GetService<TeamFoundationTeam>();
+            //var members = foundationTeam.GetMembers(projectCollection, MembershipQuery.Direct);
+            //BLOCK 6 END
+
+
+            //user names list by project:
+            //https://stackoverflow.com/questions/47651194/finding-user-in-tfs-project-programmatically
+            //https://docs.microsoft.com/en-us/archive/blogs/vasu_sankaran/querying-tfs-for-groups-and-memberships
+
+            //BLOCK 7 INIT
+            TfsTeamProjectCollection tfs = new TfsTeamProjectCollection(new Uri(GetUrlTfs()));
+            tfs.EnsureAuthenticated();
+            IGroupSecurityService gss = tfs.GetService<IGroupSecurityService>();
+            Identity SIDS = gss.ReadIdentity(SearchFactor.AccountName, "Project Collection Valid Users", QueryMembership.Expanded);
+            Identity[] UserId = gss.ReadIdentities(SearchFactor.Sid, SIDS.Members, QueryMembership.None);
+            List<string> accountnames = new List<string>();
+            foreach (Identity user in UserId)
+            {
+                if (user != null)
+                    accountnames.Add(user.AccountName);
+            }
+
+            accountnames = accountnames.Distinct().ToList();
+            //BLOCK 7 INIT
+        }
+
         public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, string userName, int _month, int _year)
         {
             IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
@@ -272,7 +434,8 @@ namespace TimesheetScheduler.Controllers
                     " FROM WorkItems " +
                     " WHERE [System.TeamProject] = '" + projectName + "'" +
                     " AND [Iteration Path] = '" + _iterationPath + "'" +
-                    " AND [Assigned To] = '" + GetUserLogged() + "'" +
+                    //" AND [Assigned To] = '" + GetUserLogged() + "'" +
+                    " AND [Assigned To] = '" + userName + "'" +
                     " ORDER BY [System.Id], [System.WorkItemType]");
 
                 foreach (WorkItem wi in WIC)
@@ -833,7 +996,8 @@ namespace TimesheetScheduler.Controllers
             //worksheet.get_Range(cellObj.CellPosition).Interior.Color = cellObj.FormatParams.cellBackgroundColor;
         }
 
-        public string GetUserLogged() {
+        public string GetUserLogged()
+        {
             return Session["userLogged"] as String;
         }
 
@@ -1563,6 +1727,7 @@ namespace TimesheetScheduler.Controllers
         {
             return (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday);
         }
+
     }
 }
 

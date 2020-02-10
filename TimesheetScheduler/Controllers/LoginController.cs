@@ -131,8 +131,9 @@ namespace TimesheetScheduler.Controllers
         [AllowAnonymous]
         public string GetLocalUser()
         {
-            DirectoryEntry de = new DirectoryEntry("WinNT://" + Environment.UserDomainName + "/" + Environment.UserName);
-            return de.Properties["FullName"].Value.ToString().Replace(" ", "");
+            //DirectoryEntry de = new DirectoryEntry("WinNT://" + Environment.UserDomainName + "/" + Environment.UserName);
+            //return de.Properties["FullName"].Value.ToString().Replace(" ", "");
+            return "";
         }
     }
 }
