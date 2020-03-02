@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippet Format="1.0.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <Header>
+    <Title>MethodCreation</Title>
+    <!--<Author>Giovanni</Author>-->
+    <Shortcut>newm</Shortcut>
+    <Description>Creates a new method</Description>
+    <SnippetTypes>
+      <SnippetType>SurroundsWith</SnippetType>
+      <!--<SnippetType>Expansion</SnippetType>-->
+    </SnippetTypes>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal>
+        <ID>ReturnType</ID>
+        <ToolTip>Define the class name</ToolTip>
+        <Default>object</Default>
+      </Literal>
+    </Declarations>
+    <Code Language="CSharp">
+      <![CDATA[
+           aaaaaaaaaaaaaaaaa
+           ]]>
+    </Code>
+  </Snippet>
+</CodeSnippet>

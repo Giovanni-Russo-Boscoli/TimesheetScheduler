@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippet Format="1.0.0" xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <Header>
+    <Title>MethodCreation</Title>
+    <!--<Author>Giovanni</Author>-->
+    <Shortcut>NewMethod</Shortcut>
+    <Description>Sql Connection</Description>
+    <SnippetTypes>
+      <SnippetType>SurroundsWith</SnippetType>
+      <SnippetType>Expansion</SnippetType>
+    </SnippetTypes>
+  </Header>
+  <Snippet>
+    <Declarations>
+      <Literal>
+        <ID>ReturnType</ID>
+        <Default>object</Default>
+      </Literal>
+    </Declarations>
+    <Code Language="CSharp">
+      <![CDATA[
+           public $ReturnType$ $ReturnType$Method(){
+              return new $ReturnType$();
+           }
+           ]]>
+    </Code>
+  </Snippet>
+</CodeSnippet>

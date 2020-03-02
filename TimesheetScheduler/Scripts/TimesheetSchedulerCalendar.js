@@ -387,7 +387,8 @@ function calculateLoadBarEventsForListView(calendarEvents) {
 
 function getUserName(callback) {
     $.ajax({
-        url: "/TimesheetScheduler/Home/GetUserLogged",
+        //url: "/TimesheetScheduler/Home/GetUserLogged",
+        url: "/Home/GetUserLogged",
         type: "GET",
         success: function (data) {
             callback(data);
@@ -408,7 +409,8 @@ function LoadUserNames(_userName) {
         "Niall Murphy",
         "Doireann Hanley",
         "Renan Camara",
-        "Disha Virk"];
+        "Disha Virk",
+        "Ramya Krishnegowda"];
 
     names.sort();//ordering A-Z
 
@@ -438,9 +440,10 @@ function LoadMonths() {
 
 function LoadYears() {
     var _currentYear = getCurrentYear();
-    if (getCurrentMonth() === 1) {
-        $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
-    }
+    //if (getCurrentMonth() === 1) {
+    //    $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
+    //}
+    $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
     $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
     $('#yearTimesheet option[value="' + _currentYear + '"]').prop('selected', true);
 }
@@ -725,7 +728,8 @@ function enterKeyForCopyTask() {
 }
 
 function enterKeySaveEvent() {
-    $("#dayTimesheet, #titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet").keypress(function (e) {
+    //, #descriptionTimesheet  -> removed to allow user to use enter/newline in the description field
+    $("#dayTimesheet, #titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet").keypress(function (e) {
         var key = e.which;
         if (key === 13)  // the enter key code
         {
@@ -757,7 +761,8 @@ function saveEvent() {
         if (_workItemNumber) {
             //EDIT
             $.ajax({
-                url: "/TimesheetScheduler/Home/EditTaskOnTFS",
+                //url: "/TimesheetScheduler/Home/EditTaskOnTFS",
+                url: "/Home/EditTaskOnTFS",
                 type: "POST",
                 dataType: "json",
                 data: {
@@ -781,7 +786,8 @@ function saveEvent() {
         } else {
             //CREATION
             $.ajax({
-                url: "/TimesheetScheduler/Home/CreateTaskOnTFS",
+                //url: "/TimesheetScheduler/Home/CreateTaskOnTFS",
+                url: "/Home/CreateTaskOnTFS",
                 type: "POST",
                 dataType: "json",
                 data: {
@@ -888,7 +894,8 @@ function changeColor() {
 function connectToTFS() {
     var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
     $.ajax({
-        url: "/TimesheetScheduler/Home/ConnectTFS",
+        //url: "/TimesheetScheduler/Home/ConnectTFS",
+        url: "/Home/ConnectTFS",
         type: "GET",
         dataType: "json",
         data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
@@ -994,7 +1001,8 @@ function removeHTMLTagsFromString(str) {
 function confirmationSavePath() {
     $.when(
         $.ajax({
-            url: "/TimesheetScheduler/Home/TimesheetSaveLocationAndFileName",
+            //url: "/TimesheetScheduler/Home/TimesheetSaveLocationAndFileName",
+            url: "/Home/TimesheetSaveLocationAndFileName",
             type: "GET",
             async: false,
             data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
@@ -1013,7 +1021,8 @@ function SaveExcelFile(strPath) {
     if (confirm(msgPath)) {
         closeModalActions();
         $.ajax({
-            url: "/TimesheetScheduler/Home/SaveExcelFile",
+            //url: "/TimesheetScheduler/Home/SaveExcelFile",
+            url: "/Home/SaveExcelFile",
             type: "GET",
             cache: false,
             data: { userName: getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
@@ -1338,7 +1347,8 @@ function clearReminderInterval() {
 
 function getWorkItemBy_Id(_workItemId, callback) {
     $.ajax({
-        url: "/TimesheetScheduler/Home/GetWorkItemById",
+        //url: "/TimesheetScheduler/Home/GetWorkItemById",
+        url: "/Home/GetWorkItemById",
         type: "GET",
         dataType: "json",
         data: { workItemId: _workItemId },
@@ -1354,7 +1364,8 @@ function getWorkItemBy_Id(_workItemId, callback) {
 
 function getIdAndTitleWorkItemBy_Id(_workItemId, callback) {
     $.ajax({
-        url: "/TimesheetScheduler/Home/GetIdAndTitleWorkItemById",
+        //url: "/TimesheetScheduler/Home/GetIdAndTitleWorkItemById",
+        url: "/Home/GetIdAndTitleWorkItemById",
         type: "GET",
         dataType: "json",
         data: { workItemId: _workItemId },
@@ -1370,7 +1381,8 @@ function getIdAndTitleWorkItemBy_Id(_workItemId, callback) {
 
 function getWorkItemByDay(_day, callback) {
     $.ajax({
-        url: "/TimesheetScheduler/Home/GetWorkItemByDay",
+        //url: "/TimesheetScheduler/Home/GetWorkItemByDay",
+        url: "/Home/GetWorkItemByDay",
         type: "GET",
         dataType: "json",
         data: { userName: getUserNameFromPage(), day: _day.toUTCString() },
@@ -1386,7 +1398,8 @@ function getWorkItemByDay(_day, callback) {
 
 function ajaxCloseAllTasks(callback, errorCallback) {
     $.ajax({
-        url: "/TimesheetScheduler/Home/CloseTasksMonth",
+        //url: "/TimesheetScheduler/Home/CloseTasksMonth",
+        url: "/Home/CloseTasksMonth",
         type: "PUT",
         dataType: "text",
         data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage()},
@@ -1495,7 +1508,8 @@ function bindDeleteWorkItemLinked() {
 //NOT BEING USED
 function checkWorkItemExists(workItemNumber, callback) {
     $.ajax({
-        url: "/TimesheetScheduler/Home/WorkItemExists",
+        //url: "/TimesheetScheduler/Home/WorkItemExists",
+        url: "/Home/WorkItemExists",
         type: "GET",
         dataType: "text",
         data: { workItemId: workItemNumber },

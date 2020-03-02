@@ -413,6 +413,8 @@ namespace TimesheetScheduler.Controllers
         {
             IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
 
+                       
+
             if (!_bypass)
             {
                 var _urlTFS = GetUrlTfs();
@@ -664,24 +666,28 @@ namespace TimesheetScheduler.Controllers
             IList<string> listToRemoveFromNewWILinks = new List<string>();
 
             //Apply deletion for work items linked (when user remove work item link)
-            foreach (var linkItem in _wi.Links)
+            foreach (Microsoft.TeamFoundation.WorkItemTracking.Client.Link linkItem in _wi.Links)
             {
-                _flagCheckExistsWorItem = false;
-                foreach (var item in _workItemLink)
+                if (linkItem.BaseType == BaseLinkType.RelatedLink)            // WorkItem Link
                 {
-                    var trimItem = item.Trim();
-
-                    if (((RelatedLink)linkItem).RelatedWorkItemId.ToString().Equals(trimItem))
+                    _flagCheckExistsWorItem = false;
+                    foreach (var item in _workItemLink)
                     {
-                        //WORK ITEM ALREADY LINKED
-                        _flagCheckExistsWorItem = true;
-                        listToRemoveFromNewWILinks.Add(_workItemLink.Where(w => w == trimItem).FirstOrDefault());
-                        break;
+                        var trimItem = item.Trim();
+
+                        if (((RelatedLink)linkItem).RelatedWorkItemId.ToString().Equals(trimItem))
+                        {
+                            //WORK ITEM ALREADY LINKED
+                            _flagCheckExistsWorItem = true;
+                            listToRemoveFromNewWILinks.Add(_workItemLink.Where(w => w == trimItem).FirstOrDefault());
+                            break;
+                        }
                     }
-                }
-                if (!_flagCheckExistsWorItem)
-                {
-                    listToRemoveFromWILinks.Add((RelatedLink)linkItem);
+
+                    if (!_flagCheckExistsWorItem)
+                    {
+                        listToRemoveFromWILinks.Add((RelatedLink)linkItem);
+                    }
                 }
             }
 
@@ -716,6 +722,27 @@ namespace TimesheetScheduler.Controllers
                 }
             }
         }
+
+        /*
+         foreach (Microsoft.TeamFoundation.WorkItemTracking.Client.Link li in wi.Links)
+{
+    // Link Type Name
+    li.ArtifactLinkType.Name;          
+
+    if (li.BaseType == BaseLinkType.RelatedLink)            // WorkItem Link
+    {
+        RelatedLink rl = (RelatedLink)li;
+    }
+    else if (li.BaseType == BaseLinkType.ExternalLink)      // ChangeSet, VersionItem , TestResult
+    {
+        ExternalLink ex = (ExternalLink)li;
+    }
+    else if (li.BaseType == BaseLinkType.Hyperlink)         // HyperLink
+    {
+        Hyperlink hy = (Hyperlink)li;
+    }
+}
+             */
 
         [HttpGet]
         public JsonResult GetWorkItemById(int workItemId)
