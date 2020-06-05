@@ -41,7 +41,12 @@
     }
 }
 
-function ajaxErrorHandler(xhrError) {
-    var dom_nodes = $($.parseHTML(xhrError.responseText));
-    toastrMessage(dom_nodes.filter('title').text(), "error");
+function ajaxErrorHandler(origin, xhrError) {
+    if (xhrError.status === 401) {
+        toastrMessage(origin + " - " + "Session expired, please login again.");
+        setTimeout(function () { location.reload(); }, 5000);
+    } else {
+        var dom_nodes = $($.parseHTML(xhrError.responseText));
+        toastrMessage(origin + " - " + dom_nodes.filter('title').text(), "error");
+    }
 }

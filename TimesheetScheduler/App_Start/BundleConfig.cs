@@ -49,6 +49,9 @@ namespace TimesheetScheduler
             bundles.Add(new ScriptBundle("~/bundles/mustachejs").Include(
                      "~/Scripts/Mustache.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/jquerymask").Include(
+                     "~/Scripts/jquery.mask.js"));
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/fullcalendar.css",

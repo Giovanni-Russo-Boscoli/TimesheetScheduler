@@ -1,11 +1,15 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using Microsoft.TeamFoundation.Client;
+//
+using Microsoft.TeamFoundation.Framework.Client;
+using Microsoft.TeamFoundation.Framework.Common;
+using Microsoft.TeamFoundation.Server;
+using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
-using Microsoft.VisualStudio.Services.Common;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.DirectoryServices;
+using System.DirectoryServices.AccountManagement;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -14,28 +18,17 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Web.Mvc;
 using TimesheetScheduler.Models;
+using TimesheetScheduler.ViewModel;
 using Application = Microsoft.Office.Interop.Excel.Application;
 //
-using Microsoft.TeamFoundation.Framework.Client;
-using Microsoft.TeamFoundation.Framework.Common;
-using Microsoft.TeamFoundation.Server;
-using Microsoft.TeamFoundation.VersionControl.Client;
-using System.Web.Security;
-using Microsoft.VisualStudio.Services.WebApi;
-using Microsoft.VisualStudio.Services.Client;
-using Microsoft.TeamFoundation.SourceControl.WebApi;
-using System.Threading.Tasks;
-//
-using Microsoft.TeamFoundation.Core.WebApi;
 using ProjectInfo = Microsoft.TeamFoundation.Server.ProjectInfo;
-using System.DirectoryServices.AccountManagement;
 
 namespace TimesheetScheduler.Controllers
 {
     [Authorize]
+    [SessionExpireFilter]
     public class HomeController : Controller
     {
-        //[TimesheetSchedulerAuthorize(Roles="giovanni")]
         public ActionResult Index()
         {
             return View();
@@ -67,68 +60,10 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
-        //public string GetUserName0() {
-
-        //    //System.Environment.UserName: Windows Account Name
-        //    //Page.User.Identity.Name: Domain\ Windows Account Name
-        //    //System.Security.Principal.WindowsIdentity.GetCurrent().Name: Domain\ Windows Account Name
-        //    var d = HttpContext.User.Identity.Name;
-        //    var a = System.Environment.UserName;
-        //    var b = User.Identity.Name;
-        //    var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-        //    return "Amy Kelly";
-        //}
-
         public string GetUserName()
         {
-            //var d = HttpContext.User.Identity.Name;
-            //var a = System.Environment.UserName;
-            //var b = User.Identity.Name;
-            //var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-            //var e = System.Web.HttpContext.Current.User.Identity;
-
-            //Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-            //NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
-            ////NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
-            //Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
-            //VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
-            //TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
-
-            //var aut = tfsColl.HasAuthenticated;
-            //tfsColl.Authenticate();
-            //aut = tfsColl.HasAuthenticated;
-
-            //return tfsColl.AuthorizedIdentity.DisplayName;
             return string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
         }
-
-        //public string GetUserName1()
-        //{
-        //    Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-        //    TfsTeamProjectCollection teamCollection =
-        //        new TfsTeamProjectCollection(tfsUri, CredentialCache.DefaultNetworkCredentials);
-
-        //    VssConnection connection = new VssConnection(tfsUri, new VssCredentials());
-        //    var _vssDataConnection = connection.GetClient<BuildHttpClient>();
-
-        //    var displayName = teamCollection.AuthorizedIdentity.DisplayName;
-
-        //    return displayName;
-        //}
-
-
-
-        //[HttpGet]
-        //public string GetUserName2()
-        //{
-        //    var c = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
-        //    var b = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
-        //    var a = string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
-        //    return a;
-        //    //return string.IsNullOrEmpty(Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
-        //}
-
-        //https://stackoverflow.com/questions/1267071/how-to-get-windows-user-name-when-identity-impersonate-true-in-asp-net
 
         public string GetDomainUserName()
         {
@@ -157,116 +92,26 @@ namespace TimesheetScheduler.Controllers
             return ConfigurationManager.AppSettings["iterationPathTFS"].ToString();
         }
 
-        public JsonResult ConnectTFS(bool bypassTFS, string userName, int _month, int _year)
+        //public JsonResult ConnectTFS(string userName, int _month, int _year)
+        //{
+        //    IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
+        //    userName = userName.Replace("'", "''");
+        //    joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(userName, _month, _year));
+        //    joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userName));
+
+        //    return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
+        //}
+        
+        [HttpPost]
+        public JsonResult ConnectTFS(UserDataSearchTFS userData)//, int _month, int _year)
         {
-            //ListUserByProject(GetProjectNameTFS());
-            //test();
-            //printMemberList();
-            //printMemberList2();
-            //printMemberList3();
-            //test2();
             IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
-            userName = userName.Replace("'", "''");
-            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(bypassTFS, userName, _month, _year));
-            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(bypassTFS, userName, _month, _year));
+            userData.UserName = userData.UserName.Replace("'", "''");
+            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(userData));
+            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userData.UserName));
 
             return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
         }
-
-        //public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, string userName, int _month, int _year)
-        //{
-        //    IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
-
-        //    if (!_bypass)
-        //    {
-        //        var _urlTFS = GetUrlTfs();
-        //        Uri tfsUri = new Uri(_urlTFS);
-        //        TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-
-        //        //
-        //        Uri tfsUri2 = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-        //        NetworkCredential networkCredentials = new NetworkCredential("GiovanniBoscoli@welfare.irlgov.ie", "?bCh+*p#d8MQ12");
-        //        //NetworkCredential networkCredentials = new NetworkCredential("renancamara@welfare.irlgov.ie", "1998Senha");
-        //        Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
-        //        VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
-        //        TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
-        //        //
-
-        //        //WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-        //        WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
-
-        //        var projectName = GetProjectNameTFS();
-        //        var _iterationPath = GetIterationPathTFS();
-
-        //        WorkItemCollection WIC = WIS.Query(
-        //            " SELECT [System.Id], " +
-        //            " [System.WorkItemType], " +
-        //            " [System.State], " +
-        //            " [System.AssignedTo], " +
-        //            " [System.Title], " +
-        //            " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-        //            " [Microsoft.VSTS.Scheduling.StartDate] " +
-        //            " FROM WorkItems " +
-        //            " WHERE [System.TeamProject] = '" + projectName + "'" +
-        //            " AND [Iteration Path] = '" + _iterationPath + "'" +
-        //            " AND [Assigned To] = '" + userName + "'" +
-        //            " ORDER BY [System.Id], [System.WorkItemType]");
-
-        //        foreach (WorkItem wi in WIC)
-        //        {
-        //            if (wi["Start Date"] != null)
-        //            {
-        //                DateTime _startDate = (DateTime)wi["Start Date"];
-        //                if (_startDate.Month == (_month == 0 ? DateTime.Now.Month : _month)
-        //                    && _startDate.Year == (_year == 0 ? DateTime.Now.Year : _year))
-        //                {
-        //                    var _workItemsLinked = "";
-        //                    for (int i = 0; i < wi.WorkItemLinks.Count; i++)
-        //                    {
-        //                        _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
-        //                    }
-
-        //                    //http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/BOM_MOD24/_queries?id=318197
-        //                    //var _link = GetUrlTfs() + GetProjectNameTFS() + "/_queries?id=" + wi["Id"].ToString();
-
-        //                    listWorkItems.Add(new WorkItemSerialized()
-        //                    {
-        //                        Id = wi["Id"].ToString(),
-        //                        Title = wi["Title"].ToString(),
-        //                        StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-        //                        Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
-        //                        CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-        //                        WorkItemsLinked = _workItemsLinked,
-        //                        State = wi.State,
-        //                        LinkUrl = _urlTFS + projectName + "/_queries?id=" + wi["Id"].ToString()
-        //                    });
-        //                }
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        //---------------------
-        //        for (int i = 0; i < DateTime.DaysInMonth(_year, _month); i++)
-        //        {
-        //            //few days without info to simulate "out of the office"
-        //            if (i == 7 || i == 12 || i == 17 || i == 22 || i == 28) continue;
-        //            listWorkItems.Add(new WorkItemSerialized()
-        //            {
-        //                Id = "35541" + i,
-        //                Title = "Title-" + i,
-        //                StartDate = new DateTime(_year, _month, i + 1),
-        //                Description = "Description-" + i,
-        //                CompletedHours = i + 1,
-        //                WorkItemsLinked = "#321321 #654654",
-        //                State = "Closed",
-        //                LinkUrl = "www.google.com"
-        //            });
-        //        }
-        //    }
-
-        //    return listWorkItems.OrderBy(x => x.StartDate).ToList();
-        //}
 
         public void printMemberList()
         {
@@ -302,7 +147,8 @@ namespace TimesheetScheduler.Controllers
         }
 
         [HttpGet]
-        public JsonResult ListUserByProject(string projectName) {
+        public JsonResult ListUserByProject(string projectName)
+        {
 
             if (string.IsNullOrEmpty(projectName))
             {
@@ -409,122 +255,40 @@ namespace TimesheetScheduler.Controllers
             //BLOCK 7 INIT
         }
 
-        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(bool _bypass, string userName, int _month, int _year)
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(UserDataSearchTFS userData)
         {
             IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
 
-                       
+            var _urlTFS = GetUrlTfs();
+            Uri tfsUri = new Uri(_urlTFS);
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
-            if (!_bypass)
+            //var projectName = GetProjectNameTFS();
+            //var _iterationPath = GetIterationPathTFS();
+
+            WorkItemCollection WIC = WIS.Query(
+                " SELECT [System.Id], " +
+                " [System.WorkItemType], " +
+                " [System.State], " +
+                " [System.AssignedTo], " +
+                " [System.Title], " +
+                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                " [Microsoft.VSTS.Scheduling.StartDate] " +
+                " FROM WorkItems " +
+                " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
+                " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
+                " AND [Assigned To] = '" + userData.UserName + "'" +
+                " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
+                " ORDER BY [System.Id], [System.WorkItemType]");
+
+            foreach (WorkItem wi in WIC)
             {
-                var _urlTFS = GetUrlTfs();
-                Uri tfsUri = new Uri(_urlTFS);
-                TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-                var projectName = GetProjectNameTFS();
-                var _iterationPath = GetIterationPathTFS();
-
-                WorkItemCollection WIC = WIS.Query(
-                    " SELECT [System.Id], " +
-                    " [System.WorkItemType], " +
-                    " [System.State], " +
-                    " [System.AssignedTo], " +
-                    " [System.Title], " +
-                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                    " [Microsoft.VSTS.Scheduling.StartDate] " +
-                    " FROM WorkItems " +
-                    " WHERE [System.TeamProject] = '" + projectName + "'" +
-                    " AND [Iteration Path] = '" + _iterationPath + "'" +
-                    //" AND [Assigned To] = '" + GetUserLogged() + "'" +
-                    " AND [Assigned To] = '" + userName + "'" +
-                    " ORDER BY [System.Id], [System.WorkItemType]");
-
-                foreach (WorkItem wi in WIC)
+                if (wi["Start Date"] != null)
                 {
-                    if (wi["Start Date"] != null)
-                    {
-                        DateTime _startDate = (DateTime)wi["Start Date"];
-                        if (_startDate.Month == (_month == 0 ? DateTime.Now.Month : _month)
-                            && _startDate.Year == (_year == 0 ? DateTime.Now.Year : _year))
-                        {
-                            var _workItemsLinked = "";
-                            for (int i = 0; i < wi.WorkItemLinks.Count; i++)
-                            {
-                                _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
-                            }
-
-                            //http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/BOM_MOD24/_queries?id=318197
-                            //var _link = GetUrlTfs() + GetProjectNameTFS() + "/_queries?id=" + wi["Id"].ToString();
-
-                            listWorkItems.Add(new WorkItemSerialized()
-                            {
-                                Id = wi["Id"].ToString(),
-                                Title = wi["Title"].ToString(),
-                                StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                                Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
-                                CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-                                WorkItemsLinked = _workItemsLinked,
-                                State = wi.State,
-                                LinkUrl = _urlTFS + projectName + "/_queries?id=" + wi["Id"].ToString()
-                            });
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //---------------------
-                for (int i = 0; i < DateTime.DaysInMonth(_year, _month); i++)
-                {
-                    //few days without info to simulate "out of the office"
-                    if (i == 7 || i == 12 || i == 17 || i == 22 || i == 28) continue;
-                    listWorkItems.Add(new WorkItemSerialized()
-                    {
-                        Id = "35541" + i,
-                        Title = "Title-" + i,
-                        StartDate = new DateTime(_year, _month, i + 1),
-                        Description = "Description-" + i,
-                        CompletedHours = i + 1,
-                        WorkItemsLinked = "#321321 #654654",
-                        State = "Closed",
-                        LinkUrl = "www.google.com"
-                    });
-                }
-            }
-
-            return listWorkItems.OrderBy(x => x.StartDate).ToList();
-        }
-
-        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate(bool _bypass, string userName, int _month, int _year)
-        {
-            IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
-            if (!_bypass)
-            {
-                Uri tfsUri = new Uri(GetUrlTfs());
-                TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-                var projectName = GetProjectNameTFS();
-                var _iterationPath = GetIterationPathTFS();
-
-                WorkItemCollection WIC = WIS.Query(
-                    " SELECT [System.Id], " +
-                    " [System.WorkItemType], " +
-                    " [System.State], " +
-                    " [System.AssignedTo], " +
-                    " [System.Title], " +
-                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                    " [Microsoft.VSTS.Scheduling.StartDate] " +
-                    " FROM WorkItems " +
-                    " WHERE [System.TeamProject] = '" + projectName + "'" +
-                    " AND [Iteration Path] = '" + _iterationPath + "'" +
-                    " AND [Assigned To] = '" + userName + "'" +
-                    " ORDER BY [System.Id], [System.WorkItemType]");
-
-                foreach (WorkItem wi in WIC)
-                {
-                    if (wi["Start Date"] == null)
+                    DateTime _startDate = (DateTime)wi["Start Date"];
+                    if (_startDate.Month == (userData.Month == 0 ? DateTime.Now.Month : userData.Month)
+                        && _startDate.Year == (userData.Year == 0 ? DateTime.Now.Year : userData.Year))
                     {
                         var _workItemsLinked = "";
                         for (int i = 0; i < wi.WorkItemLinks.Count; i++)
@@ -532,36 +296,74 @@ namespace TimesheetScheduler.Controllers
                             _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
                         }
 
-                        listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
+                        listWorkItems.Add(new WorkItemSerialized()
                         {
                             Id = wi["Id"].ToString(),
                             Title = wi["Title"].ToString(),
-                            Description = wi["Description"].ToString(),
+                            StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+                            Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
                             CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
                             WorkItemsLinked = _workItemsLinked,
                             State = wi.State,
-                            CreationDate = wi.CreatedDate
+                            LinkUrl = _urlTFS + userData.ProjectNameTFS + "/_queries?id=" + wi["Id"].ToString()
                         });
-
                     }
                 }
             }
-            else
+
+            return listWorkItems.OrderBy(x => x.StartDate).ToList();
+        }
+
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate(string userName)
+        {
+            IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
+
+            Uri tfsUri = new Uri(GetUrlTfs());
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+
+            WorkItemCollection WIC = WIS.Query(
+                " SELECT [System.Id], " +
+                " [System.WorkItemType], " +
+                " [System.State], " +
+                " [System.AssignedTo], " +
+                " [System.Title], " +
+                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                " [Microsoft.VSTS.Scheduling.StartDate] " +
+                " FROM WorkItems " +
+                " WHERE [System.TeamProject] = '" + projectName + "'" +
+                " AND [Iteration Path] = '" + _iterationPath + "'" +
+                " AND [Assigned To] = '" + userName + "'" +
+                " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
+                " ORDER BY [System.Id], [System.WorkItemType]");
+
+            foreach (WorkItem wi in WIC)
             {
-                for (int i = 0; i < DateTime.DaysInMonth(_year, _month); i++)
+                if (wi["Start Date"] == null)
                 {
+                    var _workItemsLinked = "";
+                    for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                    {
+                        _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                    }
+
                     listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
                     {
-                        Id = "35541" + i,
-                        Title = "Title-" + i,
-                        Description = "Description - " + i,
-                        CompletedHours = 7.5,
-                        WorkItemsLinked = "",
-                        State = "New",
-                        CreationDate = DateTime.Now
+                        Id = wi["Id"].ToString(),
+                        Title = wi["Title"].ToString(),
+                        Description = wi["Description"].ToString(),
+                        CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                        WorkItemsLinked = _workItemsLinked,
+                        State = wi.State,
+                        CreationDate = wi.CreatedDate
                     });
+
                 }
             }
+
             return listWorkItemsWithoutStartDate.OrderByDescending(x => x.CreationDate).ToList();
 
         }
@@ -722,27 +524,6 @@ namespace TimesheetScheduler.Controllers
                 }
             }
         }
-
-        /*
-         foreach (Microsoft.TeamFoundation.WorkItemTracking.Client.Link li in wi.Links)
-{
-    // Link Type Name
-    li.ArtifactLinkType.Name;          
-
-    if (li.BaseType == BaseLinkType.RelatedLink)            // WorkItem Link
-    {
-        RelatedLink rl = (RelatedLink)li;
-    }
-    else if (li.BaseType == BaseLinkType.ExternalLink)      // ChangeSet, VersionItem , TestResult
-    {
-        ExternalLink ex = (ExternalLink)li;
-    }
-    else if (li.BaseType == BaseLinkType.Hyperlink)         // HyperLink
-    {
-        Hyperlink hy = (Hyperlink)li;
-    }
-}
-             */
 
         [HttpGet]
         public JsonResult GetWorkItemById(int workItemId)
@@ -948,6 +729,57 @@ namespace TimesheetScheduler.Controllers
             return true;
         }
 
+        [HttpPost]
+        public int ApplyCreationDateToStartDate(string userName)
+        {
+            Uri tfsUri = new Uri(GetUrlTfs());
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+            userName = userName.Replace("'", "''");
+
+            WorkItemCollection WIC = WIS.Query(
+                " SELECT [System.Id], " +
+                " [System.WorkItemType], " +
+                " [System.State], " +
+                " [System.AssignedTo], " +
+                " [System.Title], " +
+                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                " [Microsoft.VSTS.Scheduling.StartDate] " +
+                " FROM WorkItems " +
+                " WHERE [System.TeamProject] = '" + projectName + "'" +
+                " AND [Iteration Path] = '" + _iterationPath + "'" +
+                " AND [Assigned To] = '" + userName + "'" +
+                " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
+                " ORDER BY [System.Id], [System.WorkItemType]");
+
+            var _count = 0;
+
+            foreach (WorkItem wi in WIC)
+            {
+                if (wi["Start Date"] == null)
+                {
+                    wi.Open();
+                    wi.Fields["Start Date"].Value = wi.CreatedDate;
+
+                    var _valid = wi.Validate();
+
+                    if (_valid.Count > 0)
+                    {
+                        throw new Exception("Errors when validating object [ApplyCreationDateToStartDate]");
+                    }
+
+                    wi.Save();
+
+                    _count++;
+                }
+            }
+
+            return _count;
+        }
+
         [HttpGet]
         public bool WorkItemExists(int workItemId)
         {
@@ -1025,7 +857,7 @@ namespace TimesheetScheduler.Controllers
 
         public string GetUserLogged()
         {
-            return Session["userLogged"] as String;
+            return Session["userLogged"] as string;
         }
 
         #endregion UTIL
@@ -1473,9 +1305,9 @@ namespace TimesheetScheduler.Controllers
             //---------------------------------------- END HEADER TABLE---------------------------------------------
         }
 
-        private int CreateTable(Worksheet worksheet, bool _bypassTFS, string userName, int _month, int _year)
+        private int CreateTable(Worksheet worksheet, UserDataSearchTFS userData)
         {
-            var _table = TimesheetRecords(_bypassTFS, userName, _month, _year);
+            var _table = TimesheetRecords(userData);
             int firstRow = 6;
             int lastRow = _table.Count + firstRow;
             int j;
@@ -1637,7 +1469,8 @@ namespace TimesheetScheduler.Controllers
             FormatCell(worksheet, cellObj);
         }
 
-        public string SaveExcelFile(bool _bypassTFS, string userName, int _month, int _year)
+        [HttpPost]
+        public string SaveExcelFile(UserDataSearchTFS userData)
         {
             Application excel;
             Workbook worKbooK;
@@ -1646,7 +1479,7 @@ namespace TimesheetScheduler.Controllers
 
             try
             {
-                userName = userName.Replace("'", "''");
+                userData.UserName = userData.UserName.Replace("'", "''");
 
                 excel = new Application();
                 excel.Visible = false;
@@ -1654,13 +1487,13 @@ namespace TimesheetScheduler.Controllers
                 worKbooK = excel.Workbooks.Add(Type.Missing);
                 var tableEventCount = 0;
 
-                InitExcelVariables(userName, _month, _year);
+                InitExcelVariables(userData.UserName, userData.Month, userData.Year);
 
                 worksheet = (Worksheet)worKbooK.ActiveSheet;
-                worksheet.Name = "Timesheet_" + userName.Replace(" ", "_");
+                worksheet.Name = "Timesheet_" + userData.UserName;//.Replace(" ", "_");
 
                 CreateHeader(worksheet);
-                tableEventCount = CreateTable(worksheet, _bypassTFS, userName, _month, _year);
+                tableEventCount = CreateTable(worksheet, userData);
                 resizeColumns(worksheet);
 
                 var borderStartsRow = 5;
@@ -1671,7 +1504,7 @@ namespace TimesheetScheduler.Controllers
                 border.Weight = 2d;
 
                 protectSheet(worksheet);
-                var saveParams = TimesheetSaveLocationAndFileName(userName, _month, _year);
+                var saveParams = TimesheetSaveLocationAndFileName(userData.UserName, userData.Month, userData.Year);
                 worKbooK.SaveAs(saveParams);
 
                 worKbooK.Close();
@@ -1743,9 +1576,9 @@ namespace TimesheetScheduler.Controllers
             worksheet.get_Range("G11").WrapText = true;
         }
 
-        public IList<WorkItemRecord> TimesheetRecords(bool _bypassTFS, string userName, int _month, int _year)
+        public IList<WorkItemRecord> TimesheetRecords(UserDataSearchTFS userData)
         {
-            return Convert_TFS_Events_To_Excel_Format(ReturnTFSEvents_ListWorkItems(_bypassTFS, userName, _month, _year), _month, _year);
+            return Convert_TFS_Events_To_Excel_Format(ReturnTFSEvents_ListWorkItems(userData), userData.Month, userData.Year);
         }
 
         #endregion EXCEL
@@ -1756,60 +1589,4 @@ namespace TimesheetScheduler.Controllers
         }
 
     }
-}
-
-public class WorkItemSerialized
-{
-
-    public string Id { get; set; }
-    public string Title { get; set; }
-    public DateTime? StartDate { get; set; }
-    public DateTime? CreationDate { get; set; }
-    public string Description { get; set; }
-    public double? CompletedHours { get; set; }
-    public string WorkItemsLinked { get; set; }
-    public string State { get; set; }
-    public string LinkUrl { get; set; }
-
-}
-
-public class WorkItemRecord
-{
-    public int Id { get; set; }
-
-    public DateTime Date { get; set; }
-
-    public int WorkItemNumber { get; set; }
-
-    public string Description { get; set; }
-
-    public float ChargeableHours { get; set; }
-
-    public float NonChargeableHours { get; set; }
-
-    public string Comments { get; set; }
-
-    public bool IsWeekend { get; set; }
-}
-
-public class ParamsFormatCell
-{
-    public int fontSize { get; set; } = 11;
-    public string fontFamily { get; set; }
-    public bool fontBold { get; set; } = false;
-    public bool fontItalic { get; set; } = false;
-    public Color fontColor { get; set; } = Color.Black;
-    public Color cellBackgroundColor { get; set; } = Color.Black;
-    public XlHAlign aligment { get; set; } = XlHAlign.xlHAlignCenter;
-    public bool lockCell { get; set; } = false;
-
-    //public XlLineStyle borderLineStyle { get; set; }
-    //public Color borderColor { get; set; }
-}
-
-public class CellObject
-{
-    public string CellPosition { get; set; }
-    public string CellValue { get; set; }
-    public ParamsFormatCell FormatParams { get; set; }
 }

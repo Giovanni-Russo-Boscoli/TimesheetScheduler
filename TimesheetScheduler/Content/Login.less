@@ -17,7 +17,7 @@ container div {
 #login .container #login-row #login-column #login-box {
     margin-top: 25%;
     max-width: 315px;
-    height: 355px;
+    height: auto;
     border: 1px solid #9C9C9C;
     background-color: #EAEAEA;
     margin-left: auto;
@@ -31,7 +31,6 @@ container div {
 }
 
 #login .container #login-row #login-column #login-box #login-form #register-link {
-    margin-top: -85px;
 }
 
 #login-column input {
@@ -54,24 +53,17 @@ container div {
     text-align: center !important;
 }
 
-.userNameInput {
-    margin-top: 60px !important;
-    margin-bottom: 20px !important;
-}
 
 .passwordInput {
     margin: auto !important; /*center align*/
-    /*margin-bottom: 40px !important;*/
 }
 
 .submitLogin {
     width: 150px !important;
-    margin-top: 25px !important;
 }
 
 .formCapsLock {
-    visibility: hidden;
-    display:flex !important;
+    display:none;
     position:relative;
     text-align:center !important;
 
@@ -85,4 +77,19 @@ container div {
         top: -3px;
         margin-left:10px;
     }
+}
+
+.messageValidation {
+    ul{
+        padding:0 !important;
+
+        li {
+            text-align:center;
+            display: block !important;
+        }
+    }
+}
+
+.loginBtnAndRememberMeDiv{
+
 }

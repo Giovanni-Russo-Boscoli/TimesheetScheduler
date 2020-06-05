@@ -19,7 +19,7 @@ container div {
 #login .container #login-row #login-column #login-box {
   margin-top: 25%;
   max-width: 315px;
-  height: 355px;
+  height: auto;
   border: 1px solid #9C9C9C;
   background-color: #EAEAEA;
   margin-left: auto;
@@ -29,9 +29,6 @@ container div {
 }
 #login .container #login-row #login-column #login-box #login-form {
   padding: 20px;
-}
-#login .container #login-row #login-column #login-box #login-form #register-link {
-  margin-top: -85px;
 }
 #login-column input {
   border-radius: 30px;
@@ -50,22 +47,15 @@ container div {
   align-content: center !important;
   text-align: center !important;
 }
-.userNameInput {
-  margin-top: 60px !important;
-  margin-bottom: 20px !important;
-}
 .passwordInput {
   margin: auto !important;
   /*center align*/
-  /*margin-bottom: 40px !important;*/
 }
 .submitLogin {
   width: 150px !important;
-  margin-top: 25px !important;
 }
 .formCapsLock {
-  visibility: hidden;
-  display: flex !important;
+  display: none;
   position: relative;
   text-align: center !important;
 }
@@ -77,4 +67,11 @@ container div {
   position: absolute;
   top: -3px;
   margin-left: 10px;
+}
+.messageValidation ul {
+  padding: 0 !important;
+}
+.messageValidation ul li {
+  text-align: center;
+  display: block !important;
 }

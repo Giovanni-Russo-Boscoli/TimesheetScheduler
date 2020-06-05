@@ -15,7 +15,7 @@
 
 - reports end of the month
 
-	- link workitems (using autocomplete or search field) when creating/editing workitem (*1)
+	- link workitems (using autocomplete or search field) when creating/editing workitem
 
 	- add option to remove workitem linked
 
@@ -51,7 +51,7 @@
 
 	- indicator how many tasks in "Start Date Not Defined" (N) = (7 tasks)
 
-- remove classes from HomeController
+	- remove classes from HomeController
 
 	- add Description field for Modal when creating/editing
 
@@ -77,7 +77,7 @@ Caso seja necessário uma validacao previa, que envie notificacao para aprovar o 
 
 - routine to create all excel files (from selected list of users/team) + report
 
-- INCLUDE IN INFO MONTH MODAL RATES 
+	- INCLUDE IN INFO MONTH MODAL RATES 
 
 - FINAL REPORT WITH RATES AND CHARGES FOR EACH ONE AND SEPARATED TEAMS (CORE/DRAWDOWN)
 
@@ -108,27 +108,32 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 
 	- create a login page :( - DONE :)
 
-- Required message in login page misaligned
+	- Required message in login page misaligned
 
 - duplicate task (open the actual task to be duplicated and then duplicate from there...)
 
-- call ReturnTFSEvents_ListWorkItemsWithoutStartDate only when click the button to display (avoid wasting time loading)
+	- call ReturnTFSEvents_ListWorkItemsWithoutStartDate only when click the button to display (avoid wasting time loading)
 
-- create less file Login page (login.less)
+	- create less file Login page (login.less)
 
 - prepare environment to work with different TFS url's 
 
 - retrieve all usedr LDAP/TFS for the dropdown ???
 
-- CAPSLOCK warning login page (detects with no need to use keydown in the input - the same as windows login)
+	- CAPSLOCK warning login page (detects with no need to use keydown in the input - the same as windows login)
 
 - users should close/finish their months - User flags that agree with closing the month (User had checked and its happy)
 
 - reminder for next month (for reports) (e.g. Remove a specific email from the mail list)
 
-(*1)
-Adding a link is simple. You create a link and add it to the collection, then save the work item
-WorkItem wiFeatureGroup = WIStore.GetWorkItem(9999);
-WorkItemLink wiLink = new WorkItemLink(WIStore.WorkItemLinkTypes["Is Produced By"], 9999, 8888);
-wiFeatureGroup.WorkItemLinks.Add(wiLink);
-wiFeatureGroup.Save();
+	- Display INFO dialog content beside the calendar table (under actions button)
+
+- Refresh button for that specific options (User/Month/Year) ?????
+
+	- Confirm box when logging out
+
+- countdown session  expire
+
+	- button ME to change to your user
+
+	- button previous and next to change the month (keep the same user)

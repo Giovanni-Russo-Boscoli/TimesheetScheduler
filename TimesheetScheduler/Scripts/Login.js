@@ -8,8 +8,10 @@ $(document).ready(function () {
 
 function capsLockOn(e) {
     if (e.getModifierState("CapsLock")) {
-        $('.formCapsLock').css("visibility", "visible");
+        //$('.formCapsLock').css("visibility", "visible");
+        $('.formCapsLock').show();
     } else {
-        $('.formCapsLock').css("visibility", "hidden");
+        //$('.formCapsLock').css("visibility", "hidden");
+        $('.formCapsLock').hide();
     }
 }

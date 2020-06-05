@@ -1,4 +1,4 @@
-﻿var _bypassTFS = false;
+﻿//http://pcgan0855:88/Home
 var totalChargeableHours = 0;
 var totalNonChargeableHours = 0;
 var timerID = 0;
@@ -12,51 +12,12 @@ $(document).ready(function ($) {
     bindYearDropdown();
     closeAllTasksCurrentMonth_Tooltip();
     getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
-    //getUserName(function (data) { alert(data);}); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
     saveEvent();
     applyBtnClassesInActionsSelect();
-    btnActionClick();
     reminderNoEventCreationForToday();
     copyTask();
     linkWorkItem();
-
-
-
-    //$('#body-row .collapse').collapse('hide');
-
-    // Collapse/Expand icon
-    $('#collapse-icon').addClass('fa-angle-double-left');
-
-    // Collapse click
-    $('[data-toggle=sidebar-colapse]').click(function () {
-        SidebarCollapse();
-    });
-
-    //materializecss INIT 
-    //$('.fixed-action-btn').floatingActionButton({
-    //    direction: 'left',
-    //    hoverEnabled: false
-    //});
-    //materializecss END 
 });
-
-function SidebarCollapse() {
-    $('.menu-collapsed').toggleClass('d-none');
-    $('.sidebar-submenu').toggleClass('d-none');
-    $('.submenu-icon').toggleClass('d-none');
-    $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
-
-    // Treating d-flex/d-none on separators with title
-    var SeparatorTitle = $('.sidebar-separator-title');
-    if (SeparatorTitle.hasClass('d-flex')) {
-        SeparatorTitle.removeClass('d-flex');
-    } else {
-        SeparatorTitle.addClass('d-flex');
-    }
-
-    // Collapse/Expand icon
-    $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
-}
 
 function clearMonthInfoVariables() {
     totalChargeableHours = 0;
@@ -66,11 +27,9 @@ function clearMonthInfoVariables() {
 function registerTriggerAjax() {
     jQuery.ajaxSetup({
         beforeSend: function () {
-            //console.log("show...");
             $('.modalPleaseWait').show();
         },
         complete: function () {
-            //console.log("hide...");
             $('.modalPleaseWait').hide();
         },
         success: function () {
@@ -81,11 +40,6 @@ function registerTriggerAjax() {
 function eventsCalendar(_events, dateCalendar) {
 
     var dayEvent = "";
-    //var _chargeableHoursPerDay = 0;
-    //var _nonChargeableHoursPerDay = 0;
-
-    //var _currentChargeableHours = 0.0;
-    //var _currentNonChargeableHours = 0.0;
     var totalChargeableHoursRemaining = 7.5;
 
     clearMonthInfoVariables();
@@ -107,19 +61,36 @@ function eventsCalendar(_events, dateCalendar) {
         },
         eventMouseover: function (event) {
 
+            var obj =
+                `<div class='objTooltip'>` +
+                `<br/> <span class='boldContent'>` + event.title + `</span>` +
+                `<br/> <span class='boldContent'> Chargeable Hours: </span>` + event.chargeableHours +
+                `<br/> <span class='boldContent'> Non-Chargeable Hours: </span>` + event.nonchargeableHours +
+                `<br/> <span class='boldContent'> Description: </span> <div class='wrapContent'>` + event.description + `</div>` +
+                `      <span class='boldContent'> Work Items Linked: </span>` + event.comments +
+                `<br/> <span class='boldContent'> State: </span>` + event.state +
+                `</div>`;
+
+
+            $(this).addClass("backgroundColorEventTooltip");
+            $("body").append(obj);
+        },
+        eventMouseout: function (event) {
+            $(this).removeClass("backgroundColorEventTooltip");
+            $(".objTooltip").remove();
         },
         eventRender: function (event, element) {
-            $(element).attr("data-html", "true");
-            $(element).attr("data-container", "body");
-            $(element).tooltip({
-                title: event.title +
-                    "<br> Chargeable Hours: " + event.chargeableHours +
-                    "<br> Non-Chargeable Hours:" + event.nonchargeableHours +
-                    "<br> Description: " + event.description +
-                    "<br> Work Items Linked: " + event.comments +
-                    "<br> State: " + event.state,
-                placement: "bottom"
-            });
+            //$(element).attr("data-html", "true");
+            //$(element).attr("data-container", "body");
+            //$(element).tooltip({
+            //    title: event.title +
+            //        "<br> Chargeable Hours: " + event.chargeableHours +
+            //        "<br> Non-Chargeable Hours:" + event.nonchargeableHours +
+            //        "<br> Description: " + event.description +
+            //        "<br> Work Items Linked: " + event.comments +
+            //        "<br> State: " + event.state,
+            //    placement: "bottom"
+            //});
 
             //--------- [INIT] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
 
@@ -184,6 +155,7 @@ function eventsCalendar(_events, dateCalendar) {
         $(this).html("");
     });
     $(".dayOutOfTheOffice").parent().css("background-color", "#FFF0F1"); //change the color for days without event
+    Info();
 }
 
 function toggleClass(_class) {
@@ -235,15 +207,10 @@ function fromJsonDateToDateStringFormatted(strDate) {
     return _formatDate(new Date(parseInt(strDate.substr(6))).toDateString(), "/");
 }
 
-function generateRandomNumber(min, max) {
-    return Math.random() * (+max - +min) + +min;
-}
-
 function formatTFSEventsForCalendar(_obj) {
     var _calendarEvents = [];
     for (i = 0; i < _obj.length; i++) {
         var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
-        //var _startDate = fromJsonDateToDateStringFormatted(_obj[i].StartDate); //DOES NOT WORK
         var _chargeableHours = _obj[i].CompletedHours > 7.5 ? 7.5 : (_obj[i].CompletedHours !== null ? _obj[i].CompletedHours : 0);
         var _nonchargeableHours = _obj[i].CompletedHours > 7.5 ? _obj[i].CompletedHours - 7.5 : 0;
         _calendarEvents.push({
@@ -254,7 +221,6 @@ function formatTFSEventsForCalendar(_obj) {
             allDay: false,
             day: _startDate,
             workItem: _obj[i].Id,
-            //description: $($.parseHTML(_obj[i].Description)).text(),
             description: removeHTMLTagsFromString(_obj[i].Description),
             chargeableHours: _chargeableHours,
             nonchargeableHours: _nonchargeableHours,
@@ -262,7 +228,6 @@ function formatTFSEventsForCalendar(_obj) {
             state: _obj[i].State,
             color: returnEventColor(_obj[i].State),
             linkUrl: _obj[i].LinkUrl
-            //url: _obj[i].LinkUrl
         });
     }
     return _calendarEvents;
@@ -387,30 +352,233 @@ function calculateLoadBarEventsForListView(calendarEvents) {
 
 function getUserName(callback) {
     $.ajax({
-        //url: "/TimesheetScheduler/Home/GetUserLogged",
         url: "/Home/GetUserLogged",
         type: "GET",
         success: function (data) {
             callback(data);
         },
-        error: function (error) {
-            alert("error when trying to retrieve User Name (getUserName()): " + JSON.stringify(error));
+        function(error) {
+            ajaxErrorHandler(error);
         }
     });
 }
 
+function userNames() {
+    var rates_roles = ratesRoles();
+    var projects_iteration = projectsIteration();
+
+    return userData = {
+        //create a json file and read and write from it
+        "users": [
+            {
+                "name": "Giovanni Boscoli",
+                "rate": rates_roles.JFSSD.rate,
+                "chargeable": true,
+                "role": rates_roles.JFSSD.role,
+                "email": "giovanni.boscoli@welfare.ie",
+                "access": "admin",
+                "category": "core",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Amy Kelly",
+                "rate": rates_roles.BA.rate,
+                "chargeable": true,
+                "role": rates_roles.BA.role,
+                "email": "Amy.Kelly@welfare.ie",
+                "access": "admin",
+                "category": "core",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Ian O'Brien",
+                "rate": rates_roles.SBOM.rate,
+                "chargeable": true,
+                "role": rates_roles.SBOM.role,
+                "email": "Ian.OBrien@welfare.ie",
+                "access": "admin",
+                "category": "core",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Niall Murphy",
+                "rate": rates_roles.SSD.rate,
+                "chargeable": true,
+                "role": rates_roles.SSD.role,
+                "email": "Niall.Murphy@welfare.ie",
+                "access": "user",
+                "category": "core",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Doireann Hanley",
+                "rate": rates_roles.JFSSD.rate,
+                "chargeable": true,
+                "role": rates_roles.JFSSD.role,
+                "email": "Doireann.Hanley@welfare.ie",
+                "access": "user",
+                "category": "drawdown",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Renan Camara",
+                "rate": rates_roles.SSD.rate,
+                "chargeable": true,
+                "role": rates_roles.SSD.role,
+                "email": "Renan.Camara@welfare.ie",
+                "access": "user",
+                "category": "core",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Disha Virk",
+                "rate": rates_roles.SSD.rate,
+                "chargeable": true,
+                "role": rates_roles.SSD.role,
+                "email": "Disha.Virk@welfare.ie",
+                "access": "user",
+                "category": "drawdown",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Dev Krishan",
+                "rate": rates_roles.SSD.rate,
+                "chargeable": true,
+                "role": rates_roles.SSD.role,
+                "email": "Dev.Krishan@welfare.ie",
+                "access": "user",
+                "category": "drawdown",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Craig OToole",
+                "rate": rates_roles.JFSSD.rate,
+                "chargeable": false,
+                "role": rates_roles.JFSSD.role,
+                "email": "Craig.OToole@welfare.ie",
+                "access": "user",
+                "category": "drawdown",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Eoin Edwards",
+                "rate": rates_roles.TA.rate,
+                "chargeable": true,
+                "role": rates_roles.TA.role,
+                "email": "Eoin.Edwards@welfare.ie",
+                "access": "user",
+                "category": "drawdown",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Kevin Shortall",
+                "rate": rates_roles.TA.rate,
+                "chargeable": true,
+                "role": rates_roles.TA.role,
+                "email": "Kevin.Shortall@welfare.ie",
+                "access": "user",
+                "category": "drawdown",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            },
+            {
+                "name": "Fabio Benko",
+                "rate": rates_roles.TA.rate,
+                "chargeable": true,
+                "role": rates_roles.TA.role,
+                "email": "Kevin.Shortall@welfare.ie",
+                "access": "user",
+                "category": "drawdown",
+                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
+                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
+            }
+        ]
+    };
+}
+
+function ratesRoles() {
+    return {
+        "SBOM": {
+            "role": "Senior Business Object Modeller",
+            "rate": 99500
+        },
+        "TA": {
+            "role": "Technical Architect",
+            "rate": 90000
+        },
+        "SSD": {
+            "role": "Senior Software Developer",
+            "rate": 72000
+        },
+        "BA": {
+            "role": "Business Analyst",
+            "rate": 72000
+        },
+        "JFSSD": {
+            "role": "Junior Full Stack Software Developer",
+            "rate": 51500
+        }
+    };
+}
+
+function projectsIteration() {
+    return {
+        "BOM_MOD24": {
+            "projectNameTFS": "BOM_MOD24",
+            "iterationPathTFS": "BOM_MOD24\\Timesheets"
+        }
+    };
+}
+
+function getRateUserByName(userName) {
+    var rate = 0;
+    $(userNames().users).each(function (index, value) {
+        if (rate !== 0) return;
+        if (value.name === userName && value.chargeable) {
+            rate = value.rate;
+        }
+    });
+    return rate;
+}
+
+function getAccessUserByName(userName) {
+    var access = "";
+    $(userNames().users).each(function (index, value) {
+        if (access !== "") return;
+        if (value.name === userName) {
+            access = value.access;
+        }
+    });
+    return access;
+}
+
+function getUserDataByName(userName) {
+    var userData;
+    $(userNames().users).each(function (index, value) {
+        if (value.name === userName) {
+            userData = value;
+        }
+    });
+    return userData;
+}
+
 function LoadUserNames(_userName) {
-    
-    var names = [
-        "Giovanni Boscoli",
-        "Amy Kelly",
-        "Eoin OToole",
-        "Ian O'Brien",
-        "Niall Murphy",
-        "Doireann Hanley",
-        "Renan Camara",
-        "Disha Virk",
-        "Ramya Krishnegowda"];
+
+    var names = [];
+
+    $(userNames().users).each(function (index, value) {
+        names.push(value.name);
+    });
 
     names.sort();//ordering A-Z
 
@@ -440,9 +608,6 @@ function LoadMonths() {
 
 function LoadYears() {
     var _currentYear = getCurrentYear();
-    //if (getCurrentMonth() === 1) {
-    //    $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
-    //}
     $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
     $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
     $('#yearTimesheet option[value="' + _currentYear + '"]').prop('selected', true);
@@ -546,17 +711,52 @@ function IsWeekend(date) {
 }
 
 function Info() {
-    $("#infoModal").modal();
+    clearInfoValues();
+    getUserName(function (loggedUserName) {
+        if (getAccessUserByName(loggedUserName) === "admin") { //identify by role "admin"
+            $("#infoPanel").show();
 
-    //Modal Header
-    $(".H4tTitleInfoModal").text("Info - " + getNameSelectedMonthFromPage() + " - " + getUserNameFromPage());
-    $(".H4tTitleInfoModal").addClass("infoMonthLabel");
+            $("#totalHoursInfoTxt").text(totalChargeableHours + totalNonChargeableHours);
+            $("#dayWorkedInfoTxt").text((totalChargeableHours / 7.5).toFixed(2));
+            $("#chargeableHoursInfoTxt").text(totalChargeableHours);
+            $("#nonchargeableHoursInfoTxt").text(totalNonChargeableHours);
 
-    $("#totalHoursInfoTxt").text(totalChargeableHours + totalNonChargeableHours);
-    $("#dayWorkedInfoTxt").text((totalChargeableHours / 7.5).toFixed(2));
-    $("#chargeableHoursInfoTxt").text(totalChargeableHours);
-    $("#nonchargeableHoursInfoTxt").text(totalNonChargeableHours);
-    closeModalActions();
+            var rateExcVat = getRateUserByName(getUserNameFromPage());
+            if (rateExcVat === 0) {
+                toastrMessage("Rate is 0(zero)", "warning");
+                //return;
+            }
+
+            var rateIncVat = (rateExcVat * 1.23);
+            var totalByDay = (totalChargeableHours / 7.5).toFixed(2);
+            var totalExlVatInfoTxt = (totalByDay * (rateExcVat / 100)).toFixed(2);
+            var totalIncVatInfoTxt = (totalByDay * (rateIncVat / 100)).toFixed(2);
+
+            $("#rateExlVatInfoTxt").text(rateExcVat);
+            $("#rateIncVatInfoTxt").text(rateIncVat);
+            $("#totalExlVatInfoTxt").text(totalExlVatInfoTxt);
+            $("#totalIncVatInfoTxt").text(totalIncVatInfoTxt);
+            currencyMask();
+        } else {
+            $("#infoPanel").hide();
+        }
+    });
+}
+
+function clearInfoValues() {
+    $("#totalHoursInfoTxt").text("");
+    $("#dayWorkedInfoTxt").text("");
+    $("#chargeableHoursInfoTxt").text("");
+    $("#nonchargeableHoursInfoTxt").text("");
+    $("#rateExlVatInfoTxt").text("");
+    $("#rateIncVatInfoTxt").text("");
+    $("#totalExlVatInfoTxt").text("");
+    $("#totalIncVatInfoTxt").text("");
+}
+
+function currencyMask() {
+    $('.currencyMask').unmask();
+    $(".currencyMask").mask('###,###,###.##', { reverse: true });
 }
 
 function applyBtnClassesInActionsSelect() {
@@ -586,7 +786,6 @@ function ModalEvent(event, eventCreation) {
         $("#nonchargeableTimesheet").val(event.nonchargeableHours);
         $("#descriptionTimesheet").val(event.description);
         populateWorkItemLinkedTable(event.comments);
-        //$("#workItemsLinkedTimesheet").val(event.comments);
         $(".urlLinkTfs").removeClass("displayNone");
         $("#linkOriginalUrlTimesheet").attr("href", event.linkUrl);
         populateStateTask(event.state);
@@ -619,7 +818,7 @@ function populateWorkItemLinkedTable(strWorkItemLinks) {
     $(_items).each(function (index, value) {
         if (value) {
             getIdAndTitleWorkItemBy_Id(value, appendLinkWorkItemRow);
-        }        
+        }
     });
 }
 
@@ -699,7 +898,6 @@ function copyTaskByWorkItemNumber() {
             $("#chargeableTimesheet").val(_chargeableHours);
             $("#nonchargeableTimesheet").val(_nonchargeableHours);
             $("#descriptionTimesheet").val(_description);
-            //$("#workItemsLinkedTimesheet").val(data.WorkItemsLinked);
             populateWorkItemLinkedTable(data.WorkItemsLinked);
             closeModalCopyTask();
         });
@@ -761,7 +959,6 @@ function saveEvent() {
         if (_workItemNumber) {
             //EDIT
             $.ajax({
-                //url: "/TimesheetScheduler/Home/EditTaskOnTFS",
                 url: "/Home/EditTaskOnTFS",
                 type: "POST",
                 dataType: "json",
@@ -773,20 +970,19 @@ function saveEvent() {
                     nonchargeableHours: $("#nonchargeableTimesheet").val(),
                     state: $("#closeTaskTimesheet").children("option:selected").val(),
                     description: $("#descriptionTimesheet").val(),
-                    workItemLink: getWorkItemsLinkFromPage() //$("#workItemsLinkedTimesheet").val()
+                    workItemLink: getWorkItemsLinkFromPage()
                 },
                 success: function (data) {
                     toastrMessage("Saved -> Workitem: [" + data + "]", "success");
                     connectToTFS();
                 },
                 error: function (xhr) {
-                    ajaxErrorHandler(xhr);
+                    ajaxErrorHandler("EditTaskOnTFS", xhr);
                 }
             });
         } else {
             //CREATION
             $.ajax({
-                //url: "/TimesheetScheduler/Home/CreateTaskOnTFS",
                 url: "/Home/CreateTaskOnTFS",
                 type: "POST",
                 dataType: "json",
@@ -796,7 +992,7 @@ function saveEvent() {
                     title: $("#titleTimesheet").val(),
                     state: $("#closeTaskTimesheet").children("option:selected").val(),
                     description: $("#descriptionTimesheet").val(),
-                    workItemLink: getWorkItemsLinkFromPage(), //$("#workItemsLinkedTimesheet").val(),
+                    workItemLink: getWorkItemsLinkFromPage(),
                     chargeableHours: $("#chargeableTimesheet").val(),
                     nonchargeableHours: $("#nonchargeableTimesheet").val()
                 },
@@ -805,7 +1001,7 @@ function saveEvent() {
                     connectToTFS();
                 },
                 error: function (xhr) {
-                    ajaxErrorHandler(xhr);
+                    ajaxErrorHandler("CreateTaskOnTFS", xhr);
                 }
             });
         }
@@ -815,15 +1011,10 @@ function saveEvent() {
 function getWorkItemsLinkFromPage() {
     var _workItems = "";
     $(".hiddenWorkItemId").each(function (index, value) {
-        _workItems += "#"+ $(value).text();
+        _workItems += "#" + $(value).text();
     });
     return _workItems;
 }
-
-//function ajaxErrorHandler(xhrError) {
-//    var dom_nodes = $($.parseHTML(xhrError.responseText));
-//    toastrMessage(dom_nodes.filter('title').text(), "error");
-//}
 
 function validationSaveEvent() {
     var _nonValidFields = "";
@@ -844,61 +1035,50 @@ function validationSaveEvent() {
     return _nonValidFields;
 }
 
-//function toastrMessage(msg, typeMessage) {
-//    toastr.options = {
-//        "closeButton": false,
-//        "debug": false,
-//        "newestOnTop": false,
-//        "progressBar": true,
-//        "positionClass": "toast-bottom-right", //"toast-bottom-full-width",
-//        "preventDuplicates": true,
-//        "onclick": null,
-//        "showDuration": "100",
-//        "hideDuration": "1000",
-//        "timeOut": "5000",
-//        "extendedTimeOut": "1000",
-//        "showEasing": "swing",
-//        "hideEasing": "linear",
-//        "showMethod": "show",
-//        "hideMethod": "hide"
-//    };
-
-//    switch (typeMessage) {
-//        case "info": {
-//            toastr.info(msg);
-//            break;
-//        }
-//        case "warning": {
-//            toastr.warning(msg);
-//            break;
-//        }
-//        case "success": {
-//            toastr.success(msg);
-//            break;
-//        }
-//        case "error": {
-//            toastr.error(msg);
-//            break;
-//        }
-//        default: {
-//            toastr.info(msg);
-//            break;
-//        }
-//    }
-//}
-
 function changeColor() {
     $("#inputColor").change(function (e) { alert(e.target.value); });
 }
 
+//function connectToTFS() {
+//    var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
+//    $.ajax({
+//        url: "/Home/ConnectTFS",
+//        type: "GET",
+//        dataType: "json",
+//        data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+//        success: function (data) {
+//            var eventsTFSFormatted = formatTFSEventsForCalendar(data[0]);
+//            eventsCalendar(eventsTFSFormatted, dateCalendar);
+//            eventsCalendarStartDateNotDefined(data[1]);
+//            listViewActive(eventsTFSFormatted);
+//            tooltipDaysListView();
+//        },
+//        error: function (error) {
+//            ajaxErrorHandler("ConnectTFS", error);
+//        }
+//    });
+//}
+
 function connectToTFS() {
     var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
+
+    var userData = getUserDataByName(getUserNameFromPage());
+
+    var jsonObject = {
+        "UserName": userData.name,
+        "ProjectNameTFS": userData.projectNameTFS,
+        "IterationPathTFS": userData.iterationPathTFS,
+        "Month": getMonthFromPage() + 1,
+        "Year": getYearFromPage()
+    };
+
     $.ajax({
-        //url: "/TimesheetScheduler/Home/ConnectTFS",
         url: "/Home/ConnectTFS",
-        type: "GET",
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
         dataType: "json",
-        data: { bypassTFS: _bypassTFS, userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+        //data: { userData: JSON.stringify(jsonObject), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+        data: JSON.stringify(jsonObject),
         success: function (data) {
             var eventsTFSFormatted = formatTFSEventsForCalendar(data[0]);
             eventsCalendar(eventsTFSFormatted, dateCalendar);
@@ -907,30 +1087,58 @@ function connectToTFS() {
             tooltipDaysListView();
         },
         error: function (error) {
-            //alert("error: " + JSON.stringify(error));
-            ajaxErrorHandler(error);
+            ajaxErrorHandler("ConnectTFS", error);
         }
     });
 }
 
 function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
+
     $("#divStartDateNotDefined").empty();
-    $(eventsStartDateNotDefined).each(function (index, value) {
-        //var _creationDate = _formatDate(new Date(parseInt(value.CreationDate.substr(6))).toDateString(), "/");
-        var _creationDate = fromJsonDateToDateStringFormatted(value.CreationDate);
-        var _item = "<div class='eventStartDateNofDefined'>" +
-            "<label class='mainLbl'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
-            "<label class='lblTooltip lblStartDateNotDefinedTitle'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
-            "<label class='lblTooltip lblStartDateNotDefinedState'>" + value.State + "</label>" +
-            "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" +
-            "<label class='lblTooltip lblStartDateNotDefinedWorkItem'>" + value.Id + "</label>" +
-            "</div>";
-        $("#divStartDateNotDefined").append(_item);
+
+    doSomethingIfIsTheSameUser(function (data) {
+        if (data && eventsStartDateNotDefined.length > 0) {
+            //only the own user can see this button
+            $("#divStartDateNotDefined").append("<button id='btnApplyStartDate' class='btn btn-primary' title='Apply the \"Creation Date\" to the \"Start Date\" for all events'> Apply Start Date</button>");
+            bind_btnApplyStartDate();
+        } else {
+            $(eventsStartDateNotDefined).each(function (index, value) {
+                var _creationDate = fromJsonDateToDateStringFormatted(value.CreationDate);
+                var _item = "<div class='eventStartDateNofDefined'>" +
+                    "<label class='mainLbl'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
+                    "<label class='lblTooltip lblStartDateNotDefinedTitle'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
+                    "<label class='lblTooltip lblStartDateNotDefinedState'>" + value.State + "</label>" +
+                    "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" +
+                    "<label class='lblTooltip lblStartDateNotDefinedWorkItem'>" + value.Id + "</label>" +
+                    "</div>";
+                $("#divStartDateNotDefined").append(_item);
+            });
+            $(".spanCountStartDateNotDefined").empty().append("(" + eventsStartDateNotDefined.length + ")");
+            tooltipStartDateNotDefined();
+            onClickEventsStartDateNotDefined();
+            collapseDivStartDateNotDefined(eventsStartDateNotDefined.length);
+        }
     });
-    $(".spanCountStartDateNotDefined").empty().append("(" + eventsStartDateNotDefined.length + ")");
-    tooltipStartDateNotDefined();
-    onClickEventsStartDateNotDefined();
-    collapseDivStartDateNotDefined(eventsStartDateNotDefined.length);
+}
+
+function bind_btnApplyStartDate() {
+    $("#btnApplyStartDate").on("click", function () {
+        if (confirm("It applies the \"Creation Date\" to \"Start Date\" for all events listed \n(undo is NOT available)")) {
+            $.ajax({
+                url: "/Home/ApplyCreationDateToStartDate",
+                type: "POST",
+                dataType: "text",
+                data: { userName: getUserNameFromPage() },
+                success: function (data) {
+                    connectToTFS();
+                    toastrMessage(data + " event(s) were applied \"Creation Date\" to \"Start Date\"", "success");
+                },
+                error: function (error) {
+                    ajaxErrorHandler("ApplyCreationDateToStartDate", error);
+                }
+            });
+        }
+    });
 }
 
 function tooltipStartDateNotDefined() {
@@ -954,7 +1162,6 @@ function onClickEventsStartDateNotDefined() {
 function ModalEventWithoutStartDate(event) {
     var _chargeableHours = event.CompletedHours > 7.5 ? 7.5 : (event.CompletedHours !== null ? event.CompletedHours : 0);
     var _nonchargeableHours = event.CompletedHours > 7.5 ? event.CompletedHours - 7.5 : 0;
-    //var _creationDate = _formatDate(new Date(parseInt(event.CreationDate.substr(6))).toDateString(), "/");
     var _creationDate = fromJsonDateToDateStringFormatted(event.CreationDate);
     var _description = removeHTMLTagsFromString(event.Description);
 
@@ -973,7 +1180,7 @@ function ModalEventWithoutStartDate(event) {
     $("#workItemsLinkedTimesheet").val(event.WorkItemsLinked);
     populateWorkItemLinkedTable(event.WorkItemsLinked);
     $(".urlLinkTfs").removeClass("displayNone");
-    console.log(event.LinkUrl);
+    //console.log(event.LinkUrl);
     $("#linkOriginalUrlTimesheet").attr("href", event.LinkUrl);
     populateStateTask(event.State);
     setModalTitle("Event Without Start Date");
@@ -1001,13 +1208,13 @@ function removeHTMLTagsFromString(str) {
 function confirmationSavePath() {
     $.when(
         $.ajax({
-            //url: "/TimesheetScheduler/Home/TimesheetSaveLocationAndFileName",
             url: "/Home/TimesheetSaveLocationAndFileName",
             type: "GET",
             async: false,
             data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
             error: function (error) {
-                toastrMessage("Not saved. (confirmationSavePath function) \n" + error, "warning");
+                ajaxErrorHandler("confirmationSavePath", error);
+                //toastrMessage("Not saved. (confirmationSavePath function) \n" + error, "warning");
                 return false;
             }
         })
@@ -1018,20 +1225,33 @@ function confirmationSavePath() {
 
 function SaveExcelFile(strPath) {
     var msgPath = "The Excel file will be saved in the following directory: \n" + strPath + ".xls";
+
     if (confirm(msgPath)) {
         closeModalActions();
+
+        var userData = getUserDataByName(getUserNameFromPage());
+
+        var jsonObject = {
+            "UserName": userData.name,
+            "ProjectNameTFS": userData.projectNameTFS,
+            "IterationPathTFS": userData.iterationPathTFS,
+            "Month": getMonthFromPage() + 1,
+            "Year": getYearFromPage()
+        };
+
         $.ajax({
-            //url: "/TimesheetScheduler/Home/SaveExcelFile",
             url: "/Home/SaveExcelFile",
-            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify(jsonObject),
             cache: false,
-            data: { userName: getUserNameFromPage(), _bypassTFS: _bypassTFS, _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+            //data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
             success: function (data) {
                 toastrMessage(data, "success");
             },
             error: function (error) {
-                toastrMessage("error (SaveExcelFile function): " + JSON.stringify(error), "warning");
                 closeModalActions();
+                ajaxErrorHandler("SaveExcelFile", error);
             }
         });
     }
@@ -1040,210 +1260,12 @@ function SaveExcelFile(strPath) {
     }
 }
 
-function fakeTFSObj() {
-    var fakeTFS = [
-        [
-            {
-                "Id": "352147",
-                "Title": "Timesheet - UI Improvements ",
-                "StartDate": "/Date(1567378800000)/",
-                "Description": "",
-                "CompletedHours": 5.5,
-                "WorkItemsLinked": "#350973"
-            },
-            {
-                "Id": "352779",
-                "Title": "Timesheet - UI Improvements ",
-                "StartDate": "/Date(1567465200000)/",
-                "Description": "",
-                "CompletedHours": 4.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "353270",
-                "Title": "Timesheet - UI Improvements ",
-                "StartDate": "/Date(1567551600000)/",
-                "Description": "",
-                "CompletedHours": 4.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "353573",
-                "Title": "Timesheet - UI Improvements + Live bug",
-                "StartDate": "/Date(1567638000000)/",
-                "Description": "",
-                "CompletedHours": 8.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "354065",
-                "Title": "Timesheet - Error when opening standalone tables - offset().top (live issue)",
-                "StartDate": "/Date(1567724400000)/",
-                "Description": "",
-                "CompletedHours": 10.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "354295",
-                "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
-                "StartDate": "/Date(1567983600000)/",
-                "Description": "",
-                "CompletedHours": 7.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "354566",
-                "Title": "Timesheet - Dropdown box not refilling immediately when error message is generated",
-                "StartDate": "/Date(1568070000000)/",
-                "Description": "",
-                "CompletedHours": 8.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "354920",
-                "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
-                "StartDate": "/Date(1568156400000)/",
-                "Description": "",
-                "CompletedHours": null,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "355888",
-                "Title": "Timesheet - Dialog box becomes very long if you select finder after error messsage appears ",
-                "StartDate": "/Date(1568674800000)/",
-                "Description": "",
-                "CompletedHours": 9.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "356179",
-                "Title": "Timesheet - Don't have collections minimise when dialog box is opened",
-                "StartDate": "/Date(1568156400000)/",
-                "Description": "",
-                "CompletedHours": 7.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "356548",
-                "Title": "Timesheet - Dropdown text overlapping icon  ",
-                "StartDate": "/Date(1568847600000)/",
-                "Description": "",
-                "CompletedHours": 7.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "356789",
-                "Title": "Timesheet - UI Improvements (Favourite Actions)",
-                "StartDate": "/Date(1568934000000)/",
-                "Description": "",
-                "CompletedHours": 7.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "357133",
-                "Title": "Timesheet - UI Improvements (Favourite Actions)",
-                "StartDate": "/Date(1569193200000)/",
-                "Description": "",
-                "CompletedHours": 7.5,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "357588",
-                "Title": "Timesheet - UI Improvements (Favourite Actions)",
-                "StartDate": "/Date(1569279600000)/",
-                "Description": "",
-                "CompletedHours": 7.5,
-                "WorkItemsLinked": null
-            },
-            //{
-            //    "Id": "357930",
-            //    "Title": "Timesheet - Freeze headers not working / Double scroll bars related ",
-            //    "StartDate": "/Date(1569366000000)/",
-            //    "Description": "",
-            //    "CompletedHours": 7.5,
-            //    "WorkItemsLinked": null
-            //}
-        ],
-        [
-            //WorkItemsWithoutStartDate
-            {
-                "Id": "331577",
-                "Title": "Timesheet - International Posting - Implement Contributed Actions ",
-                "StartDate": null,
-                "Description": null,
-                "CompletedHours": null,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "332683",
-                "Title": "Timesheet - Implement Articles Dropdown ",
-                "StartDate": null,
-                "Description": null,
-                "CompletedHours": null,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "333005",
-                "Title": "Timesheet - Implement Add Contact from existing top 5 ",
-                "StartDate": null,
-                "Description": null,
-                "CompletedHours": null,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "333378",
-                "Title": "Timesheet - Add actions (edit) for new properties",
-                "StartDate": null,
-                "Description": null,
-                "CompletedHours": null,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "334022",
-                "Title": "Timesheet - Record Signed Action for all decisions",
-                "StartDate": null,
-                "Description": null,
-                "CompletedHours": null,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "334291",
-                "Title": "Timesheet - Improve add contact feature",
-                "StartDate": null,
-                "Description": null,
-                "CompletedHours": null,
-                "WorkItemsLinked": null
-            },
-            {
-                "Id": "334597",
-                "Title": "Timesheet - Refactor after merge with EESSI branch",
-                "StartDate": null,
-                "Description": null,
-                "CompletedHours": null,
-                "WorkItemsLinked": null
-            }
-        ]
-    ];
-    return fakeTFS;
-}
-
-function btnActionClick() {
-    $("#btnActions").on("click", function () {
-        $("#actionsModal").modal();
-        getUserName(function (data) {
-            if (data !== getUserNameFromPage()) {
-                $("#btnCloseAllTasks").off();
-                $("#btnCloseAllTasks").on("click", function () {
-                    toastrMessage("You are not authorized to close tasks from another user", "warning");
-                });
-            }
-            else {
-                $("#btnCloseAllTasks").off();
-                $("#btnCloseAllTasks").on("click", function () {
-                    closeAllTasksCurrentMonth();
-                });
-            }
-        });
+function doSomethingIfIsTheSameUser(callback) {
+    getUserName(function (data) {
+        if (data === getUserNameFromPage()) {
+            callback(true);
+        }
+        callback(false);
     });
 }
 
@@ -1256,20 +1278,27 @@ function closeModalCopyTask() {
 }
 
 function closeAllTasksCurrentMonth() {
-    var _month = getNameSelectedMonthFromPage();
-    if (confirm("Do you want close all " + _month + " tasks?")) {
-        ajaxCloseAllTasks(function (data) {
-            closeModalActions();
-            connectToTFS();
-            if (data === true || data === "True") {
-                toastrMessage("All '" + _month + "' Tasks Were Closed", "success");
+    getUserName(function (data) {
+        if (data !== getUserNameFromPage()) {
+            toastrMessage("You are not authorized to close tasks from another user", "warning");
+        }
+        else {
+            var _month = getNameSelectedMonthFromPage();
+            if (confirm("Do you want close all " + _month + " tasks?")) {
+                ajaxCloseAllTasks(function (data) {
+                    closeModalActions();
+                    connectToTFS();
+                    if (data === true || data === "True") {
+                        toastrMessage("All '" + _month + "' Tasks Were Closed", "success");
+                    }
+                }, closeModalActions);
             }
-        }, closeModalActions);
-    }
+        }
+    });
 }
 
 function closeAllTasksCurrentMonth_Tooltip() {
-    $("#btnCloseAllTasks").attr("title", "Close All  " + getNameSelectedMonthFromPage() + " Tasks");
+    $("#btnCloseAllTasks").attr("title", "Close All '" + getNameSelectedMonthFromPage() + "' Tasks");
 }
 
 function unsavedForm(onoff) {
@@ -1308,38 +1337,9 @@ function reminderNoEventCreationForToday() {
                 });
             }
         });
-       
+
     }, _interval);
 }
-
-//function reminderNoEventCreationForToday() {
-//    var tomorrow = new Date();
-//    tomorrow.setDate(tomorrow.getDate() + 1);    
-//    var _interval = (60 * 100);
-//    timerID = setInterval(function () {
-//        checkUserRequestedActionWithLoggedUser(function (sameUser) {
-//            if (sameUser) {
-//                getWorkItemByDay(tomorrow, function (data) {
-//                    if (jQuery.isEmptyObject(data)) {
-//                        window.focus();
-//                        clearReminderInterval();
-//                        if (confirm("You don't have a event created for today, would like to create now?")) {
-//                            ModalEvent(tomorrow, true);
-//                            reminderNoEventCreationForToday();
-//                        } else {
-//                            reminderNoEventCreationForToday();
-//                            return false;
-//                        }
-//                    }
-//                    else {
-//                        clearReminderInterval();
-//                    }
-//                });
-//            }
-//        });
-
-//    }, _interval);
-//}
 
 function clearReminderInterval() {
     clearInterval(timerID);
@@ -1347,7 +1347,6 @@ function clearReminderInterval() {
 
 function getWorkItemBy_Id(_workItemId, callback) {
     $.ajax({
-        //url: "/TimesheetScheduler/Home/GetWorkItemById",
         url: "/Home/GetWorkItemById",
         type: "GET",
         dataType: "json",
@@ -1357,14 +1356,13 @@ function getWorkItemBy_Id(_workItemId, callback) {
             return data;
         },
         error: function (xhr) {
-            ajaxErrorHandler(xhr);
+            ajaxErrorHandler("GetWorkItemById", xhr);
         }
     });
 }
 
 function getIdAndTitleWorkItemBy_Id(_workItemId, callback) {
     $.ajax({
-        //url: "/TimesheetScheduler/Home/GetIdAndTitleWorkItemById",
         url: "/Home/GetIdAndTitleWorkItemById",
         type: "GET",
         dataType: "json",
@@ -1374,14 +1372,13 @@ function getIdAndTitleWorkItemBy_Id(_workItemId, callback) {
             return data;
         },
         error: function (xhr) {
-            ajaxErrorHandler(xhr);
+            ajaxErrorHandler("GetIdAndTitleWorkItemById", xhr);
         }
     });
 }
 
 function getWorkItemByDay(_day, callback) {
     $.ajax({
-        //url: "/TimesheetScheduler/Home/GetWorkItemByDay",
         url: "/Home/GetWorkItemByDay",
         type: "GET",
         dataType: "json",
@@ -1390,25 +1387,25 @@ function getWorkItemByDay(_day, callback) {
             callback(data);
         },
         error: function (error) {
-            //alert(JSON.stringify(error));
-            toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
+            ajaxErrorHandler("GetWorkItemByDay" + error);
+            //toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
         }
     });
 }
 
 function ajaxCloseAllTasks(callback, errorCallback) {
     $.ajax({
-        //url: "/TimesheetScheduler/Home/CloseTasksMonth",
         url: "/Home/CloseTasksMonth",
         type: "PUT",
         dataType: "text",
-        data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage()},
+        data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         success: function (data) {
             callback(data);
         },
         error: function (error) {
             errorCallback();
-            toastrMessage("error (ajaxCloseAllTasks): " + JSON.stringify(error), "warning");
+            //toastrMessage("error (ajaxCloseAllTasks): " + JSON.stringify(error), "warning");
+            ajaxErrorHandler("ajaxCloseAllTasks", error);
         }
     });
 }
@@ -1429,7 +1426,7 @@ function linkWorkItemClick() {
     $("#btnLinkWorkItem").on("click", function () {
         $("#linkWorkItemModal").modal();
         $("#linkWorkItemId").val("");
-        
+
         //to resolve problems when trying to do stuff when the modal is loading
         $("#linkWorkItemModal").on('shown.bs.modal', function () {
             $('#linkWorkItemId').focus();
@@ -1437,7 +1434,7 @@ function linkWorkItemClick() {
 
         //Toggle event modal behind
         $("#eventModal").css("display", "none");
-        $("#linkWorkItemModal").on('hide.bs.modal',  function () {
+        $("#linkWorkItemModal").on('hide.bs.modal', function () {
             $("#eventModal").css("display", "block");
         });
 
@@ -1459,21 +1456,21 @@ function addLinkWorkItem() {
     $("#btnSaveLinkWorkItem").on("click", function () {
         var _workItem = $("#linkWorkItemId").val();
         getIdAndTitleWorkItemBy_Id(_workItem, function (data) {
-                if (!isWorkItemLinked(_workItem)) {
-                    appendLinkWorkItemRow(data, true);
-                }
-                else {
-                    toastrMessage("Work Item already linked (" + _workItem + ")", "warning");
-                }
-                $("#linkWorkItemModal").modal('toggle');
+            if (!isWorkItemLinked(_workItem)) {
+                appendLinkWorkItemRow(data, true);
+            }
+            else {
+                toastrMessage("Work Item already linked (" + _workItem + ")", "warning");
+            }
+            $("#linkWorkItemModal").modal('toggle');
         });
-    });    
+    });
 }
 
 function appendLinkWorkItemRow(event, addedByUser) {
     var newRow =
         "<tr>" +
-        "<td> <a href='" + event.LinkUrl +"' target='_blank'>" + event.Id + " - " + event.Title + "</a>" +
+        "<td> <a href='" + event.LinkUrl + "' target='_blank'>" + event.Id + " - " + event.Title + "</a>" +
         "<span class='hiddenWorkItemId'>" + event.Id + "</span>" +
         "</td><td>" +
         "<button class='form-control deleteLinkWorkItemTableRow' title='Link work item'></button>" +
@@ -1505,23 +1502,6 @@ function bindDeleteWorkItemLinked() {
     });
 }
 
-//NOT BEING USED
-function checkWorkItemExists(workItemNumber, callback) {
-    $.ajax({
-        //url: "/TimesheetScheduler/Home/WorkItemExists",
-        url: "/Home/WorkItemExists",
-        type: "GET",
-        dataType: "text",
-        data: { workItemId: workItemNumber },
-        success: function (data) {
-            callback(data);
-        },
-        error: function (error) {
-            toastrMessage("error (checkWorkItemExists): " + JSON.stringify(error), "warning");
-        }
-    });
-}
-
 function enterKeyAddWorkItem() {
     $("#linkWorkItemId").keypress(function (e) {
         var key = e.which;
@@ -1543,3 +1523,47 @@ function linkWorkItem() {
 }
 
 // --------------------------------------   LINK WORK ITEM END ------------------------------------
+
+function bindBtnMe() {
+    //$("#btnMe").on("click", function () {
+        //getUserName(function (_userName) {
+        //    $("#userNameTimesheet option").filter(function () {
+        //        return $(this).text() === _userName;
+        //    }).prop('selected', true);//.trigger('change');
+        //    connectToTFS();
+        //    closeAllTasksCurrentMonth_Tooltip();
+        //});
+        //connectToTFS();
+        //closeAllTasksCurrentMonth_Tooltip();
+        //alert($(".loggedUser").text());
+        $("#userNameTimesheet option").filter(function () {
+            return $(this).text() === $(".loggedUser").text();
+        }).prop('selected', true).trigger('change');
+    //});
+}
+
+//function bindPrevMonthBtn() {
+//    $("#btnPrevMonth").on("click", function () {
+//         var _month = $("#monthTimesheet").children("option:selected").val();
+//        if (_month === 1) return; //First month - no previous month
+//        $("#monthTimesheet").val(parseInt(_month) - 1).trigger("change");
+//    });
+//}
+
+//function bindNextMonthBtn() {
+//    $("#btnNextMonth").on("click", function () {
+//    });
+//}
+
+function prevNextMonthBtn(prevNext) {
+    //("#btnPrevMonth").on("click", function () {
+        var _month = $("#monthTimesheet").children("option:selected").val();
+        if (prevNext === 0 && _month === 1 || prevNext === 1 && _month === 12) return; //First month - no previous month
+        if (prevNext === 0) {
+            _month = parseInt(_month) - 1;
+        } else {
+            _month = parseInt(_month) + 1;
+        }
+        $("#monthTimesheet").val(_month).trigger("change");
+    //});
+}

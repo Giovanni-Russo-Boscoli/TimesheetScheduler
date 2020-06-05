@@ -22,6 +22,34 @@ body.loading .modalPleaseWait {
     overflow: hidden;
 }
 // ----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------
+
+.monthSelection,.userSelection {
+    display: flex;
+}
+
+#divActionsBtns {
+    display: flex;
+
+    .btnActions {
+        width: 35px;
+        height: 42px;
+        border: none;
+        margin-right: 15px;
+        display: block;
+        cursor: pointer;
+    }
+
+    #btnCloseAllTasks {
+        background: url(../Images/lock-icon.png) no-repeat center;
+        background-size: 1.7vw;
+    }
+
+    #btnSaveExcelFile {
+        background: url(../Images/xlsx_icon.svg.png) no-repeat center;
+        background-size: 1.7vw;
+    }
+}
+
 // ----------------------------------------- StartDateNotDefined INIT ------------------------------------------------
 
 #divStartDateNotDefined {
@@ -30,6 +58,12 @@ body.loading .modalPleaseWait {
     border: 1px solid #337ab7;
     padding: 15px 7px;
     overflow: auto;
+
+    #btnApplyStartDate {
+        width: 100%;
+        height: 30px;
+        background-color: #337ab7;
+    }
 
     .eventStartDateNofDefined {
         border: 1px solid #ddd;
@@ -130,8 +164,70 @@ body.loading .modalPleaseWait {
 }
 
 // ----------------------------------------- StartDateNotDefined END -------------------------------------------------
-// ----------------------------------------- MODAL INIT --------------------------------------------------------------
+// ----------------------------------------- INFO EVENT INIT --------------------------------------------------------------
 
+#infoEvent {
+    padding: 5px;
+    display: none;
+    height: 25vh;
+    width: 20vw;
+    float: left;
+    margin: auto;
+    /*opacity:0.4;*/
+    background-color: #b2b2b2;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.objTooltip {
+    z-index: 10;
+    background-color: black;
+    color: wheat;
+    width: auto;
+    /*float: right;*/
+    margin: auto;
+    bottom: 0;
+    position: absolute;
+    padding: 0 10px 10px 10px;
+    border: 1px solid #d2d2d2;
+
+    .boldContent {
+        font-weight: bold;
+    }
+
+    .wrapContent {
+        white-space: pre-line;
+    }
+}
+
+.backgroundColorEventTooltip {
+    background-color: black !important;
+}
+
+/*.teste {
+    padding-left: 0 !important;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    top: 37.2vh; //25vh height = (100 - 25) / 2 = 75/2 = 37.5
+}*/
+
+/*.displayInfoEvent{
+    display:block !important;
+}
+
+.ontopEvent{
+    background-color: #d87676;
+}*/
+
+// ----------------------------------------- INFO EVENT END --------------------------------------------------------------
+// ----------------------------------------- INFO PANEL INIT --------------------------------------------------------------
+/*#infoPanel {
+    display: none;
+}*/
+
+// ----------------------------------------- INFO PANEL END --------------------------------------------------------------
+// ----------------------------------------- MODAL INIT --------------------------------------------------------------
 #linkWorkItemTable {
     font-family: arial, sans-serif;
     border-collapse: collapse;
@@ -230,6 +326,7 @@ body.loading .modalPleaseWait {
     height: 800px !important;
     max-height: 800px !important;
     overflow: auto;
+    z-index: 1 !important;
 }
 
 .fc-time {
@@ -268,7 +365,7 @@ body.loading .modalPleaseWait {
 // ----------------------------------------- FOOTER END --------------------------------------------------------------
 // ----------------------------------------- GRID AREA INIT --------------------------------------------------------------
 
-#btnActions {
+/*#btnActions {
     width: 100%;
     font-size: 18px;
 }
@@ -340,7 +437,7 @@ body.loading .modalPleaseWait {
     padding: 20px 0;
     font-size: 30px;
 }
-
+    
 #actionsModal {
     margin: auto;
 
@@ -357,6 +454,7 @@ body.loading .modalPleaseWait {
         height: 55vh;
     }
 }
+*/
 
 // ----------------------------------------- GRID AREA END --------------------------------------------------------------
 
@@ -419,9 +517,8 @@ table th, td {
 }*/
 /*---------------------------------------------------NEW ??? KEEP???*/
 // --------------------------------------------------  SIDE MENU INIT ----------------------------------------------
-@import url('https://fonts.googleapis.com/css?family=Montserrat');
 /*-------------------------------- END ----*/
-#body-row {
+/*#body-row {
     margin-left: 0;
     margin-right: 0;
     display: flex;
@@ -431,7 +528,6 @@ table th, td {
     min-height: 90vh;
     background-color: #132644;
     padding: 0;
-    /* flex: unset; */
 }
 
 .sidebar-expanded {
@@ -439,17 +535,14 @@ table th, td {
 }
 
 .sidebar-collapsed {
-    /*width: 60px;*/
     width: 100px;
 }
 
-/* ----------| Menu item*/
 #sidebar-container .list-group a {
     height: 50px;
     color: white;
 }
 
-/* ----------| Submenu item*/
 #sidebar-container .list-group li.list-group-item {
     background-color: #132644;
 }
@@ -463,7 +556,6 @@ table th, td {
     font-size: 0.9rem;
 }
 
-/* ----------| Separators */
 .sidebar-separator-title {
     background-color: #132644;
     height: 35px;
@@ -494,7 +586,7 @@ a.bg-dark {
     padding-left: 0px !important;
     padding-right: 0px !important;
     margin-right: 0px !important;
-}
+}*/
 
 // --------------------------------------------------  SIDE MENU END ----------------------------------------------
 

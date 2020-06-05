@@ -17,5 +17,18 @@ namespace TimesheetScheduler
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
+
+        protected void Application_EndRequest()
+        {
+            var context = new HttpContextWrapper(Context);
+
+            //Do a direct 401 unautorized
+            if (Context.Response.StatusCode == 302 && context.Request.IsAjaxRequest())
+            {
+                Context.Response.Clear();
+                Context.Response.StatusCode = 401;
+            }
+        }
+
     }
 }

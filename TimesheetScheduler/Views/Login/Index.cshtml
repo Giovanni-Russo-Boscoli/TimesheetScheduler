@@ -21,23 +21,34 @@
                     {
                         <h3 class="text-center text-info">Sign in</h3>
 
-                        @Html.AntiForgeryToken()
-                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <div class="form-group messageValidation">
+                            @Html.AntiForgeryToken()
+
+                        </div>
 
                         <div class="form-group">
-                            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control userNameInput inputLogin", placeholder = "UserName", @Value = @Html.Action("GetLocalUser", "Login") })
-                            @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+                            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control inputLogin", placeholder = "UserName", @Value = @Html.Action("GetLocalUser", "Login") })
                         </div>
 
                         <div class="form-group">
                             @Html.PasswordFor(m => m.Password, new { @class = "form-control passwordInput inputLogin", placeholder = "Password", onkeydown = "capsLockOn(event);" })
-                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+
                         </div>
 
                         <div class="form-group formCapsLock">
                             <span>Caps Lock is on<i class="material-icons warningIcon">warning</i></span>
-                            @*<span class="iconCapsLock">&#9888;</span>*@
-                           
+                        </div>
+
+                        <div class="form-group messageValidation">
+                            <ul>
+                                <li>
+                                    @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+                                </li>
+                                <li>
+                                    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                                </li>
+                                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            </ul>
                         </div>
 
                         <input type="submit" value="Log in" class="btn btn-lg btn-primary btn-block inputLogin submitLogin" />
@@ -47,6 +58,8 @@
                         </div>
 
                     }
+
+
                 </div>
             </div>
         </div>
