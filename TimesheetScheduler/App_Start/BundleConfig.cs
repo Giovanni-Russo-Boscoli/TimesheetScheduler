@@ -12,7 +12,8 @@ namespace TimesheetScheduler
                         "~/Scripts/jquery-{version}.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
-                        "~/Scripts/jquery.validate*"));
+                        "~/Scripts/jquery.validate*",
+                        "~/Scripts/jquery.unobtrusive-ajax.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
                     "~/Scripts/jquery-ui-1.12.1.js"));
@@ -34,6 +35,7 @@ namespace TimesheetScheduler
 
             bundles.Add(new ScriptBundle("~/bundles/timesheetscheduler").Include(
                       "~/Scripts/TimesheetSchedulerCalendar.js"));
+                      //"~/Scripts/DataTables/jquery.dataTables.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/login").Include(
                       "~/Scripts/Login.js"));
@@ -44,7 +46,8 @@ namespace TimesheetScheduler
                         "~/Scripts/modernizr-*"));
 
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
-                      "~/Scripts/bootstrap.js"));
+                      "~/Scripts/bootstrap.js",
+                      "~/Scripts/bootstrap-toggle.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/mustachejs").Include(
                      "~/Scripts/Mustache.js"));
@@ -56,16 +59,22 @@ namespace TimesheetScheduler
                       "~/Content/bootstrap.css",
                       "~/Content/fullcalendar.css",
                       "~/Content/toastr.css",
-                      "~/Content/site.css"));
+                      "~/Content/site.css",
+                      "~/Content/bootstrap-toggle.css",
+                      "~/css/font-awesome.css"));
+
+            bundles.Add(new StyleBundle("~/Content/User").Include(
+                     "~/Content/User.css"));
 
             bundles.Add(new StyleBundle("~/Content/timesheetscheduler").Include(
                       "~/Content/progressBarAnimation.css",
-                      "~/Content/TimesheetScheduler.css"));
+                      "~/Content/TimesheetScheduler.css",
+                      "~/Content/DataTables/css/jquery.dataTables.css"));
 
             bundles.Add(new StyleBundle("~/Content/login").Include(
                       "~/Content/Login.css"));
 
-            BundleTable.EnableOptimizations = true;
+            //BundleTable.EnableOptimizations = true;
         }
     }
 }

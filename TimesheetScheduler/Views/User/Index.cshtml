@@ -1,0 +1,187 @@
+﻿@{
+    ViewData["Title"] = "Users";
+}
+
+@Styles.Render("~/Content/User")
+
+@section scripts{
+    @Scripts.Render("~/bundles/mustachejs")
+    <script type="text/javascript" charset="utf8" src="~/Scripts/DataTables/jquery.dataTables.js"></script> @*MOVE IT TO BUNDLECONFIG AND SET IN _LAYOUT*@
+    <script src="~/Scripts/Users.js" type="text/javascript"></script>@*MOVE IT TO BUNDLECONFIG AND SET IN _LAYOUT*@
+}
+
+@using TimesheetScheduler.Models
+@model JsonUser
+
+<link rel="stylesheet" type="text/css" href="~/Content/DataTables/css/jquery.dataTables.css">
+
+<body>
+    <br />
+    <br />
+
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" id="tabMenuUsers" href="#userTab">User</a></li>
+        <li><a data-toggle="tab" id="tabMenuRoles" href="#rolesTab">Rates and Roles</a></li>
+        <li><a data-toggle="tab" id="tabMenuTfsReference" href="#tfsReferenceTab">TFS Reference</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="userTab" class="tab-pane fade in active">
+            <br />
+            <div class="form-group">
+                <button id="btnNewUser" type="button" class="btn btn-success" onclick="openEditUserModal(0, true);">New User</button>
+            </div>
+            <table id="userTable" class="display hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Active</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Category</th>
+                        <th>Chargeable</th>
+                        <th>Email</th>
+                        <th>Project Name TFS</th>
+                        <th>Iteration Path TFS</th>
+                        <th>Access</th>
+                        <th>Rate</th>
+                        <th>Edit</th>
+                </thead>
+            </table>
+        </div>
+        <div id="rolesTab" class="tab-pane fade">
+            <br />
+            <div class="form-group">
+                <button id="btnRoleItem" type="button" class="btn btn-success" onclick="openEditRoleModal(0, true);">New Role</button>
+            </div>
+            <table id="rolesTable" class="display hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Role</th>
+                        <th>Short Name</th>
+                        <th>Rate</th>
+                        <th>Edit</th>
+                </thead>
+            </table>
+        </div>
+        <div id="tfsReferenceTab" class="tab-pane fade">
+            <br />
+            <div class="form-group">
+                <button id="btnTFSReferenceItem" type="button" class="btn btn-success" onclick="openEditUserModal(0, true);">New TFS Item</button>
+            </div>
+            <table id="tfsReferenceTable" class="display hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Project Name TFS</th>
+                        <th>Iteration Path TFS</th>
+                        <th>Edit</th>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+</body>
+@**@
+<!-- Modal Edit User -->
+<div class="modal fade" id="editCreateUserModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span id="headerLabelUserName"></span></h4>
+            </div>
+            @*@using (Html.BeginForm("AddNewUser", "Home", FormMethod.Post, new { id = "UserForm" }))
+                {*@
+            @using (Ajax.BeginForm("SubmitUserButton", "User", FormMethod.Post, new AjaxOptions()
+            {
+                OnSuccess = "GetResult_AddNewUser",
+                //OnBegin = "yourJavascriptBeginMethod($(this))",
+                OnFailure = "AddNewUserFailure"
+            }, new { id = "UserForm" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    @Html.HiddenFor(x => x.Id, new { id = "hiddenUserId" })
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Active, new { @class = "lblUserEditModal" })
+                        @Html.CheckBoxFor(m => m.Active, new { @class = "form-control inputUserEditModal", id = "checkBoxContentActive", data_size = "mini" })
+                    </div>
+                    <div class="form-group">
+                        <div class="LabelAndInputField">
+                            @Html.LabelFor(m => m.Name, new { @class = "lblUserEditModal" })
+                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control inputUserEditModal", id = "userNameTxt" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <div class="LabelAndInputField">
+                            @Html.LabelFor(m => m.Email, new { @class = "lblUserEditModal" })
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control inputUserEditModal", id = "userEmailTxt" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <div class="LabelAndInputField">
+                            @Html.LabelFor(m => m.Role, new { @class = "lblUserEditModal" })
+                            @Html.DropDownListFor(m => m.Role, new SelectList(""), new { @class = "form-control inputUserEditModal", id = "userRolesSelect" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Role, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <div class="LabelAndInputField">
+                            @{
+                                var listItemCategory = new List<SelectListItem>
+                                                {
+                                                    new SelectListItem { Selected = false, Text = "Core", Value = "Core"},
+                                                    new SelectListItem { Selected = true, Text = "Drawdown", Value = "Drawdown"},
+                                                };
+                            }
+                            @Html.LabelFor(m => m.Category, new { @class = "lblUserEditModal" })
+                            @Html.DropDownListFor(m => m.Category, listItemCategory, new { @class = "form-control inputUserEditModal", id = "userCategorySelect" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Category, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <div class="LabelAndInputField">
+                            @Html.LabelFor(m => m.Chargeable, new { @class = "lblUserEditModal" })
+                            @Html.CheckBoxFor(m => m.Chargeable, new { @class = "form-control inputUserEditModal", id = "checkBoxChargeable", data_size = "mini" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="LabelAndInputField">
+                            @Html.LabelFor(m => m.ProjectNameTFS, new { @class = "lblUserEditModal" })
+                            @Html.DropDownListFor(m => m.ProjectNameTFS, new SelectList(""), new { @class = "form-control inputUserEditModal", id = "userProjectNameTFSSelect" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.ProjectNameTFS, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group">
+                        <div class="LabelAndInputField">
+                            @{
+                                var listItemAccess = new List<SelectListItem>
+                                                {
+                                                    new SelectListItem { Selected = false, Text = "Admin", Value = "Admin"},
+                                                    new SelectListItem { Selected = true, Text = "User", Value = "User"},
+                                                };
+                            }
+                            @Html.LabelFor(m => m.Access, new { @class = "lblUserEditModal" })
+                            @Html.DropDownListFor(m => m.Access, listItemAccess, new { @class = "form-control inputUserEditModal", id = "userAccessSelect" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.Access, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnUpdateUser" name="ButtonType" type="submit" class="btn btn-success" value="UpdateUser">Update</button>
+                    <button id="btnCreateUser" name="ButtonType" type="submit" class="btn btn-success" value="CreateUser">Create</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@Html.Partial("PartialRatesAndRoles")
+
+@*https://developercommunity.visualstudio.com/content/problem/571416/all-instances-of-expressions-in-razor-editor-asks.html*@

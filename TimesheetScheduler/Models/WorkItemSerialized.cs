@@ -11,9 +11,11 @@ namespace TimesheetScheduler.Models
         public DateTime? CreationDate { get; set; }
         public string Description { get; set; }
         public double? CompletedHours { get; set; }
+        public double? RemainingWork { get; set; }
         public string WorkItemsLinked { get; set; }
         public string State { get; set; }
         public string LinkUrl { get; set; }
+        public bool? IsWeekend { get; set; }
 
     }
 }

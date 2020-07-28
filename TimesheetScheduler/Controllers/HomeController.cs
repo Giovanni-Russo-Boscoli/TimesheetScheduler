@@ -6,6 +6,7 @@ using Microsoft.TeamFoundation.Framework.Common;
 using Microsoft.TeamFoundation.Server;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -15,8 +16,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Mail;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
 using TimesheetScheduler.Models;
 using TimesheetScheduler.ViewModel;
 using Application = Microsoft.Office.Interop.Excel.Application;
@@ -29,15 +33,11 @@ namespace TimesheetScheduler.Controllers
     [SessionExpireFilter]
     public class HomeController : Controller
     {
+
+        private string jsonHolidaysServerPath = "~/JsonData/jsonHolidays.json";
+
         public ActionResult Index()
         {
-            return View();
-        }
-
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-
             return View();
         }
 
@@ -101,50 +101,50 @@ namespace TimesheetScheduler.Controllers
 
         //    return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
         //}
-        
+
         [HttpPost]
         public JsonResult ConnectTFS(UserDataSearchTFS userData)//, int _month, int _year)
         {
             IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
             userData.UserName = userData.UserName.Replace("'", "''");
             joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(userData));
-            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userData.UserName));
+            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userData));
 
             return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
         }
 
-        public void printMemberList()
-        {
-            List<string> users = new List<string>();
-            string teamProject = "BOM_MOD24";
-            var _uri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-            TfsTeamProjectCollection tpc = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(_uri);
-            tpc.EnsureAuthenticated();
-            var vcs = tpc.GetService<VersionControlServer>();
+        //public void printMemberList()
+        //{
+        //    List<string> users = new List<string>();
+        //    string teamProject = "BOM_MOD24";
+        //    var _uri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
+        //    TfsTeamProjectCollection tpc = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(_uri);
+        //    tpc.EnsureAuthenticated();
+        //    var vcs = tpc.GetService<VersionControlServer>();
 
-            Microsoft.TeamFoundation.VersionControl.Client.TeamProject tp = vcs.GetTeamProject(teamProject);
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(_uri);
-            IGroupSecurityService sec = (IGroupSecurityService)projCollection.GetService(typeof(IGroupSecurityService));
-            Identity[] appGroups = sec.ListApplicationGroups(tp.ArtifactUri.AbsoluteUri);
-            var membersBOM = appGroups.Where(x => x.AccountName.Contains("BOM_MOD24"));
-            foreach (Identity group in membersBOM)//appGroups)
-            {
-                Identity[] groupMembers = sec.ReadIdentities(SearchFactor.Sid, new string[] { group.Sid }, QueryMembership.Expanded);
-                foreach (Identity member in groupMembers)
-                {
-                    //Console.WriteLine(member.DisplayName);
-                    if (member.Members != null)
-                    {
-                        foreach (string memberSid in member.Members)
-                        {
-                            Identity memberInfo = sec.ReadIdentity(SearchFactor.Sid, memberSid, QueryMembership.None);
-                            users.Add(memberInfo.DisplayName);
-                        }
-                    }
-                }
-            }
-            users = users.OrderBy(x => x).Distinct().ToList();
-        }
+        //    Microsoft.TeamFoundation.VersionControl.Client.TeamProject tp = vcs.GetTeamProject(teamProject);
+        //    TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(_uri);
+        //    IGroupSecurityService sec = (IGroupSecurityService)projCollection.GetService(typeof(IGroupSecurityService));
+        //    Identity[] appGroups = sec.ListApplicationGroups(tp.ArtifactUri.AbsoluteUri);
+        //    var membersBOM = appGroups.Where(x => x.AccountName.Contains("BOM_MOD24"));
+        //    foreach (Identity group in membersBOM)//appGroups)
+        //    {
+        //        Identity[] groupMembers = sec.ReadIdentities(SearchFactor.Sid, new string[] { group.Sid }, QueryMembership.Expanded);
+        //        foreach (Identity member in groupMembers)
+        //        {
+        //            //Console.WriteLine(member.DisplayName);
+        //            if (member.Members != null)
+        //            {
+        //                foreach (string memberSid in member.Members)
+        //                {
+        //                    Identity memberInfo = sec.ReadIdentity(SearchFactor.Sid, memberSid, QueryMembership.None);
+        //                    users.Add(memberInfo.DisplayName);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    users = users.OrderBy(x => x).Distinct().ToList();
+        //}
 
         [HttpGet]
         public JsonResult ListUserByProject(string projectName)
@@ -168,91 +168,6 @@ namespace TimesheetScheduler.Controllers
             var names = allMembersBomi.Select(x => x.DisplayName).OrderBy(x => x).Distinct();
 
             return Json(names, JsonRequestBehavior.AllowGet);
-        }
-
-        public void test()
-        {
-            var tfsUri = new Uri(GetUrlTfs());
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-
-            ICommonStructureService Iss = (ICommonStructureService)projCollection.GetService(typeof(ICommonStructureService));
-            var projectUri = "vstfs:///Classification/TeamProject/83822731-bd6e-4624-a6cf-45032d6c302a";
-
-            ProjectInfo[] ProjInfo = Iss.ListProjects();
-            var bomi_24 = ProjInfo[32].Uri;
-
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-            TfsTeamProjectCollection collection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            //TfsTeamProjectCollection collection2 = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            TfsTeamService teamService = collection.GetService<TfsTeamService>();
-            TeamFoundationTeam defaultTeam = teamService.GetDefaultTeam(projectUri, null);
-            TeamFoundationTeam defaultTeam2 = teamService.GetDefaultTeam(bomi_24, null);
-            ISecurityService securityService = collection.GetService<ISecurityService>();
-            SecurityNamespace securityNamespace = securityService.GetSecurityNamespace(FrameworkSecurity.IdentitiesNamespaceId);
-
-            //TeamFoundationTeam defaultTeam = teamService.GetDefaultTeam(projectUri, null);
-
-            // Retrieve an ACL object for all the team members.
-            var allMembers = defaultTeam.GetMembers(collection, MembershipQuery.Expanded).Where(m => !m.IsContainer);
-            var allMembersBomi = defaultTeam2.GetMembers(collection, MembershipQuery.Expanded).Where(m => !m.IsContainer);
-
-            var names = allMembers.Select(x => x.DisplayName);
-            var names2 = allMembersBomi.Select(x => x.DisplayName);
-
-            List<string> groupsList = new List<string>();
-            System.Collections.ArrayList groups = new System.Collections.ArrayList();
-            foreach (System.Security.Principal.IdentityReference group in System.Security.Principal.WindowsIdentity.GetCurrent().Groups)
-            {
-                var a = group.Translate(typeof(System.Security.Principal.NTAccount));
-                groupsList.Add(group.Translate(typeof(System.Security.Principal.NTAccount)).ToString());
-            }
-
-            //BLOCK 5 INIT
-            using (TfsTeamProjectCollection tpc = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/")))
-            {
-                tpc.EnsureAuthenticated();
-                var wiStore = tpc.GetService<WorkItemStore>();
-                var vcs = tpc.GetService<VersionControlServer>();
-                var a = vcs.GetAllTeamProjects(true);
-
-                var b = vcs.GetTeamProject("BOM_MOD24");
-                var c = b.TeamProjectCollection;
-                var d = b.TeamProjectCollection.GetService<WorkItemStore>();
-            }
-            //BLOCK 5 END
-
-            //BLOCK 6 INIT
-            //Uri tfsUri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-            string teamProjectName = "BOM_MOD24";
-            TfsTeamProjectCollection projectCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            var css3 = projectCollection.GetService<ICommonStructureService3>();
-            ProjectInfo projectInfo = css3.GetProjectFromName(teamProjectName);
-            TfsTeamService teamService2 = projectCollection.GetService<TfsTeamService>();
-            var allItems = teamService2.QueryTeams(projectInfo.Uri);
-            //TeamFoundationTeam foundationTeam = projectCollection.GetService<TeamFoundationTeam>();
-            //var members = foundationTeam.GetMembers(projectCollection, MembershipQuery.Direct);
-            //BLOCK 6 END
-
-
-            //user names list by project:
-            //https://stackoverflow.com/questions/47651194/finding-user-in-tfs-project-programmatically
-            //https://docs.microsoft.com/en-us/archive/blogs/vasu_sankaran/querying-tfs-for-groups-and-memberships
-
-            //BLOCK 7 INIT
-            TfsTeamProjectCollection tfs = new TfsTeamProjectCollection(new Uri(GetUrlTfs()));
-            tfs.EnsureAuthenticated();
-            IGroupSecurityService gss = tfs.GetService<IGroupSecurityService>();
-            Identity SIDS = gss.ReadIdentity(SearchFactor.AccountName, "Project Collection Valid Users", QueryMembership.Expanded);
-            Identity[] UserId = gss.ReadIdentities(SearchFactor.Sid, SIDS.Members, QueryMembership.None);
-            List<string> accountnames = new List<string>();
-            foreach (Identity user in UserId)
-            {
-                if (user != null)
-                    accountnames.Add(user.AccountName);
-            }
-
-            accountnames = accountnames.Distinct().ToList();
-            //BLOCK 7 INIT
         }
 
         public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(UserDataSearchTFS userData)
@@ -303,9 +218,11 @@ namespace TimesheetScheduler.Controllers
                             StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
                             Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
                             CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                            RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : (double?)null,
                             WorkItemsLinked = _workItemsLinked,
                             State = wi.State,
-                            LinkUrl = _urlTFS + userData.ProjectNameTFS + "/_queries?id=" + wi["Id"].ToString()
+                            LinkUrl = _urlTFS + userData.ProjectNameTFS + "/_queries?id=" + wi["Id"].ToString(),
+                            IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null
                         });
                     }
                 }
@@ -314,7 +231,7 @@ namespace TimesheetScheduler.Controllers
             return listWorkItems.OrderBy(x => x.StartDate).ToList();
         }
 
-        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate(string userName)
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate(UserDataSearchTFS userData)
         {
             IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
 
@@ -334,9 +251,9 @@ namespace TimesheetScheduler.Controllers
                 " [Microsoft.VSTS.Scheduling.CompletedWork], " +
                 " [Microsoft.VSTS.Scheduling.StartDate] " +
                 " FROM WorkItems " +
-                " WHERE [System.TeamProject] = '" + projectName + "'" +
-                " AND [Iteration Path] = '" + _iterationPath + "'" +
-                " AND [Assigned To] = '" + userName + "'" +
+                " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
+                " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
+                " AND [Assigned To] = '" + userData.UserName + "'" +
                 " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
                 " ORDER BY [System.Id], [System.WorkItemType]");
 
@@ -1331,9 +1248,9 @@ namespace TimesheetScheduler.Controllers
 
                 if (_table[j].IsWeekend)
                 {
-                    worksheet.Cells[i, 3] = ""; //WorkItemNumber
-                    worksheet.Cells[i, 5] = ""; //ChargeableHours
-                    worksheet.Cells[i, 6] = ""; //NonChargeableHours
+                    //worksheet.Cells[i, 3] = ""; //WorkItemNumber
+                    //worksheet.Cells[i, 5] = ""; //ChargeableHours
+                    //worksheet.Cells[i, 6] = ""; //NonChargeableHours
                     worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Interior.Color = Color.DarkGray; //TODO
                     worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = true;
                 }
@@ -1367,98 +1284,121 @@ namespace TimesheetScheduler.Controllers
             {
 
                 day = new DateTime(_year, _month, i + 1);
-                if (IsWeekend(day))
+                //if (IsWeekend(day))
+                //{
+                //    timesheetRecords.Add(new WorkItemRecord
+                //    {
+                //        Id = ++countTasks,
+                //        Date = day,
+                //        WorkItemNumber = 0,
+                //        Description = "",
+                //        ChargeableHours = 0,
+                //        NonChargeableHours = 0,
+                //        Comments = "",
+                //        IsWeekend = IsWeekend(day)
+                //    });
+                //    ;
+                //}
+                //else
+                //{
+                var test = day.ToShortDateString();
+                var _itemEvent = _events.Where(x => x.StartDate.Value.ToShortDateString() == day.ToShortDateString());
+                if (_itemEvent.Count() > 0)
                 {
-                    timesheetRecords.Add(new WorkItemRecord
-                    {
-                        Id = ++countTasks,
-                        Date = day,
-                        WorkItemNumber = 0,
-                        Description = "",
-                        ChargeableHours = 0,
-                        NonChargeableHours = 0,
-                        Comments = "",
-                        IsWeekend = IsWeekend(day)
-                    });
-                    ;
-                }
-                else
-                {
-                    var test = day.ToShortDateString();
-                    var _itemEvent = _events.Where(x => x.StartDate.Value.ToShortDateString() == day.ToShortDateString());
-                    if (_itemEvent.Count() > 0)
-                    {
-                        var _currentChargeableHours = 0.0;
-                        var _currentNonChargeableHours = 0.0;
-                        var totalChargeableHoursRemaining = 7.5;
+                    var _currentChargeableHours = 0.0;
+                    var _currentNonChargeableHours = 0.0;
+                    var totalChargeableHoursRemaining = 7.5;
 
-                        foreach (var item in _itemEvent)
+                    foreach (var item in _itemEvent)
+                    {
+
+                        if (IsWeekend(day))
+                        {
+                            _currentChargeableHours = 0;
+                            _currentNonChargeableHours = item.CompletedHours.Value;
+                        }
+                        else
                         {
 
                             #region Calculate Chargeable and Non-Chargeable hours
                             if (item.CompletedHours.HasValue)
                             {
-                                if (item.CompletedHours.Value > 7.5)
+                                if (totalChargeableHoursRemaining == 0)
                                 {
-
-                                    _currentChargeableHours = 7.5;
-                                    _currentNonChargeableHours = item.CompletedHours.Value - 7.5;
+                                    _currentChargeableHours = 0;
+                                    _currentNonChargeableHours = item.CompletedHours.Value;
                                 }
                                 else
                                 {
-                                    _currentChargeableHours = item.CompletedHours.Value;
-                                }
-
-                                if (totalChargeableHoursRemaining > 0)
-                                {
-                                    if (totalChargeableHoursRemaining >= _currentChargeableHours)
+                                    if (item.CompletedHours.Value > 7.5)
                                     {
-                                        totalChargeableHoursRemaining = totalChargeableHoursRemaining - _currentChargeableHours;
+
+                                        _currentChargeableHours = 7.5;
+                                        _currentNonChargeableHours = item.CompletedHours.Value - totalChargeableHoursRemaining;// 7.5;
                                     }
                                     else
                                     {
-                                        _currentNonChargeableHours = _currentChargeableHours - totalChargeableHoursRemaining;
-                                        _currentChargeableHours = totalChargeableHoursRemaining;
-                                        totalChargeableHoursRemaining = 0;
+                                        _currentChargeableHours = item.CompletedHours.Value;
+                                    }
+
+                                    if (totalChargeableHoursRemaining > 0)
+                                    {
+                                        if (totalChargeableHoursRemaining >= _currentChargeableHours)
+                                        {
+                                            totalChargeableHoursRemaining = totalChargeableHoursRemaining - _currentChargeableHours;
+                                        }
+                                        else
+                                        {
+                                            //_currentNonChargeableHours = _currentChargeableHours - totalChargeableHoursRemaining;
+                                            _currentNonChargeableHours = item.CompletedHours.Value - totalChargeableHoursRemaining;
+                                            _currentChargeableHours = totalChargeableHoursRemaining;
+                                            totalChargeableHoursRemaining = 0;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        _currentNonChargeableHours = _currentChargeableHours;
+                                        _currentChargeableHours = 0;
                                     }
                                 }
-                                else
-                                {
-                                    _currentNonChargeableHours = _currentChargeableHours;
-                                    _currentChargeableHours = 0;
-                                }
-
                             }
                             #endregion Calculate Chargeable and Non-Chargeable hours
-
-                            timesheetRecords.Add(new WorkItemRecord
-                            {
-                                Id = ++countTasks,
-                                Date = item.StartDate.Value,
-                                WorkItemNumber = int.Parse(item.Id),
-                                Description = item.Title, //item.Description,
-                                ChargeableHours = (float)_currentChargeableHours,
-                                NonChargeableHours = (float)_currentNonChargeableHours,
-                                Comments = item.WorkItemsLinked,
-                                IsWeekend = IsWeekend(item.StartDate.Value)
-                            });
                         }
-                    }
-                    else //does not exist this date in the events
-                    {
+
                         timesheetRecords.Add(new WorkItemRecord
                         {
                             Id = ++countTasks,
-                            Date = day,
-                            WorkItemNumber = 0,
-                            Description = "Out of the office",
-                            ChargeableHours = 0,
-                            NonChargeableHours = 0,
-                            Comments = "------",
-                            IsWeekend = IsWeekend(day)
+                            Date = item.StartDate.Value,
+                            WorkItemNumber = int.Parse(item.Id),
+                            Description = item.Title, //item.Description,
+                            ChargeableHours = (float)_currentChargeableHours,
+                            NonChargeableHours = (float)_currentNonChargeableHours + (item.RemainingWork != null ? (float)item.RemainingWork : 0),
+                            Comments = item.WorkItemsLinked,
+                            IsWeekend = IsWeekend(item.StartDate.Value)
                         });
+
                     }
                 }
+                else //does not exist this date in the events
+                {
+                    var _description = "Out of the office";
+                    if (IsWeekend(day))
+                    {
+                        _description = "Weekend";
+                    }
+                    timesheetRecords.Add(new WorkItemRecord
+                    {
+                        Id = ++countTasks,
+                        Date = day,
+                        WorkItemNumber = 0,
+                        Description = _description,
+                        ChargeableHours = 0,
+                        NonChargeableHours = 0,
+                        Comments = "------",
+                        IsWeekend = IsWeekend(day)
+                    });
+                }
+                //}
             }
             return timesheetRecords;
         }
@@ -1528,7 +1468,90 @@ namespace TimesheetScheduler.Controllers
             }
         }
 
-        //-0------------------------------------------------------------------------------------------------------
+        //[HttpPost]
+        //public FileResult SaveExcelFile(UserDataSearchTFS userData)
+        //{
+        //    Application excel;
+        //    Workbook worKbooK;
+        //    Worksheet worksheet;
+        //    Range celLrangE;
+
+        //    try
+        //    {
+        //        userData.UserName = userData.UserName.Replace("'", "''");
+
+        //        excel = new Application();
+        //        excel.Visible = false;
+        //        excel.DisplayAlerts = false;
+        //        worKbooK = excel.Workbooks.Add(Type.Missing);
+        //        var tableEventCount = 0;
+
+        //        InitExcelVariables(userData.UserName, userData.Month, userData.Year);
+
+        //        worksheet = (Worksheet)worKbooK.ActiveSheet;
+        //        worksheet.Name = "Timesheet_" + userData.UserName;//.Replace(" ", "_");
+
+        //        CreateHeader(worksheet);
+        //        tableEventCount = CreateTable(worksheet, userData);
+        //        resizeColumns(worksheet);
+
+        //        var borderStartsRow = 5;
+        //        var borderEndsRow = borderStartsRow + tableEventCount;
+        //        celLrangE = worksheet.Range[worksheet.Cells[borderStartsRow, 1], worksheet.Cells[borderEndsRow, 7]]; //TODO
+        //        Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
+        //        border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+        //        border.Weight = 2d;
+
+        //        protectSheet(worksheet);
+        //        var saveParams = TimesheetSaveLocationAndFileName(userData.UserName, userData.Month, userData.Year);
+        //        //worKbooK.SaveAs(saveParams);
+
+        //        MemoryStream ms = new MemoryStream();
+        //        worKbooK.SaveAs(ms);//, saveParams);
+        //        ms.Seek(0, SeekOrigin.Begin);
+
+        //        byte[] buffer = new byte[(int)ms.Length];
+        //        buffer = ms.ToArray();
+
+        //        worKbooK.Close();
+        //        excel.Workbooks.Close();
+        //        excel.Quit();
+        //        Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
+        //        Marshal.ReleaseComObject(worKbooK);
+        //        //return "File saved sucessfully!"; // - Path: " + saveParams;
+
+        //        using (MemoryStream stream = new MemoryStream())
+        //        {
+        //            string fileName = TimesheetFileName(userData.UserName.Replace("'", ""), '_', userData.Month, userData.Year);// "myfile.ext";
+        //            return File(buffer, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
+        //            //return File(stream, "application/vnd.ms-excel");
+        //        }
+
+        //        //MemoryStream m = new MemoryStream();
+        //        ////worKbooK.SaveToStream(m);
+        //        //using (MemoryStream stream = new MemoryStream())
+        //        //{
+        //        //    worKbooK.SaveAs(stream);
+        //        //    return File(stream, "application/vnd.ms-excel");
+        //        //}
+
+        //        //return File(m, "application/vnd.ms-excel");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.Write(ex.Message);
+        //        return null;// "Interal Code (1) - " + ex.Message;
+        //    }
+        //    finally
+        //    {
+        //        worksheet = null;
+        //        celLrangE = null;
+        //        worKbooK = null;
+
+        //    }
+        //}
+
+        //--------------------------------------------------------------------------------------------------------
 
         private void WorkbookSheetChange(Workbook workbook)
         {
@@ -1545,7 +1568,7 @@ namespace TimesheetScheduler.Controllers
                 XlReferenceStyle.xlA1);
         }
 
-        //-0------------------------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------------------------
 
         private void protectSheet(Worksheet worksheet)
         {
@@ -1588,5 +1611,23 @@ namespace TimesheetScheduler.Controllers
             return (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday);
         }
 
+        [HttpGet]
+        public JsonResult ReadJsonHolidaysFile()
+        {
+            return Json(DeserializeReadJsonHolidaysFile(), JsonRequestBehavior.AllowGet);
+        }
+
+        private List<JsonHolidays> DeserializeReadJsonHolidaysFile()
+        {
+            using (StreamReader r = new StreamReader(Server.MapPath(jsonHolidaysServerPath)))
+            {
+                string json = r.ReadToEnd();
+                JavaScriptSerializer jss = new JavaScriptSerializer();
+                var result = jss.Deserialize<List<JsonHolidays>>(json);
+                return result;
+            }
+        }
+
     }
+
 }

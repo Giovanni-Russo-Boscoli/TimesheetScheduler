@@ -1,12 +1,10 @@
 ﻿@{
     ViewData["Title"] = "Timesheet Scheduler";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@*@Scripts.Render("~/bundles/timesheetscheduler")*@
 @Styles.Render("~/Content/timesheetscheduler")
-@Scripts.Render("~/bundles/jquery")
 
-<script src="~/Scripts/TimesheetSchedulerCalendar.js" type="text/javascript"></script>
 
 <body>
     <div class="container">
@@ -40,7 +38,6 @@
                     <button id="btnSaveExcelFile" class="btnActions" title="Export to an Excel File" onclick="confirmationSavePath();"></button>
                     <button id="btnCloseAllTasks" class="btnActions" onclick="closeAllTasksCurrentMonth();"></button>
                 </div>
-                @*<button id="btnActions" class="btn btn-primary">Actions</button><br />*@
                 <br />
 
                 <div id="wrapperDivStartDateNotDefined">
@@ -296,3 +293,6 @@
 <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
 
 
+@section scripts{
+    @Scripts.Render("~/bundles/timesheetscheduler")
+}

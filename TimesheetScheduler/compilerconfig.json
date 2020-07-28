@@ -10,5 +10,13 @@
   {
     "outputFile": "Content/Login.css",
     "inputFile": "Content/Login.less"
+  },
+  {
+    "outputFile": "Content/User.css",
+    "inputFile": "Content/User.less"
+  },
+  {
+    "outputFile": "Content/bootstrap-toggle.css",
+    "inputFile": "Content/bootstrap-toggle.less"
   }
 ]

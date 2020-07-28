@@ -20,7 +20,7 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Admin", "About", "Home")</li>
+                    <li>@Html.ActionLink("Users", "Index", "User")</li>
                     <li>@Html.ActionLink("Report", "StepsReports", "Home")</li>
 
                 </ul>
@@ -41,18 +41,20 @@
                 <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
             </footer>*@
     </div>
-
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/jqueryui")
-    @Scripts.Render("~/bundles/momentjs")
-    @Scripts.Render("~/bundles/bootstrap")
-    @Scripts.Render("~/bundles/mustachejs")
-    @Scripts.Render("~/bundles/fullcalendarjs")
-    @Scripts.Render("~/bundles/jquerydateformat")
-    @Scripts.Render("~/bundles/toastrjs")
-    @Scripts.Render("~/bundles/util")
-    @Scripts.Render("~/bundles/jquerymask")
-
+    
+    @*@section scripts {*@
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/jqueryval")
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/momentjs")
+        @Scripts.Render("~/bundles/bootstrap")
+        @Scripts.Render("~/bundles/mustachejs")
+        @Scripts.Render("~/bundles/fullcalendarjs")
+        @Scripts.Render("~/bundles/jquerydateformat")
+        @Scripts.Render("~/bundles/toastrjs")
+        @Scripts.Render("~/bundles/util")
+        @Scripts.Render("~/bundles/jquerymask")
+    @*}*@
     @*<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"></script>*@
     @RenderSection("scripts", required: false)
 </body>

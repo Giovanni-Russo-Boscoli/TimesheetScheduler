@@ -2,22 +2,55 @@
 var totalChargeableHours = 0;
 var totalNonChargeableHours = 0;
 var timerID = 0;
+var users = [];
 
 $(document).ready(function ($) {
     registerTriggerAjax();
-    LoadMonths();
-    LoadYears();
-    bindUserNameDropdown();
-    bindMonthDropdown();
-    bindYearDropdown();
-    closeAllTasksCurrentMonth_Tooltip();
-    getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
-    saveEvent();
-    applyBtnClassesInActionsSelect();
-    reminderNoEventCreationForToday();
-    copyTask();
-    linkWorkItem();
+    readJsonUserFile(function (data) {
+        users = data;
+        LoadMonths();
+        LoadYears();
+        bindUserNameDropdown();
+        bindMonthDropdown();
+        bindYearDropdown();
+        closeAllTasksCurrentMonth_Tooltip();
+        getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
+        saveEvent();
+        //applyBtnClassesInActionsSelect();
+        reminderNoEventCreationForToday();
+        copyTask();
+        linkWorkItem();
+    });
 });
+
+function readJsonUserFile(callback) {
+    $.ajax({
+        url: "/User/ReadJsonUserFile",
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            callback(data);
+        },
+        function(error) {
+            ajaxErrorHandler(error);
+        }
+    });
+}
+
+function readJsonHolidyasFile(callback) {
+    $.ajax({
+        url: "/Home/ReadJsonHolidaysFile",
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            users = data;
+            callback(data);
+        },
+        function(error) {
+            ajaxErrorHandler(error);
+        }
+    });
+}
 
 function clearMonthInfoVariables() {
     totalChargeableHours = 0;
@@ -50,7 +83,7 @@ function eventsCalendar(_events, dateCalendar) {
         height: 800,
         contentHeight: "auto",
         weekMode: 'liquid',
-        weekends: false,
+        weekends: true,
         fixedWeekCount: true,
         header: { left: 'title', center: ' ', right: 'month, listMonth' },
         defaultDate: _formatDate(dateCalendar, "yyyymmdd", "-"),
@@ -80,45 +113,35 @@ function eventsCalendar(_events, dateCalendar) {
             $(".objTooltip").remove();
         },
         eventRender: function (event, element) {
-            //$(element).attr("data-html", "true");
-            //$(element).attr("data-container", "body");
-            //$(element).tooltip({
-            //    title: event.title +
-            //        "<br> Chargeable Hours: " + event.chargeableHours +
-            //        "<br> Non-Chargeable Hours:" + event.nonchargeableHours +
-            //        "<br> Description: " + event.description +
-            //        "<br> Work Items Linked: " + event.comments +
-            //        "<br> State: " + event.state,
-            //    placement: "bottom"
-            //});
-
             //--------- [INIT] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
-
-            if (dayEvent.toString() === event.start.toString() || !dayEvent) {
-                //same day - more than one event
-                if (totalChargeableHoursRemaining > 0) {
-                    if (totalChargeableHoursRemaining >= event.chargeableHours) {
-                        totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
-                        totalChargeableHours += event.chargeableHours;
-                        totalNonChargeableHours += event.nonchargeableHours;
+            if (event.isWeekend) {
+                totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
+            } else {
+                if (dayEvent.toString() === event.start.toString() || !dayEvent) {
+                    //same day - more than one event
+                    if (totalChargeableHoursRemaining > 0) {
+                        if (totalChargeableHoursRemaining >= event.chargeableHours) {
+                            totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
+                            totalChargeableHours += event.chargeableHours;
+                            totalNonChargeableHours += event.nonchargeableHours;
+                        }
+                        else {
+                            totalNonChargeableHours += (event.chargeableHours - totalChargeableHoursRemaining) + event.nonchargeableHours;
+                            totalChargeableHours += totalChargeableHoursRemaining;
+                            totalChargeableHoursRemaining = 0;
+                        }
                     }
                     else {
-                        totalNonChargeableHours += (event.chargeableHours - totalChargeableHoursRemaining) + event.nonchargeableHours;
-                        totalChargeableHours += totalChargeableHoursRemaining;
-                        totalChargeableHoursRemaining = 0;
+                        totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
                     }
+                } else {
+                    //only one event on the day
+                    totalChargeableHoursRemaining = 7.5;
+                    totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
+                    totalChargeableHours += event.chargeableHours;
+                    totalNonChargeableHours += event.nonchargeableHours;
                 }
-                else {
-                    totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
-                }
-            } else {
-                //only one event on the day
-                totalChargeableHoursRemaining = 7.5;
-                totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
-                totalChargeableHours += event.chargeableHours;
-                totalNonChargeableHours += event.nonchargeableHours;
             }
-
             dayEvent = event.start;
 
             //--------- [END] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
@@ -126,7 +149,12 @@ function eventsCalendar(_events, dateCalendar) {
         },
         dayRender: function (date, cell) {
             if (date._d.setHours(0, 0, 0, 0) < new Date($.now()).setHours(0, 0, 0, 0)) { //ONLY FOR PAST DAYS
-                cell.append('<div class="dayOutOfTheOffice">Out Of The Office</div>');
+                if (IsWeekend(date._d)) {
+                    cell.append('<div class="weekendDay">Weekend</div>');
+                } else {
+                    cell.append('<div class="dayOutOfTheOffice">Out Of The Office</div>');
+                }
+
             }
         },
         eventAfterAllRender: function (view) {
@@ -155,6 +183,7 @@ function eventsCalendar(_events, dateCalendar) {
         $(this).html("");
     });
     $(".dayOutOfTheOffice").parent().css("background-color", "#FFF0F1"); //change the color for days without event
+    $(".weekendDay").parent().css("background-color", "#F2F2F2"); //change the color for days without event
     Info();
 }
 
@@ -227,7 +256,8 @@ function formatTFSEventsForCalendar(_obj) {
             comments: _obj[i].WorkItemsLinked,
             state: _obj[i].State,
             color: returnEventColor(_obj[i].State),
-            linkUrl: _obj[i].LinkUrl
+            linkUrl: _obj[i].LinkUrl,
+            isWeekend: _obj[i].IsWeekend
         });
     }
     return _calendarEvents;
@@ -350,187 +380,6 @@ function calculateLoadBarEventsForListView(calendarEvents) {
     });
 }
 
-function getUserName(callback) {
-    $.ajax({
-        url: "/Home/GetUserLogged",
-        type: "GET",
-        success: function (data) {
-            callback(data);
-        },
-        function(error) {
-            ajaxErrorHandler(error);
-        }
-    });
-}
-
-function userNames() {
-    var rates_roles = ratesRoles();
-    var projects_iteration = projectsIteration();
-
-    return userData = {
-        //create a json file and read and write from it
-        "users": [
-            {
-                "name": "Giovanni Boscoli",
-                "rate": rates_roles.JFSSD.rate,
-                "chargeable": true,
-                "role": rates_roles.JFSSD.role,
-                "email": "giovanni.boscoli@welfare.ie",
-                "access": "admin",
-                "category": "core",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Amy Kelly",
-                "rate": rates_roles.BA.rate,
-                "chargeable": true,
-                "role": rates_roles.BA.role,
-                "email": "Amy.Kelly@welfare.ie",
-                "access": "admin",
-                "category": "core",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Ian O'Brien",
-                "rate": rates_roles.SBOM.rate,
-                "chargeable": true,
-                "role": rates_roles.SBOM.role,
-                "email": "Ian.OBrien@welfare.ie",
-                "access": "admin",
-                "category": "core",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Niall Murphy",
-                "rate": rates_roles.SSD.rate,
-                "chargeable": true,
-                "role": rates_roles.SSD.role,
-                "email": "Niall.Murphy@welfare.ie",
-                "access": "user",
-                "category": "core",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Doireann Hanley",
-                "rate": rates_roles.JFSSD.rate,
-                "chargeable": true,
-                "role": rates_roles.JFSSD.role,
-                "email": "Doireann.Hanley@welfare.ie",
-                "access": "user",
-                "category": "drawdown",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Renan Camara",
-                "rate": rates_roles.SSD.rate,
-                "chargeable": true,
-                "role": rates_roles.SSD.role,
-                "email": "Renan.Camara@welfare.ie",
-                "access": "user",
-                "category": "core",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Disha Virk",
-                "rate": rates_roles.SSD.rate,
-                "chargeable": true,
-                "role": rates_roles.SSD.role,
-                "email": "Disha.Virk@welfare.ie",
-                "access": "user",
-                "category": "drawdown",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Dev Krishan",
-                "rate": rates_roles.SSD.rate,
-                "chargeable": true,
-                "role": rates_roles.SSD.role,
-                "email": "Dev.Krishan@welfare.ie",
-                "access": "user",
-                "category": "drawdown",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Craig OToole",
-                "rate": rates_roles.JFSSD.rate,
-                "chargeable": false,
-                "role": rates_roles.JFSSD.role,
-                "email": "Craig.OToole@welfare.ie",
-                "access": "user",
-                "category": "drawdown",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Eoin Edwards",
-                "rate": rates_roles.TA.rate,
-                "chargeable": true,
-                "role": rates_roles.TA.role,
-                "email": "Eoin.Edwards@welfare.ie",
-                "access": "user",
-                "category": "drawdown",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Kevin Shortall",
-                "rate": rates_roles.TA.rate,
-                "chargeable": true,
-                "role": rates_roles.TA.role,
-                "email": "Kevin.Shortall@welfare.ie",
-                "access": "user",
-                "category": "drawdown",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            },
-            {
-                "name": "Fabio Benko",
-                "rate": rates_roles.TA.rate,
-                "chargeable": true,
-                "role": rates_roles.TA.role,
-                "email": "Kevin.Shortall@welfare.ie",
-                "access": "user",
-                "category": "drawdown",
-                "projectNameTFS": projects_iteration.BOM_MOD24.projectNameTFS,
-                "iterationPathTFS": projects_iteration.BOM_MOD24.iterationPathTFS
-            }
-        ]
-    };
-}
-
-function ratesRoles() {
-    return {
-        "SBOM": {
-            "role": "Senior Business Object Modeller",
-            "rate": 99500
-        },
-        "TA": {
-            "role": "Technical Architect",
-            "rate": 90000
-        },
-        "SSD": {
-            "role": "Senior Software Developer",
-            "rate": 72000
-        },
-        "BA": {
-            "role": "Business Analyst",
-            "rate": 72000
-        },
-        "JFSSD": {
-            "role": "Junior Full Stack Software Developer",
-            "rate": 51500
-        }
-    };
-}
-
 function projectsIteration() {
     return {
         "BOM_MOD24": {
@@ -542,30 +391,19 @@ function projectsIteration() {
 
 function getRateUserByName(userName) {
     var rate = 0;
-    $(userNames().users).each(function (index, value) {
+    $(users).each(function (index, value) {
         if (rate !== 0) return;
-        if (value.name === userName && value.chargeable) {
-            rate = value.rate;
+        if (value.Name === userName && value.Chargeable) {
+            rate = value.Rate.toFixed(2);
         }
     });
     return rate;
 }
 
-function getAccessUserByName(userName) {
-    var access = "";
-    $(userNames().users).each(function (index, value) {
-        if (access !== "") return;
-        if (value.name === userName) {
-            access = value.access;
-        }
-    });
-    return access;
-}
-
 function getUserDataByName(userName) {
     var userData;
-    $(userNames().users).each(function (index, value) {
-        if (value.name === userName) {
+    $(users).each(function (index, value) {
+        if (value.Name === userName) {
             userData = value;
         }
     });
@@ -576,8 +414,10 @@ function LoadUserNames(_userName) {
 
     var names = [];
 
-    $(userNames().users).each(function (index, value) {
-        names.push(value.name);
+    $(users).each(function (index, value) {
+        if (value.Active) {
+            names.push(value.Name);
+        }
     });
 
     names.sort();//ordering A-Z
@@ -713,7 +553,7 @@ function IsWeekend(date) {
 function Info() {
     clearInfoValues();
     getUserName(function (loggedUserName) {
-        if (getAccessUserByName(loggedUserName) === "admin") { //identify by role "admin"
+        if (getAccessUserByName(loggedUserName) === "ADMIN") { //identify by role "admin"
             $("#infoPanel").show();
 
             $("#totalHoursInfoTxt").text(totalChargeableHours + totalNonChargeableHours);
@@ -727,16 +567,16 @@ function Info() {
                 //return;
             }
 
-            var rateIncVat = (rateExcVat * 1.23);
+            var rateIncVat = (rateExcVat * 1.23).toFixed(2);
             var totalByDay = (totalChargeableHours / 7.5).toFixed(2);
-            var totalExlVatInfoTxt = (totalByDay * (rateExcVat / 100)).toFixed(2);
-            var totalIncVatInfoTxt = (totalByDay * (rateIncVat / 100)).toFixed(2);
+            var totalExlVatInfoTxt = (totalByDay * rateExcVat).toFixed(2);
+            var totalIncVatInfoTxt = (totalByDay * rateIncVat).toFixed(2);
 
             $("#rateExlVatInfoTxt").text(rateExcVat);
             $("#rateIncVatInfoTxt").text(rateIncVat);
             $("#totalExlVatInfoTxt").text(totalExlVatInfoTxt);
             $("#totalIncVatInfoTxt").text(totalIncVatInfoTxt);
-            currencyMask();
+            currencyMask('.currencyMask', '###,###,###.##');
         } else {
             $("#infoPanel").hide();
         }
@@ -752,21 +592,6 @@ function clearInfoValues() {
     $("#rateIncVatInfoTxt").text("");
     $("#totalExlVatInfoTxt").text("");
     $("#totalIncVatInfoTxt").text("");
-}
-
-function currencyMask() {
-    $('.currencyMask').unmask();
-    $(".currencyMask").mask('###,###,###.##', { reverse: true });
-}
-
-function applyBtnClassesInActionsSelect() {
-    $(".dropdownActions input").each(function (index, value) {
-        if (index % 2 === 0) {
-            $(value).addClass("btn-success");
-        } else {
-            $(value).addClass("btn-primary");
-        }
-    });
 }
 
 function ModalEvent(event, eventCreation) {
@@ -1039,35 +864,15 @@ function changeColor() {
     $("#inputColor").change(function (e) { alert(e.target.value); });
 }
 
-//function connectToTFS() {
-//    var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
-//    $.ajax({
-//        url: "/Home/ConnectTFS",
-//        type: "GET",
-//        dataType: "json",
-//        data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
-//        success: function (data) {
-//            var eventsTFSFormatted = formatTFSEventsForCalendar(data[0]);
-//            eventsCalendar(eventsTFSFormatted, dateCalendar);
-//            eventsCalendarStartDateNotDefined(data[1]);
-//            listViewActive(eventsTFSFormatted);
-//            tooltipDaysListView();
-//        },
-//        error: function (error) {
-//            ajaxErrorHandler("ConnectTFS", error);
-//        }
-//    });
-//}
-
 function connectToTFS() {
     var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
 
     var userData = getUserDataByName(getUserNameFromPage());
 
     var jsonObject = {
-        "UserName": userData.name,
-        "ProjectNameTFS": userData.projectNameTFS,
-        "IterationPathTFS": userData.iterationPathTFS,
+        "UserName": userData.Name,
+        "ProjectNameTFS": userData.ProjectNameTFS,
+        "IterationPathTFS": userData.IterationPathTFS,
         "Month": getMonthFromPage() + 1,
         "Year": getYearFromPage()
     };
@@ -1077,7 +882,6 @@ function connectToTFS() {
         type: "POST",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        //data: { userData: JSON.stringify(jsonObject), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
         data: JSON.stringify(jsonObject),
         success: function (data) {
             var eventsTFSFormatted = formatTFSEventsForCalendar(data[0]);
@@ -1213,8 +1017,7 @@ function confirmationSavePath() {
             async: false,
             data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
             error: function (error) {
-                ajaxErrorHandler("confirmationSavePath", error);
-                //toastrMessage("Not saved. (confirmationSavePath function) \n" + error, "warning");
+                ajaxErrorHandler("Not saved. (confirmationSavePath function) \n", error);
                 return false;
             }
         })
@@ -1232,24 +1035,24 @@ function SaveExcelFile(strPath) {
         var userData = getUserDataByName(getUserNameFromPage());
 
         var jsonObject = {
-            "UserName": userData.name,
-            "ProjectNameTFS": userData.projectNameTFS,
-            "IterationPathTFS": userData.iterationPathTFS,
+            "UserName": userData.Name,
+            "ProjectNameTFS": userData.ProjectNameTFS,
+            "IterationPathTFS": userData.IterationPathTFS,
             "Month": getMonthFromPage() + 1,
             "Year": getYearFromPage()
         };
 
         $.ajax({
             url: "/Home/SaveExcelFile",
+            type: "POST",
             contentType: "application/json; charset=utf-8",
-            dataType: "json",
             data: JSON.stringify(jsonObject),
             cache: false,
-            //data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
             success: function (data) {
                 toastrMessage(data, "success");
             },
             error: function (error) {
+                alert(JSON.stringify(error));
                 closeModalActions();
                 ajaxErrorHandler("SaveExcelFile", error);
             }
@@ -1526,44 +1329,32 @@ function linkWorkItem() {
 
 function bindBtnMe() {
     //$("#btnMe").on("click", function () {
-        //getUserName(function (_userName) {
-        //    $("#userNameTimesheet option").filter(function () {
-        //        return $(this).text() === _userName;
-        //    }).prop('selected', true);//.trigger('change');
-        //    connectToTFS();
-        //    closeAllTasksCurrentMonth_Tooltip();
-        //});
-        //connectToTFS();
-        //closeAllTasksCurrentMonth_Tooltip();
-        //alert($(".loggedUser").text());
-        $("#userNameTimesheet option").filter(function () {
-            return $(this).text() === $(".loggedUser").text();
-        }).prop('selected', true).trigger('change');
+    //getUserName(function (_userName) {
+    //    $("#userNameTimesheet option").filter(function () {
+    //        return $(this).text() === _userName;
+    //    }).prop('selected', true);//.trigger('change');
+    //    connectToTFS();
+    //    closeAllTasksCurrentMonth_Tooltip();
+    //});
+    //connectToTFS();
+    //closeAllTasksCurrentMonth_Tooltip();
+    //alert($(".loggedUser").text());
+    $("#userNameTimesheet option").filter(function () {
+        return $(this).text() === $(".loggedUser").text();
+    }).prop('selected', true).trigger('change');
     //});
 }
-
-//function bindPrevMonthBtn() {
-//    $("#btnPrevMonth").on("click", function () {
-//         var _month = $("#monthTimesheet").children("option:selected").val();
-//        if (_month === 1) return; //First month - no previous month
-//        $("#monthTimesheet").val(parseInt(_month) - 1).trigger("change");
-//    });
-//}
-
-//function bindNextMonthBtn() {
-//    $("#btnNextMonth").on("click", function () {
-//    });
-//}
 
 function prevNextMonthBtn(prevNext) {
     //("#btnPrevMonth").on("click", function () {
-        var _month = $("#monthTimesheet").children("option:selected").val();
-        if (prevNext === 0 && _month === 1 || prevNext === 1 && _month === 12) return; //First month - no previous month
-        if (prevNext === 0) {
-            _month = parseInt(_month) - 1;
-        } else {
-            _month = parseInt(_month) + 1;
-        }
-        $("#monthTimesheet").val(_month).trigger("change");
+    var _month = $("#monthTimesheet").children("option:selected").val();
+    if (prevNext === 0 && _month === 1 || prevNext === 1 && _month === 12) return; //First month - no previous month
+    if (prevNext === 0) {
+        _month = parseInt(_month) - 1;
+    } else {
+        _month = parseInt(_month) + 1;
+    }
+    $("#monthTimesheet").val(_month).trigger("change");
     //});
 }
+
