@@ -8,6 +8,7 @@ namespace TimesheetScheduler.Models
 {
     public class JsonProjectIteration
     {
+        [Required]
         public int Id { get; set; }
 
         [Required]

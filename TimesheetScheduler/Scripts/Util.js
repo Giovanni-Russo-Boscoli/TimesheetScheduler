@@ -156,3 +156,8 @@ Number.prototype.formatMoney = function (decPlaces, thouSeparator, decSeparator)
 //    return result;
 //    //return obj === "true" || obj === "True";
 //}
+
+// From /Date(1560330289910)/ to DD/MM/YYYY
+function fromJsonDateToDateStringFormatted(strDate) {
+    return _formatDate(new Date(parseInt(strDate.substr(6))).toDateString(), "/");
+}

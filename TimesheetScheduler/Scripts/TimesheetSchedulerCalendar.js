@@ -3,6 +3,7 @@ var totalChargeableHours = 0;
 var totalNonChargeableHours = 0;
 var timerID = 0;
 var users = [];
+var holidays = [];
 
 $(document).ready(function ($) {
     registerTriggerAjax();
@@ -37,13 +38,13 @@ function readJsonUserFile(callback) {
     });
 }
 
-function readJsonHolidyasFile(callback) {
+function readJsonHolidaysFile(callback) {
     $.ajax({
         url: "/Home/ReadJsonHolidaysFile",
         type: "GET",
         dataType: "json",
         success: function (data) {
-            users = data;
+            holidays = data;
             callback(data);
         },
         function(error) {
@@ -72,119 +73,140 @@ function registerTriggerAjax() {
 
 function eventsCalendar(_events, dateCalendar) {
 
-    var dayEvent = "";
-    var totalChargeableHoursRemaining = 7.5;
+    readJsonHolidaysFile(function () { 
 
-    clearMonthInfoVariables();
-    $('#calendar').fullCalendar('destroy');
-    $('#calendar').fullCalendar({
-        defaultView: 'month',
-        firstDay: 1,
-        height: 800,
-        contentHeight: "auto",
-        weekMode: 'liquid',
-        weekends: true,
-        fixedWeekCount: true,
-        header: { left: 'title', center: ' ', right: 'month, listMonth' },
-        defaultDate: _formatDate(dateCalendar, "yyyymmdd", "-"),
-        events: _events,
-        eventLimit: 10,
-        eventClick: function (event) {
-            ModalEvent(event, false);
-        },
-        eventMouseover: function (event) {
+        //alert(fromJsonDateToDateStringFormatted(holidays[0].Date));
 
-            var obj =
-                `<div class='objTooltip'>` +
-                `<br/> <span class='boldContent'>` + event.title + `</span>` +
-                `<br/> <span class='boldContent'> Chargeable Hours: </span>` + event.chargeableHours +
-                `<br/> <span class='boldContent'> Non-Chargeable Hours: </span>` + event.nonchargeableHours +
-                `<br/> <span class='boldContent'> Description: </span> <div class='wrapContent'>` + event.description + `</div>` +
-                `      <span class='boldContent'> Work Items Linked: </span>` + event.comments +
-                `<br/> <span class='boldContent'> State: </span>` + event.state +
-                `</div>`;
+        var dayEvent = "";
+        var totalChargeableHoursRemaining = 7.5;
+
+        clearMonthInfoVariables();
+        $('#calendar').fullCalendar('destroy');
+        $('#calendar').fullCalendar({
+            defaultView: 'month',
+            firstDay: 1,
+            height: 800,
+            contentHeight: "auto",
+            weekMode: 'liquid',
+            weekends: true,
+            fixedWeekCount: true,
+            header: { left: 'title', center: ' ', right: 'month, listMonth' },
+            defaultDate: _formatDate(dateCalendar, "yyyymmdd", "-"),
+            events: _events,
+            eventLimit: 10,
+            eventClick: function (event) {
+                ModalEvent(event, false);
+            },
+            eventMouseover: function (event) {
+
+                var obj =
+                    `<div class='objTooltip'>` +
+                    `<br/> <span class='boldContent'>` + event.title + `</span>` +
+                    `<br/> <span class='boldContent'> Chargeable Hours: </span>` + event.chargeableHours +
+                    `<br/> <span class='boldContent'> Non-Chargeable Hours: </span>` + event.nonchargeableHours +
+                    `<br/> <span class='boldContent'> Description: </span> <div class='wrapContent'>` + event.description + `</div>` +
+                    `      <span class='boldContent'> Work Items Linked: </span>` + event.comments +
+                    `<br/> <span class='boldContent'> State: </span>` + event.state +
+                    `</div>`;
 
 
-            $(this).addClass("backgroundColorEventTooltip");
-            $("body").append(obj);
-        },
-        eventMouseout: function (event) {
-            $(this).removeClass("backgroundColorEventTooltip");
-            $(".objTooltip").remove();
-        },
-        eventRender: function (event, element) {
-            //--------- [INIT] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
-            if (event.isWeekend) {
-                totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
-            } else {
-                if (dayEvent.toString() === event.start.toString() || !dayEvent) {
-                    //same day - more than one event
-                    if (totalChargeableHoursRemaining > 0) {
-                        if (totalChargeableHoursRemaining >= event.chargeableHours) {
-                            totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
-                            totalChargeableHours += event.chargeableHours;
-                            totalNonChargeableHours += event.nonchargeableHours;
+                $(this).addClass("backgroundColorEventTooltip");
+                $("body").append(obj);
+            },
+            eventMouseout: function (event) {
+                $(this).removeClass("backgroundColorEventTooltip");
+                $(".objTooltip").remove();
+            },
+            eventRender: function (event, element) {
+                //--------- [INIT] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
+                if (event.isWeekend) {
+                    totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
+                } else {
+                    if (dayEvent.toString() === event.start.toString() || !dayEvent) {
+                        //same day - more than one event
+                        if (totalChargeableHoursRemaining > 0) {
+                            if (totalChargeableHoursRemaining >= event.chargeableHours) {
+                                totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
+                                totalChargeableHours += event.chargeableHours;
+                                totalNonChargeableHours += event.nonchargeableHours;
+                            }
+                            else {
+                                totalNonChargeableHours += (event.chargeableHours - totalChargeableHoursRemaining) + event.nonchargeableHours;
+                                totalChargeableHours += totalChargeableHoursRemaining;
+                                totalChargeableHoursRemaining = 0;
+                            }
                         }
                         else {
-                            totalNonChargeableHours += (event.chargeableHours - totalChargeableHoursRemaining) + event.nonchargeableHours;
-                            totalChargeableHours += totalChargeableHoursRemaining;
-                            totalChargeableHoursRemaining = 0;
+                            totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
                         }
+                    } else {
+                        //only one event on the day
+                        totalChargeableHoursRemaining = 7.5;
+                        totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
+                        totalChargeableHours += event.chargeableHours;
+                        totalNonChargeableHours += event.nonchargeableHours;
                     }
-                    else {
-                        totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
-                    }
-                } else {
-                    //only one event on the day
-                    totalChargeableHoursRemaining = 7.5;
-                    totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
-                    totalChargeableHours += event.chargeableHours;
-                    totalNonChargeableHours += event.nonchargeableHours;
                 }
-            }
-            dayEvent = event.start;
+                dayEvent = event.start;
 
-            //--------- [END] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
+                //--------- [END] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
 
-        },
-        dayRender: function (date, cell) {
-            if (date._d.setHours(0, 0, 0, 0) < new Date($.now()).setHours(0, 0, 0, 0)) { //ONLY FOR PAST DAYS
-                if (IsWeekend(date._d)) {
+            },
+            dayRender: function (date, cell) {
+                var _weekend = IsWeekend(date._d);
+                if (_weekend) {
                     cell.append('<div class="weekendDay">Weekend</div>');
-                } else {
+                } else if (date._d.setHours(0, 0, 0, 0) < new Date($.now()).setHours(0, 0, 0, 0)) {//ONLY FOR PAST DAYS
                     cell.append('<div class="dayOutOfTheOffice">Out Of The Office</div>');
                 }
 
-            }
-        },
-        eventAfterAllRender: function (view) {
-            $('#calendar').fullCalendar('clientEvents', function (event) {
-                var td = $('td.fc-day[data-date="' + event.start.format('YYYY-MM-DD') + '"]');
-                td.find('div:first').remove();
-            });
-        },
-        dayClick: function (date, jsEvent, view) {
-            prevTime = typeof currentTime === 'undefined' || currentTime === null
-                ? new Date().getTime() - 1000000
-                : currentTime;
-            currentTime = new Date().getTime();
+                $.each(holidays, function (index, value) {
+                    var _date = _formatDate(date._d.setHours(0, 0, 0, 0), "ddmmyyyy", "/");
+                    if (fromJsonDateToDateStringFormatted(value.Date) === _date) {
+                        $(cell).find(".weekendDay").remove();
+                        $(cell).find(".dayOutOfTheOffice").remove();
+                        $(cell).attr("title", value.Description);
+                        cell.append("<div class='hollidayEvent' title='" + value.Description + "'>Holliday</div>");
+                    }
+                });
+            },
+            eventAfterAllRender: function (view) {
+                $('#calendar').fullCalendar('clientEvents', function (event) {
+                    var td = $('td.fc-day[data-date="' + event.start.format('YYYY-MM-DD') + '"]');
+                    td.find('div:first').remove();
+                });
+            },
+            dayClick: function (date, jsEvent, view) {
+                prevTime = typeof currentTime === 'undefined' || currentTime === null
+                    ? new Date().getTime() - 1000000
+                    : currentTime;
+                currentTime = new Date().getTime();
 
-            if (currentTime - prevTime < 500) {
-                //DOUBLE CLICK
-                ModalEvent(date, true);
+                if (currentTime - prevTime < 500) {
+                    //DOUBLE CLICK
+                    ModalEvent(date, true);
+                }
+            },
+            viewRender: function (view, element) {
+                calculateLoadBarEvents(_events);
             }
-        },
-        viewRender: function (view, element) {
-            calculateLoadBarEvents(_events);
-        }
-    });
+        });
 
-    $(".fc-other-month").each(function () {
-        $(this).html("");
+        $(".fc-other-month").each(function () {
+            $(this).html("");
+        });
+        $(".dayOutOfTheOffice").parent().css({ "background-color": "#FFF0F1", "vertical-align": "middle"}); //change the color for days without event
+        $(".weekendDay").parent().css({"background-color":"#F2F2F2", "vertical-align": "middle"}); //change the color for days without event
+        $(".hollidayEvent").parent().css({ "background-color": "thistle", "vertical-align": "middle" }); //change the color for days without event
+
+        $(".fc-content-skeleton tbody td").each(function (index, value) {
+            if ($(value).html().length < 1) {
+                $(value).css("z-index", "-1");
+            }
+        });
+
+        Info();
     });
-    $(".dayOutOfTheOffice").parent().css("background-color", "#FFF0F1"); //change the color for days without event
-    $(".weekendDay").parent().css("background-color", "#F2F2F2"); //change the color for days without event
-    Info();
 }
 
 function toggleClass(_class) {
@@ -199,7 +221,7 @@ function tooltipDaysListView() {
         });
     });
 }
-
+ 
 function _formatDate(date, format, separator) {
 
     if (!separator) {
@@ -229,11 +251,6 @@ function _formatDate(date, format, separator) {
 
 function formatDate(date) {
     return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
-}
-
-// From /Date(1560330289910)/ to DD/MM/YYYY
-function fromJsonDateToDateStringFormatted(strDate) {
-    return _formatDate(new Date(parseInt(strDate.substr(6))).toDateString(), "/");
 }
 
 function formatTFSEventsForCalendar(_obj) {
@@ -860,9 +877,9 @@ function validationSaveEvent() {
     return _nonValidFields;
 }
 
-function changeColor() {
-    $("#inputColor").change(function (e) { alert(e.target.value); });
-}
+//function changeColor() {
+//    $("#inputColor").change(function (e) { alert(e.target.value); });
+//}
 
 function connectToTFS() {
     var dateCalendar = new Date(getYearFromPage(), getMonthFromPage(), 1);
@@ -1052,7 +1069,7 @@ function SaveExcelFile(strPath) {
                 toastrMessage(data, "success");
             },
             error: function (error) {
-                alert(JSON.stringify(error));
+                //alert(JSON.stringify(error));
                 closeModalActions();
                 ajaxErrorHandler("SaveExcelFile", error);
             }

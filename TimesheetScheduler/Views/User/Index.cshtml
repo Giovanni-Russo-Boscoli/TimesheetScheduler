@@ -68,7 +68,7 @@
         <div id="tfsReferenceTab" class="tab-pane fade">
             <br />
             <div class="form-group">
-                <button id="btnTFSReferenceItem" type="button" class="btn btn-success" onclick="openEditUserModal(0, true);">New TFS Item</button>
+                <button id="btnTFSReferenceItem" type="button" class="btn btn-success" onclick="openEditTFSReferenceModal(0, true);">New TFS Item</button>
             </div>
             <table id="tfsReferenceTable" class="display hover" style="width:100%">
                 <thead>
@@ -183,5 +183,6 @@
 </div>
 
 @Html.Partial("PartialRatesAndRoles")
+@Html.Partial("TFSReference")
 
 @*https://developercommunity.visualstudio.com/content/problem/571416/all-instances-of-expressions-in-razor-editor-asks.html*@

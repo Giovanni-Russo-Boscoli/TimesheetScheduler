@@ -74,6 +74,17 @@ function GetResult_AddNewRole(data) {
     }
 }
 
+function GetResult_AddNewTFSProject(data) {
+    if (data === true) {
+        $('#editCreateTFSReferenceModal').modal('hide');
+        toastrMessage("TFS Project save successfully!", "success");
+        initTfsReferenceTab(true);
+    }
+    else {
+        toastrMessage("(GetResult_AddNewTFSProject) Something went wrong! \n " + data, "error");
+    }
+}
+
 //function RemoveMask_AddNewRole() {
 //    //$("#rateTxt").val($("#rateTxt").unmask());
 //    //$("#rateTxt").unmask();
@@ -85,6 +96,10 @@ function AddNewUserFailure(data) {
 
 function AddNewRoleFailure(data) {
     ajaxErrorHandler("(AddNewRoleFailure) Something went wrong!", data);
+}
+
+function AddNewTFSProjectFailure(data) {
+    ajaxErrorHandler("(AddNewTFSProjectFailure) Something went wrong!", data);
 }
 
 function readJsonUserFile(callback) {
@@ -264,8 +279,8 @@ function callbackDataTablesTfsReference() {
                 { data: "IterationPathTFS" },
                 {
                     data: function (data, type, row, meta) {
-                        return "<i class='fa fa-pencil-square-o editUser' title='Edit User' onclick='openEditUserModal(" + meta.row + "," + false + ") : \"\"'></i> " +
-                            "<i class='fa fa-trash-o deleteUser' title='Delete User' onclick='return confirm(" + "\"Delete " + " data.Name " + " ?\") ? deleteUser(" + data.Id + ") : \"\"'></i>";
+                        return "<i class='fa fa-pencil-square-o editTFSProject' title='Edit TFS Project' onclick='openEditTFSReferenceModal(" + meta.row + "," + false + ")'></i> " +
+                            "<i class='fa fa-trash-o deleteTFSProject' title='Delete TFS Project' onclick='return confirm(" + "\"Delete " + data.IterationPathTFS + " ?\") ? deleteTFSProject(" + data.Id + ") : \"\"'></i>";
                     }
                 }
             ],
@@ -285,7 +300,7 @@ function callbackDataTablesTfsReference() {
             ]
         });
 
-        hideColumnsForNonAdminRole();
+        hideColumnsForNonAdminRole_TFSReference();
     });
 }
 
@@ -303,6 +318,14 @@ function hideColumnsForNonAdminRole_RolesTable() {
     isUserLoggedAdmin(function (_visibleColumns) {
         userTable.column(4).visible(_visibleColumns);
         $("#btnRoleItem").toggle(_visibleColumns);
+    });
+}
+
+function hideColumnsForNonAdminRole_TFSReference() {
+    var tfsReference = $('#tfsReferenceTable').DataTable();
+    isUserLoggedAdmin(function (_visibleColumns) {
+        tfsReference.column(3).visible(_visibleColumns);
+        $("#btnTFSReferenceItem").toggle(_visibleColumns);
     });
 }
 
@@ -346,6 +369,26 @@ function deleteRole(_roleId) {
         },
         function(error) {
             ajaxErrorHandler("Something went wrong, role NOT deleted", error);
+        }
+    });
+}
+
+function deleteTFSProject(_tfsProjectId) {
+    $.ajax({
+        url: "/User/DeleteTFSProject",
+        type: "POST",
+        dataType: "json",
+        data: { tfsProjectId: _tfsProjectId },
+        success: function (data) {
+            if (data === true) {
+                toastrMessage("TFS Project deleted!", "success");
+                initTfsReferenceTab(true);
+            } else {
+                toastrMessage("Something went wrong, TFS Project NOT deleted. \n " + data, "error");
+            }
+        },
+        function(error) {
+            ajaxErrorHandler("Something went wrong, TFS Project NOT deleted", error);
         }
     });
 }
@@ -458,6 +501,45 @@ function openEditRoleModal(rowIndex, create) {
     currencyMask('#rateTxt', '####.##');
     //OPEN MODAL
     $("#editCreateRolesModal").modal();
+} 
+
+function openEditTFSReferenceModal(projectIndex, create) {
+
+    //CLEAN MODAL
+    cleanEditTfsReferenceModal();
+
+    if (!create) { //EDIT MODE
+
+        var data = $('#tfsReferenceTable').DataTable().row(projectIndex).data();
+
+        //HEADER - NAME
+        $("#headerLabelTFSName").text("Edit TFS Project - " + data.IterationPathTFS);
+
+        $("#hiddenTFSId").val(data.Id);
+
+        //PROJECT NAME TFS
+        $("#projectNameTFSTxt").val(data.ProjectNameTFS);
+
+        //SHORT NAME
+        $("#iterationPathTFSTxt").val(data.IterationPathTFS);
+
+        //SAVE BUTTON
+        $("#btnUpdateTFSProject").show();
+    }
+    else {
+        //NEW USER
+        //HEADER - NAME
+        $("#headerLabelTFSName").text("New TFS Project");
+
+        $("#hiddenTFSId").val(0);//send 0 for new users and avoid ModelState.IsValid fail
+
+        //CREATE BUTTON
+        $("#btnCreateTFSProject").show();
+    }
+
+    //currencyMask('#rateTxt', '####.##');
+    //OPEN MODAL
+    $("#editCreateTFSReferenceModal").modal();
 }
 
 function populateSelectEditUserModal() {
@@ -516,5 +598,9 @@ function cleanEditRatesAndRolesModal() {
 }
 
 function cleanEditTfsReferenceModal(){
-
+    $("#headerLabelTFSName").text("");
+    $("#projectNameTFSTxt").val("");
+    $("#iterationPathTFSTxt").val("");
+    $("#btnUpdateTFSProject").hide();
+    $("#btnCreateTFSProject").hide();    
 }

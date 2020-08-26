@@ -21,12 +21,14 @@ table#userTable.dataTable tbody tr:hover {
   display: inline-block;
 }
 .deleteUser,
-.deleteRole {
+.deleteRole,
+.deleteTFSProject {
   font-size: 24px;
   color: red;
 }
 .editUser,
-.editRole {
+.editRole,
+.editTFSProject {
   font-size: 20px;
   margin-right: 5px;
 }
@@ -35,33 +37,48 @@ table#userTable.dataTable tbody tr:hover {
 }
 #editCreateUserModal .modal-body .lblUserEditModal,
 #editCreateRolesModal .modal-body .lblUserEditModal,
+#editCreateTFSReferenceModal .modal-body .lblUserEditModal,
 #editCreateUserModal .modal-body .lblRolesEditModal,
-#editCreateRolesModal .modal-body .lblRolesEditModal {
+#editCreateRolesModal .modal-body .lblRolesEditModal,
+#editCreateTFSReferenceModal .modal-body .lblRolesEditModal,
+#editCreateUserModal .modal-body .lblProjectNameTFSditModal,
+#editCreateRolesModal .modal-body .lblProjectNameTFSditModal,
+#editCreateTFSReferenceModal .modal-body .lblProjectNameTFSditModal {
   width: 160px !important;
 }
 #editCreateUserModal .modal-body .inputUserEditModal,
 #editCreateRolesModal .modal-body .inputUserEditModal,
+#editCreateTFSReferenceModal .modal-body .inputUserEditModal,
 #editCreateUserModal .modal-body .inputRolesEditModal,
-#editCreateRolesModal .modal-body .inputRolesEditModal {
+#editCreateRolesModal .modal-body .inputRolesEditModal,
+#editCreateTFSReferenceModal .modal-body .inputRolesEditModal,
+#editCreateUserModal .modal-body .inputProjectNameTFSEditModal,
+#editCreateRolesModal .modal-body .inputProjectNameTFSEditModal,
+#editCreateTFSReferenceModal .modal-body .inputProjectNameTFSEditModal {
   width: 380px !important;
   max-width: none;
 }
 #editCreateUserModal .modal-body .form-group,
-#editCreateRolesModal .modal-body .form-group {
+#editCreateRolesModal .modal-body .form-group,
+#editCreateTFSReferenceModal .modal-body .form-group {
   padding: 5px 0;
 }
 #editCreateUserModal .modal-body .LabelAndInputField,
-#editCreateRolesModal .modal-body .LabelAndInputField {
+#editCreateRolesModal .modal-body .LabelAndInputField,
+#editCreateTFSReferenceModal .modal-body .LabelAndInputField {
   display: flex !important;
 }
 #editCreateUserModal .modal-body .field-validation-error,
-#editCreateRolesModal .modal-body .field-validation-error {
+#editCreateRolesModal .modal-body .field-validation-error,
+#editCreateTFSReferenceModal .modal-body .field-validation-error {
   margin-left: 160px;
 }
 #editCreateUserModal .modal-footer #btnCreate,
 #editCreateRolesModal .modal-footer #btnCreate,
+#editCreateTFSReferenceModal .modal-footer #btnCreate,
 #editCreateUserModal .modal-footer #btnUpdate,
-#editCreateRolesModal .modal-footer #btnUpdate {
+#editCreateRolesModal .modal-footer #btnUpdate,
+#editCreateTFSReferenceModal .modal-footer #btnUpdate {
   display: none;
 }
 /*------------------------------------------------------------------ END TOGGLE SWITCH ------------------------------------------------------------------- */

@@ -116,7 +116,7 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 
 	- create less file Login page (login.less)
 
-- prepare environment to work with different TFS url's 
+	- prepare environment to work with different TFS url's 
 
 - retrieve all usedr LDAP/TFS for the dropdown ???
 
@@ -137,3 +137,17 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 	- button ME to change to your user
 
 	- button previous and next to change the month (keep the same user)
+
+- Set holidays calendar (to avoid create tasks in wrong days) - Another json file with all holidays of the year
+
+- Display a label to warning when creating task on the weekend (label in the top of the modal creation)
+
+- Read users from the file
+
+- Treat not registered user (in home page show a message saying "user not registered")
+
+- Check session for User page (check if user still logged)
+
+- Give to the user a option to choose the location to save the excel file
+
+- WORD DOCUMENT (https://stackoverflow.com/questions/44888038/create-insert-text-and-save-a-word-doc-in-c-sharp/44888651)

@@ -23,12 +23,12 @@ table#userTable.dataTable tbody tr:hover {
     display: inline-block;
 }
 
-.deleteUser, .deleteRole {
+.deleteUser, .deleteRole, .deleteTFSProject {
     font-size: 24px;
     color: red
 }
 
-.editUser, .editRole {
+.editUser, .editRole, .editTFSProject {
     font-size: 20px;
     margin-right: 5px;
 }
@@ -38,14 +38,15 @@ table#userTable.dataTable tbody tr:hover {
 }
 
 #editCreateUserModal,
-#editCreateRolesModal {
+#editCreateRolesModal,
+#editCreateTFSReferenceModal {
 
     .modal-body {
-        .lblUserEditModal, .lblRolesEditModal {
+        .lblUserEditModal, .lblRolesEditModal, .lblProjectNameTFSditModal {
             width: 160px !important;
         }
 
-        .inputUserEditModal, .inputRolesEditModal {
+        .inputUserEditModal, .inputRolesEditModal, .inputProjectNameTFSEditModal {
             width: 380px !important;
             max-width: none;
         }

@@ -15,7 +15,7 @@ namespace TimesheetScheduler.Controllers
     {
         private string jsonUserServerPath = "~/JsonData/jsonUser.json";
         private string jsonRatesAndRolesServerPath = "~/JsonData/ratesAndRoles.json";
-        private string jsonProjectIterationPServerPath = "~/JsonData/projectIteration.json";
+        private string jsonProjectIterationServerPath = "~/JsonData/projectIteration.json";
 
         // GET: User
         public ActionResult Index()
@@ -41,6 +41,18 @@ namespace TimesheetScheduler.Controllers
             using (StreamWriter w = new StreamWriter(Server.MapPath(jsonRatesAndRolesServerPath)))
             {
                 string jsonData = JsonConvert.SerializeObject(jsonRole, Formatting.Indented);
+                w.Write(jsonData);
+                success = true;
+            }
+            return success;
+        }
+
+        private bool WriteJsonTFSProjectFile(List<JsonProjectIteration> jsonTFSProject)
+        {
+            var success = false;
+            using (StreamWriter w = new StreamWriter(Server.MapPath(jsonProjectIterationServerPath)))
+            {
+                string jsonData = JsonConvert.SerializeObject(jsonTFSProject, Formatting.Indented);
                 w.Write(jsonData);
                 success = true;
             }
@@ -76,6 +88,12 @@ namespace TimesheetScheduler.Controllers
             return ++nextId;
         }
 
+        private int ReturnNextId_TFSProjects()
+        {
+            var nextId = DeserializeReadJsonProjectIterationFile().Max(x => x.Id);
+            return ++nextId;
+        }
+
         [HttpGet]
         public JsonResult ReadJsonRatesAndRolesFile()
         {
@@ -105,7 +123,7 @@ namespace TimesheetScheduler.Controllers
 
         private List<JsonProjectIteration> DeserializeReadJsonProjectIterationFile()
         {
-            using (StreamReader r = new StreamReader(Server.MapPath(jsonProjectIterationPServerPath)))
+            using (StreamReader r = new StreamReader(Server.MapPath(jsonProjectIterationServerPath)))
             {
                 string json = r.ReadToEnd();
                 JavaScriptSerializer jss = new JavaScriptSerializer();
@@ -151,6 +169,26 @@ namespace TimesheetScheduler.Controllers
                 case "UpdateRole":
                     {
                         result = UpdateRole(jsonRoles);
+                        break;
+                    }
+            }
+            return result;
+        }
+
+        [HttpPost]
+        public JsonResult SubmitTFSReferenceButton(JsonProjectIteration jsonTFS, string ButtonType)
+        {
+            JsonResult result = new JsonResult();
+            switch (ButtonType)
+            {
+                case "CreateTFSProject":
+                    {
+                        result = AddNewTFSProject(jsonTFS);
+                        break;
+                    }
+                case "UpdateTFSProject":
+                    {
+                        result = UpdateTFSProject(jsonTFS);
                         break;
                     }
             }
@@ -208,6 +246,36 @@ namespace TimesheetScheduler.Controllers
                 throw ex;
             }
         }
+
+        private JsonResult AddNewTFSProject(JsonProjectIteration jsonTFS)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var Items = new List<JsonProjectIteration>();
+                    using (StreamReader r = new StreamReader(Server.MapPath(jsonProjectIterationServerPath)))
+                    {
+                        string json = r.ReadToEnd();
+                        JavaScriptSerializer jss = new JavaScriptSerializer();
+                        Items = jss.Deserialize<List<JsonProjectIteration>>(json);
+                        jsonTFS.Id = ReturnNextId_TFSProjects();
+                        jsonTFS.IterationPathTFS = jsonTFS.IterationPathTFS;
+                        jsonTFS.ProjectNameTFS = jsonTFS.ProjectNameTFS;
+                        Items.Add(jsonTFS);
+                    }
+
+                    return Json(WriteJsonTFSProjectFile(Items), JsonRequestBehavior.AllowGet);
+
+                }
+                return Json(modelStateErrors(ModelState.Values), JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
 
         private bool UpdateUser(JsonUser jsonFile)
         {
@@ -277,10 +345,52 @@ namespace TimesheetScheduler.Controllers
             }
         }
 
+        private JsonResult UpdateTFSProject(JsonProjectIteration jsonTFS)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var Items = new List<JsonProjectIteration>();
+                    var tfsProjectIterationName = "";
+                    using (StreamReader r = new StreamReader(Server.MapPath(jsonProjectIterationServerPath)))
+                    {
+                        string json = r.ReadToEnd();
+                        JavaScriptSerializer jss = new JavaScriptSerializer();
+                        Items = jss.Deserialize<List<JsonProjectIteration>>(json);
+
+                        var item = Items.Where(x => x.Id == jsonTFS.Id).FirstOrDefault();
+                        tfsProjectIterationName = item.IterationPathTFS;//delete when using db
+                        item.ProjectNameTFS = jsonTFS.ProjectNameTFS;
+                        item.IterationPathTFS = jsonTFS.IterationPathTFS;
+                        Items[Items.FindIndex(ind => ind.Id == jsonTFS.Id)] = item;
+                    }
+
+                    //UPDATE USERS WITH THIS ROLE
+                    updateUsersTFSProject(tfsProjectIterationName, jsonTFS.IterationPathTFS, jsonTFS.ProjectNameTFS);
+
+                    return Json(WriteJsonTFSProjectFile(Items), JsonRequestBehavior.AllowGet);
+
+                }
+                return Json(modelStateErrors(ModelState.Values), JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         private void updateUsersRoles(string originalRole, string newRole, decimal rate)
         {
             var users = DeserializeReadJsonUserFile();
             users.Where(x => x.Role.Equals(originalRole)).ToList().ForEach(y => { y.Role = newRole; y.Rate = rate; });
+            WriteJsonUserFile(users);
+        }
+
+        private void updateUsersTFSProject(string originalTFSProject, string newIterationPathTFS, string newTFSProject)
+        {
+            var users = DeserializeReadJsonUserFile();
+            users.Where(x => x.IterationPathTFS.Equals(originalTFSProject)).ToList().ForEach(y => { y.IterationPathTFS = newIterationPathTFS; y.ProjectNameTFS = newTFSProject; });
             WriteJsonUserFile(users);
         }
 
@@ -304,9 +414,8 @@ namespace TimesheetScheduler.Controllers
         [HttpPost]
         public JsonResult DeleteRole(int roleId)
         {
-
             //CHECK IF THERE ARE ANY USERS WITH THIS ROLE, IF YES PREVENT DELETION
-            if (allowToDelete(roleId))
+            if (allowToDeleteRole(roleId))
             {
                 var Items = new List<JsonRatesAndRoles>();
                 using (StreamReader r = new StreamReader(Server.MapPath(jsonRatesAndRolesServerPath)))
@@ -317,17 +426,41 @@ namespace TimesheetScheduler.Controllers
 
                     Items.RemoveAll(x => x.Id == roleId);
                 }
-
-                //return WriteJsonRolesFile(Items);
                 return Json(WriteJsonRolesFile(Items), JsonRequestBehavior.AllowGet);
             }
             return Json("There are users associated with this role.", JsonRequestBehavior.AllowGet);
         }
 
-        private bool allowToDelete(int roleId)
+        [HttpPost]
+        public JsonResult DeleteTFSProject(int tfsProjectId)
+        {
+            //CHECK IF THERE ARE ANY USERS WITH THIS PROJECT ASSOCIATED, IF YES PREVENT DELETION
+            if (allowToDeleteTFSProject(tfsProjectId))
+            {
+                var Items = new List<JsonProjectIteration>();
+                using (StreamReader r = new StreamReader(Server.MapPath(jsonProjectIterationServerPath)))
+                {
+                    string json = r.ReadToEnd();
+                    JavaScriptSerializer jss = new JavaScriptSerializer();
+                    Items = jss.Deserialize<List<JsonProjectIteration>>(json);
+
+                    Items.RemoveAll(x => x.Id == tfsProjectId);
+                }
+                return Json(WriteJsonTFSProjectFile(Items), JsonRequestBehavior.AllowGet);
+            }
+            return Json("There are users associated with this TFS Project.", JsonRequestBehavior.AllowGet);
+        }
+
+        private bool allowToDeleteRole(int roleId)
         {
             var role = DeserializeReadJsonRatesAndRolesFile().Where(x => x.Id == roleId).FirstOrDefault();
             return DeserializeReadJsonUserFile().Where(x => x.Role == role.Role).Count() < 1;
+        }
+
+        private bool allowToDeleteTFSProject(int tfsProjectId)
+        {
+            var tfsProject = DeserializeReadJsonProjectIterationFile().Where(x => x.Id == tfsProjectId).FirstOrDefault();
+            return DeserializeReadJsonUserFile().Where(x => x.IterationPathTFS == tfsProject.IterationPathTFS).Count() < 1;
         }
 
         private string modelStateErrors(ICollection<ModelState> modelStateValues)

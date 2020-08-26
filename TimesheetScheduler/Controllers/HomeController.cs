@@ -1619,12 +1619,19 @@ namespace TimesheetScheduler.Controllers
 
         private List<JsonHolidays> DeserializeReadJsonHolidaysFile()
         {
-            using (StreamReader r = new StreamReader(Server.MapPath(jsonHolidaysServerPath)))
+            try
             {
-                string json = r.ReadToEnd();
-                JavaScriptSerializer jss = new JavaScriptSerializer();
-                var result = jss.Deserialize<List<JsonHolidays>>(json);
-                return result;
+                DateTime _date = DateTime.Now;
+                using (StreamReader r = new StreamReader(Server.MapPath(jsonHolidaysServerPath)))
+                {
+                    string json = r.ReadToEnd();
+                    JavaScriptSerializer jss = new JavaScriptSerializer();
+                    var result = jss.Deserialize<List<JsonHolidays>>(json);
+                    return result;
+                }
+            }
+            catch (Exception ex) {
+                throw ex;
             }
         }
 

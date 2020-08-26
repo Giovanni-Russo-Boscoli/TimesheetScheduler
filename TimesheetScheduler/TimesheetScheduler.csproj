@@ -810,6 +810,7 @@
     <Content Include="todo timesheetscheduler" />
     <Content Include="Views\Home\SampleTest.cshtml" />
     <Content Include="Views\User\PartialRatesAndRoles.cshtml" />
+    <Content Include="Views\User\TFSReference.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
