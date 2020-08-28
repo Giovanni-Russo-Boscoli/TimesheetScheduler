@@ -4,7 +4,7 @@
         "debug": false,
         "newestOnTop": false,
         "progressBar": true,
-        "positionClass": "toast-bottom-right", //"toast-bottom-full-width",
+        "positionClass": "toast-bottom-right", //"toast-bottom-full-width",//
         "preventDuplicates": true,
         "onclick": null,
         "showDuration": "100",
@@ -14,7 +14,8 @@
         "showEasing": "swing",
         "hideEasing": "linear",
         "showMethod": "show",
-        "hideMethod": "hide"
+        "hideMethod": "hide",
+        'body-output-type': 'trustedHtml'
     };
 
     switch (typeMessage) {
@@ -62,6 +63,15 @@ function getUserName(callback) {
             ajaxErrorHandler(error);
         }
     });
+}
+
+//return int e.g.: January = 1 / December = 12
+function getCurrentMonth() {
+    return new Date().getMonth() + 1;
+}
+
+function getCurrentYear() {
+    return (new Date).getFullYear();
 }
 
 function getAccessUserByName(userName) {

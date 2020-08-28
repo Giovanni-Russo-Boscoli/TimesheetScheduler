@@ -492,6 +492,7 @@
     <Content Include="Content\Login.min.css">
       <DependentUpon>Login.css</DependentUpon>
     </Content>
+    <Content Include="Content\multi-select.css" />
     <Content Include="Content\progressBarAnimation.css">
       <DependentUpon>progressBarAnimation.less</DependentUpon>
     </Content>
@@ -574,6 +575,7 @@
     <Content Include="Images\plus.png" />
     <Content Include="Images\poweroff.svg" />
     <Content Include="Images\sad_face_icon.png" />
+    <Content Include="Images\switch.png" />
     <Content Include="Images\xlsx_icon.svg.png" />
     <Content Include="Images\xsl_icon.png" />
     <Content Include="MySnippet.xml">
@@ -682,6 +684,7 @@
     <Content Include="Scripts\jquery-ui-1.12.1.min.js" />
     <Content Include="Scripts\jquery.dateFormat-1.0.js" />
     <Content Include="Scripts\jquery.mask.js" />
+    <Content Include="Scripts\jquery.multi-select.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Scripts\jquery.validate.js" />

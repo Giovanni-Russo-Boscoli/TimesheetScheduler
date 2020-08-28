@@ -6,7 +6,6 @@ var users = [];
 var holidays = [];
 
 $(document).ready(function ($) {
-    registerTriggerAjax();
     readJsonUserFile(function (data) {
         users = data;
         LoadMonths();
@@ -56,19 +55,6 @@ function readJsonHolidaysFile(callback) {
 function clearMonthInfoVariables() {
     totalChargeableHours = 0;
     totalNonChargeableHours = 0;
-}
-
-function registerTriggerAjax() {
-    jQuery.ajaxSetup({
-        beforeSend: function () {
-            $('.modalPleaseWait').show();
-        },
-        complete: function () {
-            $('.modalPleaseWait').hide();
-        },
-        success: function () {
-        }
-    });
 }
 
 function eventsCalendar(_events, dateCalendar) {
@@ -397,15 +383,6 @@ function calculateLoadBarEventsForListView(calendarEvents) {
     });
 }
 
-function projectsIteration() {
-    return {
-        "BOM_MOD24": {
-            "projectNameTFS": "BOM_MOD24",
-            "iterationPathTFS": "BOM_MOD24\\Timesheets"
-        }
-    };
-}
-
 function getRateUserByName(userName) {
     var rate = 0;
     $(users).each(function (index, value) {
@@ -468,15 +445,6 @@ function LoadYears() {
     $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
     $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
     $('#yearTimesheet option[value="' + _currentYear + '"]').prop('selected', true);
-}
-
-//return int e.g.: January = 1 / December = 12
-function getCurrentMonth() {
-    return new Date().getMonth() + 1;
-}
-
-function getCurrentYear() {
-    return (new Date).getFullYear();
 }
 
 function getUserNameFromPage() {
@@ -1039,7 +1007,7 @@ function confirmationSavePath() {
             }
         })
     ).then(function (data, textStatus, jqXHR) {
-        SaveExcelFile(data);
+            SaveExcelFile(data);
     });
 }
 
@@ -1047,7 +1015,6 @@ function SaveExcelFile(strPath) {
     var msgPath = "The Excel file will be saved in the following directory: \n" + strPath + ".xls";
 
     if (confirm(msgPath)) {
-        closeModalActions();
 
         var userData = getUserDataByName(getUserNameFromPage());
 
@@ -1070,7 +1037,6 @@ function SaveExcelFile(strPath) {
             },
             error: function (error) {
                 //alert(JSON.stringify(error));
-                closeModalActions();
                 ajaxErrorHandler("SaveExcelFile", error);
             }
         });
@@ -1089,10 +1055,6 @@ function doSomethingIfIsTheSameUser(callback) {
     });
 }
 
-function closeModalActions() {
-    $("#actionsModal").modal('toggle');
-}
-
 function closeModalCopyTask() {
     $("#copyTaskModal").modal('toggle');
 }
@@ -1106,12 +1068,11 @@ function closeAllTasksCurrentMonth() {
             var _month = getNameSelectedMonthFromPage();
             if (confirm("Do you want close all " + _month + " tasks?")) {
                 ajaxCloseAllTasks(function (data) {
-                    closeModalActions();
                     connectToTFS();
                     if (data === true || data === "True") {
                         toastrMessage("All '" + _month + "' Tasks Were Closed", "success");
                     }
-                }, closeModalActions);
+                });
             }
         }
     });

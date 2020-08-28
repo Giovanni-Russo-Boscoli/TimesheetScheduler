@@ -18,6 +18,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
@@ -742,6 +743,7 @@ namespace TimesheetScheduler.Controllers
             return "Timesheet" + separator + NameSplittedByUnderscore(userName, separator.ToString()) + separator + _monthFormatted + separator + _year;
         }
 
+        [HttpGet]
         public string TimesheetSaveLocation()
         {
             var _desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\";
@@ -1468,6 +1470,71 @@ namespace TimesheetScheduler.Controllers
             }
         }
 
+        [HttpPost]
+        public string BulkSaveExcelFile(IList<UserDataSearchTFS> userData)
+        {
+            Application excel;
+            Workbook worKbooK;
+            Worksheet worksheet;
+            Range celLrangE;
+            StringBuilder result = new StringBuilder();
+            foreach (var item in userData)
+            {
+                try
+                {
+                    item.UserName = item.UserName.Replace("'", "''");
+
+                    excel = new Application();
+                    excel.Visible = false;
+                    excel.DisplayAlerts = false;
+                    worKbooK = excel.Workbooks.Add(Type.Missing);
+                    var tableEventCount = 0;
+
+                    InitExcelVariables(item.UserName, item.Month, item.Year);
+
+                    worksheet = (Worksheet)worKbooK.ActiveSheet;
+                    worksheet.Name = "Timesheet_" + item.UserName;//.Replace(" ", "_");
+
+                    CreateHeader(worksheet);
+                    tableEventCount = CreateTable(worksheet, item);
+                    resizeColumns(worksheet);
+
+                    var borderStartsRow = 5;
+                    var borderEndsRow = borderStartsRow + tableEventCount;
+                    celLrangE = worksheet.Range[worksheet.Cells[borderStartsRow, 1], worksheet.Cells[borderEndsRow, 7]]; //TODO
+                    Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
+                    border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+                    border.Weight = 2d;
+
+                    protectSheet(worksheet);
+                    var saveParams = TimesheetSaveLocationAndFileName(item.UserName, item.Month, item.Year);
+                    worKbooK.SaveAs(saveParams);
+
+                    result.Append($"File saved sucessfully!({worksheet.Name})"); // - Path: " + saveParams;
+                    result.Append("<br />");
+                    worKbooK.Close();
+                    excel.Workbooks.Close();
+                    excel.Quit();
+                    Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
+                    Marshal.ReleaseComObject(worKbooK);
+                }
+                catch (Exception ex)
+                {
+                    Console.Write(ex.Message);
+                    result.AppendLine($"Interal Code (1) - {ex.Message}");
+                    result.Append("<br />");
+                }
+                finally
+                {
+                    worksheet = null;
+                    celLrangE = null;
+                    worKbooK = null;
+
+                }
+            }
+            return result.ToString();
+        }
+
         //[HttpPost]
         //public FileResult SaveExcelFile(UserDataSearchTFS userData)
         //{
@@ -1630,7 +1697,8 @@ namespace TimesheetScheduler.Controllers
                     return result;
                 }
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 throw ex;
             }
         }

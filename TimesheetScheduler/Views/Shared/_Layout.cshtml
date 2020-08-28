@@ -20,7 +20,7 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Users", "Index", "User")</li>
+                    <li>@Html.ActionLink("Data", "Index", "User")</li>
                     <li>@Html.ActionLink("Report", "StepsReports", "Home")</li>
 
                 </ul>
@@ -41,7 +41,7 @@
                 <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
             </footer>*@
     </div>
-    
+    <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
     @*@section scripts {*@
         @Scripts.Render("~/bundles/jquery")
         @Scripts.Render("~/bundles/jqueryval")
@@ -54,12 +54,60 @@
         @Scripts.Render("~/bundles/toastrjs")
         @Scripts.Render("~/bundles/util")
         @Scripts.Render("~/bundles/jquerymask")
+        @Scripts.Render("~/bundles/jquery-multiselect")
     @*}*@
     @*<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"></script>*@
     @RenderSection("scripts", required: false)
+    <script>
+
+        $(document).ready(function ($) {
+            registerTriggerAjax();
+        });
+
+        function registerTriggerAjax() {
+            jQuery.ajaxSetup({
+                beforeSend: function () {
+                    $('.modalPleaseWait').show();
+                },
+                complete: function () {
+                    $('.modalPleaseWait').hide();
+                },
+                success: function () {
+                }
+            });
+        }
+
+    </script>
 </body>
 </html>
 <style>
+
+     /*----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------*/
+    .modalPleaseWait {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba( 255, 255, 255, .8 ) url(../../Images/pacman_animated.gif) no-repeat;
+        background-position: center; /* Center the image */
+        background-repeat: no-repeat; /* Do not repeat the image */
+    }
+
+    body.loading .modalPleaseWait {
+        display: block;
+        overflow: hidden;
+    }
+
+     /*----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------*/
+
+    #toast-container.toast-bottom-right > div {
+        width: auto !important;
+        max-width: none !important;
+    }
+
 
     .navbar .container {
         display: flex;

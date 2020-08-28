@@ -55,12 +55,16 @@ namespace TimesheetScheduler
             bundles.Add(new ScriptBundle("~/bundles/jquerymask").Include(
                      "~/Scripts/jquery.mask.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/jquery-multiselect").Include(
+                     "~/Scripts/jquery.multi-select.js"));
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/fullcalendar.css",
                       "~/Content/toastr.css",
                       "~/Content/site.css",
                       "~/Content/bootstrap-toggle.css",
+                      "~/Content/multi-select.css",
                       "~/css/font-awesome.css"));
 
             bundles.Add(new StyleBundle("~/Content/User").Include(

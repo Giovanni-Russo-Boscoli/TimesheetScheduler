@@ -7,25 +7,300 @@
 @Styles.Render("~/Content/timesheetscheduler")
 @Scripts.Render("~/bundles/jquery")
 
-<h2>StepsReports</h2>
+@*<h2>StepsReports</h2>*@
 
-<div class="container">
-    <ul class="stepsProcess">
-        <li class="active">login</li>
-        <li class="active">choose interest</li>
-        <li  class="active">add friends</li>
-        <li>View map</li>
-    </ul>
+@*<div class="container">
+        <ul class="stepsProcess">
+            <li class="active">login</li>
+            <li class="active">choose interest</li>
+            <li class="active">add friends</li>
+            <li>View map</li>
+        </ul>
+    </div>*@
+<div class="row">
+    <div class="col-lg-4">
+        <fieldset>
+            <legend>Export Excel - BULK</legend>
+            
+        </fieldset>
+    </div>
+</div>
+<div>
+    <!-- start -->
+    <div class="col-lg-4">
+
+        <label for="monthTimesheet">Month</label>
+        <div class="monthSelection">
+            <button id="btnPrevMonth" title="Previous Month" class="btn btn-primary" onclick="prevNextMonthBtn2(0);"><</button>
+            <select class="form-control" id="monthTimesheet"></select>
+            <button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="prevNextMonthBtn2(1);">></button>
+        </div>
+
+        <br />
+
+        <label for="yearTimesheet">Year</label>
+        <select class="form-control" id="yearTimesheet"></select>
+        <br />
+        <div class="col-lg-12 row">
+            <div class="col-lg-6">
+                @*<input type="radio" name="radioBoxUserSelection" id="radioSelectAll" />*@
+                <button id="btnSelectAllBoxSelection" class="btn btn-default">Select All</button>
+            </div>
+            <div class="col-lg-6">
+                @*<input type="radio" name="radioBoxUserSelection" id="radioDeselectAll" />*@
+                <button id="btnDeselectAllBoxSelection" class="btn btn-default">Deselect All</button>
+            </div>
+        </div>
+        <br />
+
+        <select id='boxUserSelection' multiple='multiple'></select>
+        <br />
+        <button id="btnExportExcelBulk" class="btn btn-success" onclick="confirmationSavePath();" disabled>Export</button>
+    </div>
+
+    <script src="~/Scripts/jquery.multi-select.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/multi-select.css">
+    
+    <script type="text/javascript">
+
+        var users = [];
+        var emptyBoxUSerSelection = "List is empty!"
+        var countBoxUserSelection = 0;
+
+        $(document).ready(function () {
+            init();
+        });
+
+        function init() {
+            users = [];
+            countBoxUserSelection = 0;
+            readJsonUserFile(function (data) {
+                users = data;
+                loadUsers();
+                LoadMonths2();
+                LoadYears2();
+                bindBtnUserSelection();
+                $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
+            });
+        }
+
+        function readJsonUserFile(callback) {
+            $.ajax({
+                url: "/User/ReadJsonUserFile",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    callback(data);
+                },
+                function(error) {
+                    ajaxErrorHandler(error);
+                }
+            });
+        }
+
+        function loadUsers() {
+            var names = [];
+
+            $(users).each(function (index, value) {
+                if (value.Active) {
+                    names.push(value.Name);
+                }
+            });
+
+            names.sort();//ordering A-Z
+
+            var options = "";
+            for (i = 0; i < names.length; i++) {
+                options += "<option value='" + (i + 1) + "'>" + names[i] + "</option>";
+            }
+            //$("#boxUserSelection").append(options);
+            $("#boxUserSelection").html(options);
+
+            bindBoxUserSelection();
+        }
+
+        function bindBoxUserSelection() {
+            //http://loudev.com/#project
+            $('#boxUserSelection').multiSelect({
+                afterSelect: function (values) {
+                    countBoxUserSelection = countItemsBoxUserSelection();
+                    $("#btnExportExcelBulk").removeAttr('disabled');
+                    $("#btnExportExcelBulk").prop("title", "Export Excel File (" + countBoxUserSelection + " file(s))");
+                },
+                afterDeselect: function (values) {
+                    countBoxUserSelection = countItemsBoxUserSelection();
+                    if (countBoxUserSelection === 0) {
+                        $("#btnExportExcelBulk").attr('disabled', 'disabled');
+                        $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
+                    } else {
+                        $("#btnExportExcelBulk").prop("title", "Export Excel File (" + countBoxUserSelection + " file(s))");
+                    }
+                }
+            });
+        }
+
+        function countItemsBoxUserSelection() {
+            var count = 0;
+            $(".ms-selection .ms-list .ms-elem-selection").each(function (index, value) {
+                if ($(value).is(":visible")) {
+                    count++;
+                }
+            });
+            return count;
+        }
+
+        function bindBtnUserSelection() {
+
+            $("#btnSelectAllBoxSelection").on("click", function () {
+                $('#boxUserSelection').multiSelect('select_all');
+            });
+
+            $("#btnDeselectAllBoxSelection").on("click", function () {
+                $('#boxUserSelection').multiSelect('deselect_all');
+            });
+
+        }
+
+        function readSelected() {
+            var count = 0;
+            $(".ms-selection .ms-list .ms-elem-selection").each(function (index, value) {
+                if ($(value).is(":visible")) {
+                    toastrMessage($(value).find("span").text(), "sucess");
+                    count++;
+                }
+            });
+            if (count === 0) {
+                toastrMessage("List is empty", "warning");
+            }
+        }
+
+       function confirmationSavePath() {
+            $.when(
+                $.ajax({
+                    url: "/Home/TimesheetSaveLocation",
+                    type: "GET",
+                    async: false,
+                    data: {},
+                    error: function (error) {
+                        ajaxErrorHandler("Not saved. (confirmationSavePath function) \n", error);
+                        return false;
+                    }
+                })
+            ).then(function (data, textStatus, jqXHR) {
+                BulkSaveExcelFile(data);
+            });
+        }
+
+
+        function BulkSaveExcelFile(strPath) {
+            var msgPath = "The Excel files will be saved in the following directory: \n" + strPath + ".xls";
+
+            if (confirm(msgPath)) {
+
+                var jsonObject = [];
+                var _month = getMonthFromPage2() + 1;
+                var _year = getYearFromPage2();
+
+                $(".ms-selection .ms-list .ms-elem-selection").each(function (index, value) {
+                    if ($(value).is(":visible")) {
+                        var userData = getUserDataByName2($(value).find("span").text());
+                        var _selected = {
+                            "UserName": userData.Name,
+                            "ProjectNameTFS": userData.ProjectNameTFS,
+                            "IterationPathTFS": userData.IterationPathTFS,
+                            "Month": _month,
+                            "Year": _year
+                        }
+                        jsonObject.push(_selected);
+                    }
+                });
+
+                if (jsonObject.length > 0) {
+                    $.ajax({
+                        url: "/Home/BulkSaveExcelFile",
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(jsonObject),
+                        cache: false,
+                        success: function (data) {
+                            toastrMessage(data, "success");
+                            $('#boxUserSelection').multiSelect('deselect_all');
+                            $("#btnExportExcelBulk").attr('disabled', 'disabled');
+                            $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
+                        },
+                        error: function (error) {
+                            ajaxErrorHandler("BulkSaveExcelFile", error);
+                        }
+                    });
+                }
+            }
+            else {
+                toastrMessage("Not saved.", "warning");
+            }
+        }
+
+        function getUserDataByName2(userName) {
+            var userData;
+            $(users).each(function (index, value) {
+                if (value.Name === userName) {
+                    userData = value;
+                }
+            });
+            return userData;
+        }
+
+        function LoadMonths2() {
+            var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            var options = "";
+            for (i = 0; i < 12; i++) {
+                options += "<option value='" + (i + 1) + "'>" + months[i] + "</option>";
+            }
+            $("#monthTimesheet").append(options);
+            $('#monthTimesheet option[value="' + getCurrentMonth() + '"]').prop('selected', true);
+        }
+
+        function prevNextMonthBtn2(prevNext) {
+            //("#btnPrevMonth").on("click", function () {
+            var _month = $("#monthTimesheet").children("option:selected").val();
+            if (prevNext === 0 && _month === 1 || prevNext === 1 && _month === 12) return; //First month - no previous month
+            if (prevNext === 0) {
+                _month = parseInt(_month) - 1;
+            } else {
+                _month = parseInt(_month) + 1;
+            }
+            $("#monthTimesheet").val(_month).trigger("change");
+            //});
+        }
+
+        function getMonthFromPage2() {
+            return $("#monthTimesheet").val() - 1;
+        }
+
+        function LoadYears2() {
+            var _currentYear = getCurrentYear();
+            $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
+            $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
+            $('#yearTimesheet option[value="' + _currentYear + '"]').prop('selected', true);
+        }
+
+        function getYearFromPage2() {
+            return $("#yearTimesheet").val();
+        }
+    </script>
 </div>
 
 
 <style>
 
+    .ms-container {
+        width: 500px !important;
+    }
+
     .stepsProcess {
         counter-reset: step;
     }
 
-    .stepsProcess li {
+        .stepsProcess li {
             list-style-type: none;
             width: 25%;
             float: left;
@@ -36,7 +311,7 @@
             color: #7d7d7d;
         }
 
-    .stepsProcess li:before {
+            .stepsProcess li:before {
                 width: 30px;
                 height: 30px;
                 content: counter(step);
@@ -50,7 +325,7 @@
                 background-color: white;
             }
 
-    .stepsProcess li:after {
+            .stepsProcess li:after {
                 width: 100%;
                 height: 2px;
                 content: '';
@@ -61,20 +336,26 @@
                 z-index: -1;
             }
 
-    .stepsProcess li:first-child:after {
+            .stepsProcess li:first-child:after {
                 content: none;
             }
 
-    .stepsProcess li.active {
+            .stepsProcess li.active {
                 color: green;
             }
 
-    .stepsProcess li.active:before {
+                .stepsProcess li.active:before {
                     border-color: #55b776;
                 }
 
-    .stepsProcess li.active + li:after {
+                .stepsProcess li.active + li:after {
                     background-color: #55b776;
                 }
 
+    .leftDualMultiSelect {
+        border: 2px solid black;
+        border-radius: 3px;
+        background-color: #d2d2d2;
+        display: flex;
+    }
 </style>

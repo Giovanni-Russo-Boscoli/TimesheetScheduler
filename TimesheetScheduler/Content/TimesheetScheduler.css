@@ -1,24 +1,6 @@
 ﻿.body-content {
   min-width: 1250px !important;
 }
-.modalPleaseWait {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.8) url(../Images/pacman_animated.gif) no-repeat;
-  background-position: center;
-  /* Center the image */
-  background-repeat: no-repeat;
-  /* Do not repeat the image */
-}
-body.loading .modalPleaseWait {
-  display: block;
-  overflow: hidden;
-}
 .monthSelection,
 .userSelection {
   display: flex;
