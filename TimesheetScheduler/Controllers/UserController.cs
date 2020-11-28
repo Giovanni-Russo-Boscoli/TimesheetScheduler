@@ -476,6 +476,13 @@ namespace TimesheetScheduler.Controllers
             return strErrors.ToString();
         }
 
+        [HttpGet]
+        public bool IsUserLoggedAdmin()
+        {
+            string _user = Session["userLoggedName"] as string;
+            IList<JsonUser> _users = DeserializeReadJsonUserFile();
+            return _users.Where(x => x.Name == _user).FirstOrDefault().Access == "Admin";
+        }
     }
 
 }

@@ -20,6 +20,36 @@ $(document).ready(function ($) {
         reminderNoEventCreationForToday();
         copyTask();
         linkWorkItem();
+
+        //$("#datepicker").datepicker({
+        //    showButtonPanel: true,
+        //    //gotoCurrent: false,
+        //    dateFormat: 'dd/mm/yy',
+        //    closeText: '&times;'
+        //})
+
+        //.on('click', function () {
+        //    $(".ui-datepicker-current").css("display", "none");
+        //    setTimeout(function () {
+        //        //$("#ui-datepicker-div").css("display", "none");
+        //        //e = jQuery.Event("keyup");
+        //        //e.which = 27;
+        //        //$(this).trigger(e);
+        //        $(".ui-datepicker").datepicker("hide");
+        //        //$("#ui-datepicker-div").datepicker("hide");
+        //        //$(".ui-datepicker-close").click();
+        //        //$("#datepicker").trigger({
+        //        //    type: 'keyup',
+        //        //    which: 27 //escape
+        //        //});
+        //    }, 3000);
+        //});
+
+        //$("#datepicker").datepicker();
+        //$("#datepicker").datepicker("show");
+        
+        //setTimeout(function () { $("#datepicker").datepicker("hide"); }, 3000);
+        
     });
 });
 
@@ -552,7 +582,7 @@ function Info() {
                 //return;
             }
 
-            var rateIncVat = (rateExcVat * 1.23).toFixed(2);
+            var rateIncVat = (rateExcVat * 1.21).toFixed(2);
             var totalByDay = (totalChargeableHours / 7.5).toFixed(2);
             var totalExlVatInfoTxt = (totalByDay * rateExcVat).toFixed(2);
             var totalIncVatInfoTxt = (totalByDay * rateIncVat).toFixed(2);

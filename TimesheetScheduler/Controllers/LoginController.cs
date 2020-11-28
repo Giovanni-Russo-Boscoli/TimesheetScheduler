@@ -43,7 +43,7 @@ namespace TimesheetScheduler.Controllers
 
                 if (userExists)
                 {
-                    SaveUserSession(model.UserName);
+                    SaveUserSession(model.UserName, model.Password);
                    
                     //Session["userId"] = userId;
                     //if (model.RememberMe)
@@ -124,9 +124,11 @@ namespace TimesheetScheduler.Controllers
             return Index();
         }
 
-        private void SaveUserSession(string userName) {
+        private void SaveUserSession(string userName, string userPass) {
             DirectoryEntry de = new DirectoryEntry("WinNT://" + Environment.UserDomainName + "/" + userName);// Environment.UserName);
-            Session["userLogged"] = de.Properties["FullName"].Value.ToString();
+            Session["userLogged"] = userName;
+            Session["userLoggedName"] = de.Properties["FullName"].Value.ToString();
+            Session["userLoggedPass"] = userPass;
         }
 
         [AllowAnonymous]

@@ -16,7 +16,7 @@ namespace TimesheetScheduler.Models
         {
             HttpContext ctx = HttpContext.Current;
 
-            string value = HttpContext.Current.Session["userLogged"] as string;
+            string value = HttpContext.Current.Session["userLoggedName"] as string;
             if (string.IsNullOrEmpty(value))
             {
                 FormsAuthentication.SignOut();

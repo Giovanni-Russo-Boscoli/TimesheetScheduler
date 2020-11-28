@@ -54,9 +54,10 @@ function ajaxErrorHandler(origin, xhrError) {
 
 function getUserName(callback) {
     $.ajax({
-        url: "/Home/GetUserLogged",
+        url: "/Home/GetUserLoggedName",
         type: "GET",
         success: function (data) {
+            //alert(data);
             callback(data);
         },
         function(error) {

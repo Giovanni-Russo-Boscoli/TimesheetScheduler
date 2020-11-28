@@ -151,3 +151,13 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 - Give to the user a option to choose the location to save the excel file
 
 - WORD DOCUMENT (https://stackoverflow.com/questions/44888038/create-insert-text-and-save-a-word-doc-in-c-sharp/44888651)
+
+- Add button to send a reminder/confirmation about the hours/days worked for each member / add button to send by group/all
+
+- Reports Tab: Create a preview for all members including: Days Worked / Hours (Same info for the main excel file)
+
+- Button to send a draft of hours/days worked for confirmation
+
+- Refresh button in the main page (do not reload the page, send the same query to update the same user and month selected)
+
+- aloow user connected to create task with their own user (currently using my user to create tasks)

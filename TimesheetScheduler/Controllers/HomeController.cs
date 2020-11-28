@@ -6,6 +6,7 @@ using Microsoft.TeamFoundation.Framework.Common;
 using Microsoft.TeamFoundation.Server;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
+using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -180,8 +181,15 @@ namespace TimesheetScheduler.Controllers
             TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
             WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
-            //var projectName = GetProjectNameTFS();
-            //var _iterationPath = GetIterationPathTFS();
+            //-------------------------
+            //NetworkCredential networkCredentials = new NetworkCredential(@"welfare\RenanCamara", @"5000@Senha");
+            //Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
+            //VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
+            //TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri,basicCredentials);
+            //WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
+            //tfsColl.Authenticate(); // make sure it is authenticate
+
+            //-------------------------
 
             WorkItemCollection WIC = WIS.Query(
                 " SELECT [System.Id], " +
@@ -292,14 +300,22 @@ namespace TimesheetScheduler.Controllers
             var _iterationPath = GetIterationPathTFS();
 
             Uri tfsUri = new Uri(GetUrlTfs());
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+            //TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            //WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            NetworkCredential networkCredentials = new NetworkCredential(@"welfare\" + GetUserLogged(), GetUserLoggedPass());
+            Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
+            VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
+            TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
+            WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
+            tfsColl.Authenticate(); // make sure it is authenticate
 
             Project teamProject = WIS.Projects.GetById(3192); //3192 = BOM_MOD24 [35]
             WorkItemType workItemType = teamProject.WorkItemTypes["Task"];
 
             WorkItem newWI = new WorkItem(workItemType);
             newWI.Title = title;
+            newWI.Fields["System.CreatedBy"].Value = GetUserLogged();
             newWI.Fields["System.AssignedTo"].Value = userName;
             newWI.Fields["System.TeamProject"].Value = projectName;
             newWI.Fields["Iteration Path"].Value = _iterationPath;
@@ -777,6 +793,17 @@ namespace TimesheetScheduler.Controllers
         public string GetUserLogged()
         {
             return Session["userLogged"] as string;
+        }
+
+        public string GetUserLoggedName()
+        {
+            return Session["userLoggedName"] as string;
+        }
+
+        public string GetUserLoggedPass()
+        {
+            //criptograph before saving
+            return Session["userLoggedPass"] as string;
         }
 
         #endregion UTIL
