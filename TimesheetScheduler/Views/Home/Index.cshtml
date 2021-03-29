@@ -3,7 +3,7 @@
     //Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@Styles.Render("~/Content/timesheetscheduler")
+@*@Styles.Render("~/Content/timesheetscheduler")*@
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
 
@@ -15,7 +15,7 @@
 
                 <label for="userNameTimesheet">User</label>
                 <div class="userSelection">
-                    <select class="form-control" id="userNameTimesheet"></select>
+                    <select class="form-control" id="userNameTimesheet" title="Only admin user can see other members' timesheet data" disabled></select>
                     <button id="btnMe" class="btn btn-primary" onclick="bindBtnMe();">ME</button>
                 </div>
 
@@ -38,6 +38,7 @@
                 <div id="divActionsBtns">
                     <button id="btnSaveExcelFile" class="btnActions" title="Export to an Excel File" onclick="confirmationSavePath();"></button>
                     <button id="btnCloseAllTasks" class="btnActions" onclick="closeAllTasksCurrentMonth();"></button>
+                    @*<button id="btnSendEmail" class="btnActions" onclick="sendEmail();">SEND EMAIL</button>*@
                 </div>
                 <br />
 
@@ -52,57 +53,43 @@
 
                 <br />
 
-                <div id="infoPanel">
-                    <fieldset>
-                        <legend>Info</legend>
-                        <form class="form-inline">
-                            <div class="form-group">
+                <div>
+                    <fieldset id="fieldsetInfoPanel">
+                        <legend id="infoPanel">Info</legend>
+                        <div id="infoPanelContent">
+                            <div>
                                 <label id="dayWorkedInfoLbl" class="modalLbl" for="dayWorkedInfoTxt">Days Worked: </label>
                                 <label id="dayWorkedInfoTxt"></label>
                             </div>
-                        </form>
-                        <form class="form-inline">
-                            <div class="form-group">
+                            <div>
                                 <label id="totalHoursInfoLbl" class="modalLbl" for="totalHoursInfoTxt">Total Hours: </label>
                                 <label id="totalHoursInfoTxt"></label>
                             </div>
-                        </form>
-                        <form class="form-inline">
-                            <div class="form-group">
+                            <div>
                                 <label id="chargeableHoursInfoLbl" class="modalLbl" for="chargeableHoursInfoTxt">Chargeable Hours: </label>
                                 <label id="chargeableHoursInfoTxt"></label>
                             </div>
-                        </form>
-                        <form class="form-inline">
-                            <div class="form-group">
+                            <div>
                                 <label id="nonchargeableHoursInfoLbl" class="modalLbl" for="nonchargeableHoursInfoTxt">Non-Chargeable Hours: </label>
                                 <label id="nonchargeableHoursInfoTxt"></label>
                             </div>
-                        </form>
-                        <form class="form-inline">
-                            <div class="form-group">
+                            <div>
                                 <label id="rateExcVatInfoLbl" class="modalLbl" for="rateExlVatInfoTxt">Rate (exc. VAT): </label>
                                 <label id="rateExlVatInfoTxt" class="currencyMask"></label>
                             </div>
-                        </form>
-                        <form class="form-inline">
-                            <div class="form-group">
+                            <div>
                                 <label id="rateIncVatInfoLbl" class="modalLbl" for="rateIncVatInfoTxt">Rate (inc. VAT): </label>
                                 <label id="rateIncVatInfoTxt" class="currencyMask"></label>
                             </div>
-                        </form>
-                        <form class="form-inline">
-                            <div class="form-group">
+                            <div>
                                 <label id="totalExcVatInfoLbl" class="modalLbl" for="totalExlVatInfoTxt">Total (exc. VAT): </label>
                                 <label id="totalExlVatInfoTxt" class="currencyMask"></label>
                             </div>
-                        </form>
-                        <form class="form-inline">
-                            <div class="form-group">
+                            <div>
                                 <label id="totalIncVatInfoLbl" class="modalLbl" for="totalIncVatInfoTxt">Total (inc. VAT): </label>
                                 <label id="totalIncVatInfoTxt" class="currencyMask"></label>
                             </div>
-                        </form>
+                        </div>
                     </fieldset>
                 </div>
 

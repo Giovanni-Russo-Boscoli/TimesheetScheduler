@@ -23,7 +23,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
+using TimesheetScheduler.Interface;
 using TimesheetScheduler.Models;
+using TimesheetScheduler.Services;
 using TimesheetScheduler.ViewModel;
 using Application = Microsoft.Office.Interop.Excel.Application;
 //
@@ -36,7 +38,17 @@ namespace TimesheetScheduler.Controllers
     public class HomeController : Controller
     {
 
-        private string jsonHolidaysServerPath = "~/JsonData/jsonHolidays.json";
+        public HomeController()
+        {
+            _utilService = new UtilService();
+            requiredHours = _utilService.FetchRequiredHours();
+        }
+
+        private static IUtilService _utilService;
+
+        private string jsonHolidaysServerPath = "~/JsonData/Holidays/jsonHolidays";//.json";
+
+        private double requiredHours { get; set; }
 
         public ActionResult Index()
         {
@@ -107,12 +119,22 @@ namespace TimesheetScheduler.Controllers
         [HttpPost]
         public JsonResult ConnectTFS(UserDataSearchTFS userData)//, int _month, int _year)
         {
-            IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
+            //var _userController = new UserController();
+            //var _isUserLoggedAdmin = _userController.IsUserLoggedAdmin();
+            //var _userLoggedName = _userController.GetUserNameLogged();
+            //if (_isUserLoggedAdmin || userData.UserName.Equals(_userLoggedName))
+            // {
+            IList<object> joinWorkitems = new List<object>();
             userData.UserName = userData.UserName.Replace("'", "''");
-            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(userData));
-            joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userData));
-
-            return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
+            joinWorkitems.Add(ReturnTFSEvents_ListWorkItems(userData));
+            joinWorkitems.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userData));
+            //FormatTasksForEmailConfirmation(userData);
+            return Json(joinWorkitems, JsonRequestBehavior.AllowGet);
+            //}
+            //else
+            //{
+            //    throw new Exception("Only admin user can see other members' timesheet data");
+            // }
         }
 
         //public void printMemberList()
@@ -172,101 +194,138 @@ namespace TimesheetScheduler.Controllers
             return Json(names, JsonRequestBehavior.AllowGet);
         }
 
-        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems(UserDataSearchTFS userData)
+        ///DELETE
+        public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItems_DELETE(UserDataSearchTFS userData)
         {
-            IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
-
-            var _urlTFS = GetUrlTfs();
-            Uri tfsUri = new Uri(_urlTFS);
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-            //-------------------------
-            //NetworkCredential networkCredentials = new NetworkCredential(@"welfare\RenanCamara", @"5000@Senha");
-            //Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
-            //VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
-            //TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri,basicCredentials);
-            //WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
-            //tfsColl.Authenticate(); // make sure it is authenticate
-
-            //-------------------------
-
-            WorkItemCollection WIC = WIS.Query(
-                " SELECT [System.Id], " +
-                " [System.WorkItemType], " +
-                " [System.State], " +
-                " [System.AssignedTo], " +
-                " [System.Title], " +
-                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                " [Microsoft.VSTS.Scheduling.StartDate] " +
-                " FROM WorkItems " +
-                " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
-                " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
-                " AND [Assigned To] = '" + userData.UserName + "'" +
-                " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
-                " ORDER BY [System.Id], [System.WorkItemType]");
-
-            foreach (WorkItem wi in WIC)
+            try
             {
-                if (wi["Start Date"] != null)
-                {
-                    DateTime _startDate = (DateTime)wi["Start Date"];
-                    if (_startDate.Month == (userData.Month == 0 ? DateTime.Now.Month : userData.Month)
-                        && _startDate.Year == (userData.Year == 0 ? DateTime.Now.Year : userData.Year))
-                    {
-                        var _workItemsLinked = "";
-                        for (int i = 0; i < wi.WorkItemLinks.Count; i++)
-                        {
-                            _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
-                        }
+                IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
 
-                        listWorkItems.Add(new WorkItemSerialized()
+                var _urlTFS = GetUrlTfs();
+                Uri tfsUri = new Uri(_urlTFS);
+                TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+                //-------------------------
+                //NetworkCredential networkCredentials = new NetworkCredential(@"welfare\RenanCamara", @"5000@Senha");
+                //Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
+                //VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
+                //TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri,basicCredentials);
+                //WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
+                //tfsColl.Authenticate(); // make sure it is authenticate
+
+                //-------------------------
+
+                WorkItemCollection WIC = WIS.Query(
+                    " SELECT [System.Id], " +
+                    " [System.WorkItemType], " +
+                    " [System.State], " +
+                    " [System.AssignedTo], " +
+                    " [System.Title], " +
+                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                    " [Microsoft.VSTS.Scheduling.StartDate] " +
+                    " FROM WorkItems " +
+                    " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
+                    " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
+                    " AND [Assigned To] = '" + userData.UserName + "'" +
+                    " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
+                    " ORDER BY [System.Id], [System.WorkItemType]");
+
+                foreach (WorkItem wi in WIC)
+                {
+                    if (wi["Start Date"] != null)
+                    {
+                        DateTime _startDate = (DateTime)wi["Start Date"];
+                        if (_startDate.Month == (userData.Month == 0 ? DateTime.Now.Month : userData.Month)
+                            && _startDate.Year == (userData.Year == 0 ? DateTime.Now.Year : userData.Year))
                         {
-                            Id = wi["Id"].ToString(),
-                            Title = wi["Title"].ToString(),
-                            StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                            Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
-                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-                            RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : (double?)null,
-                            WorkItemsLinked = _workItemsLinked,
-                            State = wi.State,
-                            LinkUrl = _urlTFS + userData.ProjectNameTFS + "/_queries?id=" + wi["Id"].ToString(),
-                            IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null
-                        });
+                            var _workItemsLinked = "";
+                            for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                            {
+                                _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                            }
+
+                            listWorkItems.Add(new WorkItemSerialized()
+                            {
+                                Id = wi["Id"].ToString(),
+                                Title = wi["Title"].ToString(),
+                                StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+                                Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
+                                CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                                RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : (double?)null,
+                                WorkItemsLinked = _workItemsLinked,
+                                State = wi.State,
+                                LinkUrl = _urlTFS + userData.ProjectNameTFS + "/_queries?id=" + wi["Id"].ToString(),
+                                IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null
+                            });
+                        }
                     }
                 }
+                return listWorkItems.OrderBy(x => x.StartDate).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
 
-            return listWorkItems.OrderBy(x => x.StartDate).ToList();
+        }
+
+        public ConsolidatedMonthUserData ReturnTFSEvents_ListWorkItems(UserDataSearchTFS userData)
+        {
+            try
+            {
+                IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
+
+                var _urlTFS = GetUrlTfs();
+               
+                foreach (WorkItem wi in TFSQuery(userData))
+                {
+                    if (wi["Start Date"] != null)
+                    {
+                        DateTime _startDate = (DateTime)wi["Start Date"];
+                        if (_startDate.Month == (userData.Month == 0 ? DateTime.Now.Month : userData.Month)
+                            && _startDate.Year == (userData.Year == 0 ? DateTime.Now.Year : userData.Year))
+                        {
+                            var _workItemsLinked = "";
+                            for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                            {
+                                _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                            }
+
+                            var _item = new WorkItemSerialized()
+                            {
+                                Id = wi["Id"].ToString(),
+                                Title = wi["Title"].ToString(),
+                                StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+                                Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
+                                WorkItemsLinked = _workItemsLinked,
+                                State = wi.State,
+                                LinkUrl = _urlTFS + userData.ProjectNameTFS + "/_queries?id=" + wi["Id"].ToString(),
+                                IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null,
+                                CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : 0,
+                                RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : 0
+                        };
+
+                            listWorkItems.Add(_item);
+
+                        }
+                    }
+                }
+
+                return formatTFSResult(ref listWorkItems, userData.UserName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
         }
 
         public IList<WorkItemSerialized> ReturnTFSEvents_ListWorkItemsWithoutStartDate(UserDataSearchTFS userData)
         {
             IList<WorkItemSerialized> listWorkItemsWithoutStartDate = new List<WorkItemSerialized>();
 
-            Uri tfsUri = new Uri(GetUrlTfs());
-            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-            var projectName = GetProjectNameTFS();
-            var _iterationPath = GetIterationPathTFS();
-
-            WorkItemCollection WIC = WIS.Query(
-                " SELECT [System.Id], " +
-                " [System.WorkItemType], " +
-                " [System.State], " +
-                " [System.AssignedTo], " +
-                " [System.Title], " +
-                " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-                " [Microsoft.VSTS.Scheduling.StartDate] " +
-                " FROM WorkItems " +
-                " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
-                " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
-                " AND [Assigned To] = '" + userData.UserName + "'" +
-                " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
-                " ORDER BY [System.Id], [System.WorkItemType]");
-
-            foreach (WorkItem wi in WIC)
+            foreach (WorkItem wi in TFSQuery(userData))
             {
                 if (wi["Start Date"] == null)
                 {
@@ -294,14 +353,143 @@ namespace TimesheetScheduler.Controllers
 
         }
 
-        public string CreateTaskOnTFS(string userName, string startDate, string title, string state, string description, string workItemLink, float chargeableHours = 7.5f, float nonchargeableHours = 0)//newTimesheetTask
+        private ConsolidatedMonthUserData formatTFSResult(ref IList<WorkItemSerialized> listWorkItems, string username)
+        {
+            try
+            {
+                ConsolidatedMonthUserData consolidatedMonthUserData = new ConsolidatedMonthUserData();
+                consolidatedMonthUserData.ListWorkItem = listWorkItems.OrderBy(x => x.StartDate).ToList();
+
+                double _chargeableHours;
+                double _nonChargeableHours;
+                foreach (var group in listWorkItems.GroupBy(x => x.StartDate))
+                {
+
+                    double _chargeableHoursPerDay;
+                    double _nonChargeableHoursPerDay;
+                    double _completedHours;
+                    double _remainingWork;
+                    var _totalChargerableHoursPerDay = requiredHours;
+
+                    foreach (var item in group)
+                    {
+                        _chargeableHoursPerDay = 0;
+                        _nonChargeableHoursPerDay = 0;
+                        _completedHours = item.CompletedHours.HasValue ? item.CompletedHours.Value : 0;
+                        _remainingWork = item.RemainingWork.HasValue ? item.RemainingWork.Value : 0;
+
+                        if (item.IsWeekend.Value)
+                        {
+                            _chargeableHoursPerDay = 0;
+                            _nonChargeableHoursPerDay = _completedHours + _remainingWork;
+                        }
+                        else
+                        {
+                            if (_totalChargerableHoursPerDay > 0)
+                            {
+                                if (_completedHours <= _totalChargerableHoursPerDay)
+                                {
+                                    _chargeableHoursPerDay = _completedHours;
+                                    _nonChargeableHoursPerDay = _remainingWork;
+                                    _totalChargerableHoursPerDay -= _completedHours;
+                                }
+                                else
+                                {
+                                    _chargeableHoursPerDay = _totalChargerableHoursPerDay;
+                                    _nonChargeableHoursPerDay = (_completedHours - _totalChargerableHoursPerDay) + _remainingWork;
+                                    _totalChargerableHoursPerDay = 0;
+                                }
+                            }
+                            else
+                            {
+                                //has reached the limit of required hours per day
+                                _chargeableHoursPerDay = 0;
+                                _nonChargeableHoursPerDay = _completedHours + _remainingWork;
+                            }
+                        }
+                        item.CompletedHours = _chargeableHoursPerDay;
+                        item.RemainingWork = _nonChargeableHoursPerDay;
+
+                    }
+
+                    _chargeableHours = _nonChargeableHours = 0d;
+
+                    if (group.FirstOrDefault().IsWeekend.Value)
+                    {
+                        _nonChargeableHours += group.Sum(x => x.CompletedHours.HasValue ? x.CompletedHours.Value : 0) + group.Sum(x => x.RemainingWork.HasValue ? x.RemainingWork.Value : 0);
+                        consolidatedMonthUserData.NonChargeableHours += _nonChargeableHours;
+                    }
+                    else
+                    {
+
+                        _chargeableHours = group.Sum(x => x.CompletedHours.HasValue ? x.CompletedHours.Value : 0);
+                        _nonChargeableHours = group.Sum(x => x.RemainingWork.HasValue ? x.RemainingWork.Value : 0);
+
+                        if (_chargeableHours > requiredHours)
+                        {
+                            consolidatedMonthUserData.ChargeableHours += requiredHours;
+                            consolidatedMonthUserData.NonChargeableHours += ((_chargeableHours - requiredHours) + _nonChargeableHours);
+                        }
+                        else
+                        {
+                            consolidatedMonthUserData.ChargeableHours += _chargeableHours;
+                            consolidatedMonthUserData.NonChargeableHours += _nonChargeableHours;
+                        }
+                    }
+
+                }
+
+                consolidatedMonthUserData.UserName = username;
+                consolidatedMonthUserData.TotalExcludingVAT = consolidatedMonthUserData.RateExcludingVAT * (decimal)consolidatedMonthUserData.WorkedDays;
+                consolidatedMonthUserData.TotalIncludingVAT = consolidatedMonthUserData.TotalExcludingVAT + (consolidatedMonthUserData.TotalExcludingVAT * (_utilService.FetchVat() / 100));
+
+                return consolidatedMonthUserData;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private WorkItemCollection TFSQuery(UserDataSearchTFS userData) {
+            try
+            {
+                Uri tfsUri = new Uri(GetUrlTfs());
+                TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+                WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+                var projectName = GetProjectNameTFS();
+                var _iterationPath = GetIterationPathTFS();
+
+                WorkItemCollection WIC = WIS.Query(
+                    " SELECT [System.Id], " +
+                    " [System.WorkItemType], " +
+                    " [System.State], " +
+                    " [System.AssignedTo], " +
+                    " [System.Title], " +
+                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                    " [Microsoft.VSTS.Scheduling.StartDate] " +
+                    " FROM WorkItems " +
+                    " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
+                    " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
+                    " AND [Assigned To] = '" + userData.UserName + "'" +
+                    " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
+                    " ORDER BY [System.Id], [System.WorkItemType]");
+
+                return WIC;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public string CreateTaskOnTFS(string userName, string startDate, string title, string state, string description, string workItemLink, float chargeableHours = 7.5f, float nonchargeableHours = 0)
         {
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
 
             Uri tfsUri = new Uri(GetUrlTfs());
-            //TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-            //WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
             NetworkCredential networkCredentials = new NetworkCredential(@"welfare\" + GetUserLogged(), GetUserLoggedPass());
             Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
@@ -319,7 +507,8 @@ namespace TimesheetScheduler.Controllers
             newWI.Fields["System.AssignedTo"].Value = userName;
             newWI.Fields["System.TeamProject"].Value = projectName;
             newWI.Fields["Iteration Path"].Value = _iterationPath;
-            newWI.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
+            newWI.Fields["Completed Work"].Value = chargeableHours ;
+            newWI.Fields["Remaining Work"].Value = nonchargeableHours;
             newWI.Fields["Description"].Value = description;
             newWI.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
             newWI.State = state;
@@ -358,7 +547,8 @@ namespace TimesheetScheduler.Controllers
             WorkItem _wi = WIC.OfType<WorkItem>().FirstOrDefault();
             _wi.Open();
             _wi.Title = title;
-            _wi.Fields["Completed Work"].Value = chargeableHours + nonchargeableHours;
+            _wi.Fields["Completed Work"].Value = chargeableHours;
+            _wi.Fields["Remaining Work"].Value = nonchargeableHours;
             _wi.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
             _wi.Fields["Description"].Value = description;
 
@@ -550,6 +740,8 @@ namespace TimesheetScheduler.Controllers
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
 
+            userName = userName.Replace("'", "''");
+
             WorkItemCollection WIC = WIS.Query(
                 " SELECT [System.Id], " +
                 " [System.WorkItemType], " +
@@ -601,6 +793,8 @@ namespace TimesheetScheduler.Controllers
 
             var projectName = GetProjectNameTFS();
             var _iterationPath = GetIterationPathTFS();
+
+            userName = userName.Replace("'", "''");
 
             WorkItemCollection WIC = WIS.Query(
                 " SELECT [System.Id], " +
@@ -773,7 +967,6 @@ namespace TimesheetScheduler.Controllers
             return TimesheetSaveLocation() + TimesheetFileName(userName.Replace("'", ""), '_', _month, _year);
         }
 
-
         public void SetCellValue(Worksheet worksheet, CellObject cellObj)
         {
             worksheet.get_Range(cellObj.CellPosition).Value = cellObj.CellValue;
@@ -804,6 +997,50 @@ namespace TimesheetScheduler.Controllers
         {
             //criptograph before saving
             return Session["userLoggedPass"] as string;
+        }
+
+        public void FormatTasksForEmailConfirmation(UserDataSearchTFS userData)
+        {
+
+            var timesheetTasks = TimesheetRecords(userData);
+
+            StringBuilder strMain = new StringBuilder();
+            StringBuilder strOutOfOffice = new StringBuilder();
+            StringBuilder strUnderWork = new StringBuilder();
+            StringBuilder strOverWork = new StringBuilder();
+            StringBuilder strNormalWork = new StringBuilder();
+
+            strMain.AppendLine("--------------------------------");
+            strMain.AppendLine("Member Name: " + userData.UserName);
+            strMain.AppendLine("--------------------------------");
+
+            foreach (var item in timesheetTasks)
+            {
+
+                if (item.IsWeekend)
+                {
+                    strMain.AppendLine();
+                    strMain.AppendLine(item.Date.ToString("dddd dd/MM/yyyy"));
+                    continue;
+                }
+
+                if (item.Description.Equals("Out of the office"))
+                {
+                    strMain.AppendLine();
+                    strMain.AppendLine(item.Description + " - " + item.Date.ToString("dddd dd/MM/yyyy"));
+                    continue;
+                }
+
+                strMain.AppendLine();
+                strMain.AppendLine("Title: " + item.Description);
+                strMain.AppendLine("Start Date: " + item.Date.ToShortDateString());
+                strMain.AppendLine("Completed Hours: " + item.ChargeableHours);
+
+                if (item.NonChargeableHours > 0)
+                    strMain.AppendLine("Non-Chargeable Hours: " + item.NonChargeableHours);
+            }
+
+            var str = strMain.ToString();
         }
 
         #endregion UTIL
@@ -1251,6 +1488,56 @@ namespace TimesheetScheduler.Controllers
             //---------------------------------------- END HEADER TABLE---------------------------------------------
         }
 
+        private int CreateTable_DELETE(Worksheet worksheet, UserDataSearchTFS userData)
+        {
+            var _table = TimesheetRecords(userData);
+            int firstRow = 6;
+            int lastRow = _table.Count + firstRow;
+            int j;
+
+            worksheet.get_Range(CellTotalChargeableHoursInput.CellPosition).Value = "=SUM(E" + firstRow + ":E" + lastRow + ")";
+            worksheet.get_Range(CellTotalNonChargeableHoursInput.CellPosition).Value = "=SUM(F" + firstRow + ":F" + lastRow + ")";
+
+            for (int i = firstRow; i < lastRow; i++) //ROW
+            {
+                j = i - firstRow;
+                worksheet.Cells[i, 1] = _table[j].Id;
+                worksheet.Cells[i, 2] = _table[j].Date.ToShortDateString();
+                worksheet.Cells[i, 3] = _table[j].WorkItemNumber;
+                worksheet.Cells[i, 4] = _table[j].Description;
+                worksheet.Cells[i, 5] = _table[j].ChargeableHours;
+                worksheet.Cells[i, 6] = _table[j].NonChargeableHours;
+                worksheet.Cells[i, 7] = _table[j].Comments;
+
+                worksheet.Cells[i, 2].NumberFormat = "MM/DD/YYYY"; //date in american format
+                worksheet.Cells[i, 3].NumberFormat = "0"; //workitem formatted as number
+
+                if (_table[j].IsWeekend)
+                {
+                    //worksheet.Cells[i, 3] = ""; //WorkItemNumber
+                    //worksheet.Cells[i, 5] = ""; //ChargeableHours
+                    //worksheet.Cells[i, 6] = ""; //NonChargeableHours
+                    worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Interior.Color = Color.DarkGray; //TODO
+                    worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = true;
+                }
+                else
+                {
+                    worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Interior.Color = Color.White; //TODO
+                    worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = false;
+                }
+            }
+
+            worksheet.Range[worksheet.Cells[firstRow, 1], worksheet.Cells[lastRow, 7]].HorizontalAlignment = XlHAlign.xlHAlignCenter;
+            worksheet.Range[worksheet.Cells[firstRow, 1], worksheet.Cells[lastRow, 7]].VerticalAlignment = XlHAlign.xlHAlignCenter;
+
+            worksheet.Cells[1, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Working Days In Month)
+            worksheet.Cells[2, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Hours)
+            worksheet.Cells[3, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Chargeable Hours)
+            worksheet.Cells[4, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Non-Chargeable Hours)
+
+            return _table.Count;
+        }
+
         private int CreateTable(Worksheet worksheet, UserDataSearchTFS userData)
         {
             var _table = TimesheetRecords(userData);
@@ -1301,7 +1588,7 @@ namespace TimesheetScheduler.Controllers
             return _table.Count;
         }
 
-        public IList<WorkItemRecord> Convert_TFS_Events_To_Excel_Format(IList<WorkItemSerialized> _events, int _month, int _year)
+        public IList<WorkItemRecord> Convert_TFS_Events_To_Excel_Format(ConsolidatedMonthUserData consolidatedMonthUserData, int _month, int _year)
         {
             IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
             var _days = DateTime.DaysInMonth(_year, _month);
@@ -1313,24 +1600,124 @@ namespace TimesheetScheduler.Controllers
             {
 
                 day = new DateTime(_year, _month, i + 1);
-                //if (IsWeekend(day))
-                //{
-                //    timesheetRecords.Add(new WorkItemRecord
-                //    {
-                //        Id = ++countTasks,
-                //        Date = day,
-                //        WorkItemNumber = 0,
-                //        Description = "",
-                //        ChargeableHours = 0,
-                //        NonChargeableHours = 0,
-                //        Comments = "",
-                //        IsWeekend = IsWeekend(day)
-                //    });
-                //    ;
-                //}
-                //else
-                //{
-                var test = day.ToShortDateString();
+
+                var _itemEvent = consolidatedMonthUserData.ListWorkItem.Where(x => x.StartDate.Value.ToShortDateString() == day.ToShortDateString());
+                if (_itemEvent.Count() > 0)
+                {
+                    var _currentChargeableHours = 0.0;
+                    var _currentNonChargeableHours = 0.0;
+                    //var totalChargeableHoursRemaining = 7.5;
+
+                    foreach (var item in _itemEvent)
+                    {
+
+                        if (IsWeekend(day))
+                        {
+                            _currentChargeableHours = 0;
+                            _currentNonChargeableHours = item.CompletedHours.Value + item.RemainingWork.Value;
+                        }
+                        else
+                        {
+                            _currentChargeableHours = item.CompletedHours.HasValue ? item.CompletedHours.Value : 0;
+                            _currentNonChargeableHours = item.RemainingWork.HasValue ?  item.RemainingWork.Value : 0;
+                        }
+
+                        //else
+                        //{
+
+                        #region Calculate Chargeable and Non-Chargeable hours
+                        //if (item.CompletedHours.HasValue)
+                        //{
+                        //    if (totalChargeableHoursRemaining == 0)
+                        //    {
+                        //        _currentChargeableHours = 0;
+                        //        _currentNonChargeableHours = item.CompletedHours.Value;
+                        //    }
+                        //    else
+                        //    {
+                        //        if (item.CompletedHours.Value > 7.5)
+                        //        {
+
+                        //            _currentChargeableHours = 7.5;
+                        //            _currentNonChargeableHours = item.CompletedHours.Value - totalChargeableHoursRemaining;// 7.5;
+                        //        }
+                        //        else
+                        //        {
+                        //            _currentChargeableHours = item.CompletedHours.Value;
+                        //        }
+
+                        //        if (totalChargeableHoursRemaining > 0)
+                        //        {
+                        //            if (totalChargeableHoursRemaining >= _currentChargeableHours)
+                        //            {
+                        //                totalChargeableHoursRemaining = totalChargeableHoursRemaining - _currentChargeableHours;
+                        //            }
+                        //            else
+                        //            {
+                        //                _currentNonChargeableHours = item.CompletedHours.Value - totalChargeableHoursRemaining;
+                        //                _currentChargeableHours = totalChargeableHoursRemaining;
+                        //                totalChargeableHoursRemaining = 0;
+                        //            }
+                        //        }
+                        //        else
+                        //        {
+                        //            _currentNonChargeableHours = _currentChargeableHours;
+                        //            _currentChargeableHours = 0;
+                        //        }
+                        //    }
+                        //}
+                        #endregion Calculate Chargeable and Non-Chargeable hours
+                        //}
+
+                        timesheetRecords.Add(new WorkItemRecord
+                        {
+                            Id = ++countTasks,
+                            Date = item.StartDate.Value,
+                            WorkItemNumber = int.Parse(item.Id),
+                            Description = item.Title, //item.Description,
+                            ChargeableHours = (float)item.CompletedHours,
+                            NonChargeableHours = (float)item.RemainingWork,
+                            Comments = item.WorkItemsLinked,
+                            IsWeekend = IsWeekend(item.StartDate.Value)
+                        });
+
+                    }
+                }
+                else //does not exist this date in the events
+                {
+                    var _description = "Out of the office";
+                    if (IsWeekend(day))
+                    {
+                        _description = "Weekend";
+                    }
+                    timesheetRecords.Add(new WorkItemRecord
+                    {
+                        Id = ++countTasks,
+                        Date = day,
+                        WorkItemNumber = 0,
+                        Description = _description,
+                        ChargeableHours = 0,
+                        NonChargeableHours = 0,
+                        Comments = "------",
+                        IsWeekend = IsWeekend(day)
+                    });
+                }
+            }
+            return timesheetRecords;
+        }
+        public IList<WorkItemRecord> Convert_TFS_Events_To_Excel_Format_DELETE(IList<WorkItemSerialized> _events, int _month, int _year)
+        {
+            IList<WorkItemRecord> timesheetRecords = new List<WorkItemRecord>();
+            var _days = DateTime.DaysInMonth(_year, _month);
+            DateTime day;
+            var countTasks = 0;
+            //loop for all days in the month but doesn't include weekends
+            //allow more then 1 task per day
+            for (int i = 0; i < _days; i++) //_events.Count; i++) //
+            {
+
+                day = new DateTime(_year, _month, i + 1);
+
                 var _itemEvent = _events.Where(x => x.StartDate.Value.ToShortDateString() == day.ToShortDateString());
                 if (_itemEvent.Count() > 0)
                 {
@@ -1378,7 +1765,6 @@ namespace TimesheetScheduler.Controllers
                                         }
                                         else
                                         {
-                                            //_currentNonChargeableHours = _currentChargeableHours - totalChargeableHoursRemaining;
                                             _currentNonChargeableHours = item.CompletedHours.Value - totalChargeableHoursRemaining;
                                             _currentChargeableHours = totalChargeableHoursRemaining;
                                             totalChargeableHoursRemaining = 0;
@@ -1427,7 +1813,6 @@ namespace TimesheetScheduler.Controllers
                         IsWeekend = IsWeekend(day)
                     });
                 }
-                //}
             }
             return timesheetRecords;
         }
@@ -1437,6 +1822,130 @@ namespace TimesheetScheduler.Controllers
             SetCellValue(worksheet, cellObj);
             FormatCell(worksheet, cellObj);
         }
+
+        //[HttpPost]
+        //public string SaveExcelFile(UserDataSearchTFS userData)
+        //{
+        //    Application excel;
+        //    Workbook worKbooK;
+        //    Worksheet worksheet;
+        //    Range celLrangE;
+
+        //    try
+        //    {
+        //        userData.UserName = userData.UserName.Replace("'", "''");
+
+        //        excel = new Application();
+        //        excel.Visible = false;
+        //        excel.DisplayAlerts = false;
+        //        worKbooK = excel.Workbooks.Add(Type.Missing);
+        //        var tableEventCount = 0;
+
+        //        InitExcelVariables(userData.UserName, userData.Month, userData.Year);
+
+        //        worksheet = (Worksheet)worKbooK.ActiveSheet;
+        //        worksheet.Name = "Timesheet_" + userData.UserName;//.Replace(" ", "_");
+
+        //        CreateHeader(worksheet);
+        //        tableEventCount = CreateTable(worksheet, userData);
+        //        resizeColumns(worksheet);
+
+        //        var borderStartsRow = 5;
+        //        var borderEndsRow = borderStartsRow + tableEventCount;
+        //        celLrangE = worksheet.Range[worksheet.Cells[borderStartsRow, 1], worksheet.Cells[borderEndsRow, 7]]; //TODO
+        //        Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
+        //        border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+        //        border.Weight = 2d;
+
+        //        protectSheet(worksheet);
+        //        var saveParams = TimesheetSaveLocationAndFileName(userData.UserName, userData.Month, userData.Year);
+        //        worKbooK.SaveAs(saveParams);
+
+        //        worKbooK.Close();
+        //        excel.Workbooks.Close();
+        //        excel.Quit();
+        //        Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
+        //        Marshal.ReleaseComObject(worKbooK);
+        //        return "File saved sucessfully!"; // - Path: " + saveParams;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.Write(ex.Message);
+        //        return "Interal Code (1) - " + ex.Message;
+        //    }
+        //    finally
+        //    {
+        //        worksheet = null;
+        //        celLrangE = null;
+        //        worKbooK = null;
+
+        //    }
+        //}
+
+        //[HttpPost]
+        //public string BulkSaveExcelFile(IList<UserDataSearchTFS> userData)
+        //{
+        //    Application excel;
+        //    Workbook worKbooK;
+        //    Worksheet worksheet;
+        //    Range celLrangE;
+        //    StringBuilder result = new StringBuilder();
+        //    foreach (var item in userData)
+        //    {
+        //        try
+        //        {
+        //            item.UserName = item.UserName.Replace("'", "''");
+
+        //            excel = new Application();
+        //            excel.Visible = false;
+        //            excel.DisplayAlerts = false;
+        //            worKbooK = excel.Workbooks.Add(Type.Missing);
+        //            var tableEventCount = 0;
+
+        //            InitExcelVariables(item.UserName, item.Month, item.Year);
+
+        //            worksheet = (Worksheet)worKbooK.ActiveSheet;
+        //            worksheet.Name = "Timesheet_" + item.UserName;//.Replace(" ", "_");
+
+        //            CreateHeader(worksheet);
+        //            tableEventCount = CreateTable(worksheet, item);
+        //            resizeColumns(worksheet);
+
+        //            var borderStartsRow = 5;
+        //            var borderEndsRow = borderStartsRow + tableEventCount;
+        //            celLrangE = worksheet.Range[worksheet.Cells[borderStartsRow, 1], worksheet.Cells[borderEndsRow, 7]]; //TODO
+        //            Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
+        //            border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+        //            border.Weight = 2d;
+
+        //            protectSheet(worksheet);
+        //            var saveParams = TimesheetSaveLocationAndFileName(item.UserName, item.Month, item.Year);
+        //            worKbooK.SaveAs(saveParams);
+
+        //            result.Append($"File saved sucessfully!({worksheet.Name})"); // - Path: " + saveParams;
+        //            result.Append("<br />");
+        //            worKbooK.Close();
+        //            excel.Workbooks.Close();
+        //            excel.Quit();
+        //            Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
+        //            Marshal.ReleaseComObject(worKbooK);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Console.Write(ex.Message);
+        //            result.AppendLine($"Interal Code (1) - {ex.Message}");
+        //            result.Append("<br />");
+        //        }
+        //        finally
+        //        {
+        //            worksheet = null;
+        //            celLrangE = null;
+        //            worKbooK = null;
+
+        //        }
+        //    }
+        //    return result.ToString();
+        //}
 
         [HttpPost]
         public string SaveExcelFile(UserDataSearchTFS userData)
@@ -1693,6 +2202,11 @@ namespace TimesheetScheduler.Controllers
             worksheet.get_Range("G11").WrapText = true;
         }
 
+        public IList<WorkItemRecord> TimesheetRecords_DELETE(UserDataSearchTFS userData)
+        {
+            return Convert_TFS_Events_To_Excel_Format_DELETE(ReturnTFSEvents_ListWorkItems_DELETE(userData), userData.Month, userData.Year);
+        }
+
         public IList<WorkItemRecord> TimesheetRecords(UserDataSearchTFS userData)
         {
             return Convert_TFS_Events_To_Excel_Format(ReturnTFSEvents_ListWorkItems(userData), userData.Month, userData.Year);
@@ -1706,17 +2220,17 @@ namespace TimesheetScheduler.Controllers
         }
 
         [HttpGet]
-        public JsonResult ReadJsonHolidaysFile()
+        public JsonResult ReadJsonHolidaysFile(string year)
         {
-            return Json(DeserializeReadJsonHolidaysFile(), JsonRequestBehavior.AllowGet);
+            return Json(DeserializeReadJsonHolidaysFile(year), JsonRequestBehavior.AllowGet);
         }
 
-        private List<JsonHolidays> DeserializeReadJsonHolidaysFile()
+        private List<JsonHolidays> DeserializeReadJsonHolidaysFile(string year)
         {
             try
             {
                 DateTime _date = DateTime.Now;
-                using (StreamReader r = new StreamReader(Server.MapPath(jsonHolidaysServerPath)))
+                using (StreamReader r = new StreamReader(Server.MapPath(jsonHolidaysServerPath + year + ".json")))
                 {
                     string json = r.ReadToEnd();
                     JavaScriptSerializer jss = new JavaScriptSerializer();

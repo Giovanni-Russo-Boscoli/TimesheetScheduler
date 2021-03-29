@@ -112,6 +112,28 @@ function isUserLoggedAdmin(callback) {
 //    });
 //}
 
+function sendEmail() {
+    $.ajax({
+        url: "/EmailSender/SendEmail",
+        type: "GET",
+        //data: {
+        //    "from": "GiovanniRB",
+        //    "email": "boscoli.giovanni@gmail.com2",
+        //    "subject": "Test subject",
+        //    "comments": "Test comments"
+        //},
+        success: function (data) {
+            alert(data);
+            console.log("Sucess");
+        },
+        function(error) {
+            ajaxErrorHandler(error);
+        }
+    });
+}
+
+//EmailSenderController
+
 function clearJqValidErrors(formElement) {
     // NOTE: Internal "$.validator" is exposed through "$(form).validate()". By Travis J
     var validator = $(formElement).validate();
@@ -172,3 +194,47 @@ Number.prototype.formatMoney = function (decPlaces, thouSeparator, decSeparator)
 function fromJsonDateToDateStringFormatted(strDate) {
     return _formatDate(new Date(parseInt(strDate.substr(6))).toDateString(), "/");
 }
+
+
+//USAGE
+//var holidays = [
+//    { 
+//        "Year": "2020", 
+//        "Dates": [
+//              { 
+//                  "Date": "01/01/2020"
+//              },
+//              { 
+//                  "Date": "01/02/2020"
+//              }
+//          ] 
+//    }];
+
+//var _holidays = holidays.where({ Year: "2020" });
+
+Array.prototype.where = function (filter) {
+
+    var collection = this;
+
+    switch (typeof filter) {
+
+        case 'function':
+            return $.grep(collection, filter);
+
+        case 'object':
+            for (var property in filter) {
+                if (!filter.hasOwnProperty(property))
+                    continue; // ignore inherited properties
+
+                collection = $.grep(collection, function (item) {
+                    return item[property] === filter[property];
+                });
+            }
+            return collection.slice(0); // copy the array 
+        // (in case of empty object filter)
+
+        default:
+            throw new TypeError('func must be either a' +
+                'function or an object of properties and values to filter by');
+    }
+};

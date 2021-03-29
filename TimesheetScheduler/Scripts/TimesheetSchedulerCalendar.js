@@ -20,6 +20,7 @@ $(document).ready(function ($) {
         reminderNoEventCreationForToday();
         copyTask();
         linkWorkItem();
+        bindToggleInfoPanel();
 
         //$("#datepicker").datepicker({
         //    showButtonPanel: true,
@@ -47,9 +48,9 @@ $(document).ready(function ($) {
 
         //$("#datepicker").datepicker();
         //$("#datepicker").datepicker("show");
-        
+
         //setTimeout(function () { $("#datepicker").datepicker("hide"); }, 3000);
-        
+
     });
 });
 
@@ -67,11 +68,12 @@ function readJsonUserFile(callback) {
     });
 }
 
-function readJsonHolidaysFile(callback) {
+function readJsonHolidaysFile(callback, year) {
     $.ajax({
         url: "/Home/ReadJsonHolidaysFile",
         type: "GET",
         dataType: "json",
+        data: { "year": year},
         success: function (data) {
             holidays = data;
             callback(data);
@@ -88,8 +90,7 @@ function clearMonthInfoVariables() {
 }
 
 function eventsCalendar(_events, dateCalendar) {
-
-    readJsonHolidaysFile(function () { 
+    readJsonHolidaysFile(function () {
 
         //alert(fromJsonDateToDateStringFormatted(holidays[0].Date));
 
@@ -135,34 +136,34 @@ function eventsCalendar(_events, dateCalendar) {
             },
             eventRender: function (event, element) {
                 //--------- [INIT] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
-                if (event.isWeekend) {
-                    totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
-                } else {
-                    if (dayEvent.toString() === event.start.toString() || !dayEvent) {
-                        //same day - more than one event
-                        if (totalChargeableHoursRemaining > 0) {
-                            if (totalChargeableHoursRemaining >= event.chargeableHours) {
-                                totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
-                                totalChargeableHours += event.chargeableHours;
-                                totalNonChargeableHours += event.nonchargeableHours;
-                            }
-                            else {
-                                totalNonChargeableHours += (event.chargeableHours - totalChargeableHoursRemaining) + event.nonchargeableHours;
-                                totalChargeableHours += totalChargeableHoursRemaining;
-                                totalChargeableHoursRemaining = 0;
-                            }
-                        }
-                        else {
-                            totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
-                        }
-                    } else {
-                        //only one event on the day
-                        totalChargeableHoursRemaining = 7.5;
-                        totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
-                        totalChargeableHours += event.chargeableHours;
-                        totalNonChargeableHours += event.nonchargeableHours;
-                    }
-                }
+                //if (event.isWeekend) {
+                //    totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
+                //} else {
+                //    if (dayEvent.toString() === event.start.toString() || !dayEvent) {
+                //        //same day - more than one event
+                //        if (totalChargeableHoursRemaining > 0) {
+                //            if (totalChargeableHoursRemaining >= event.chargeableHours) {
+                //                totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
+                //                totalChargeableHours += event.chargeableHours;
+                //                totalNonChargeableHours += event.nonchargeableHours;
+                //            }
+                //            else {
+                //                totalNonChargeableHours += (event.chargeableHours - totalChargeableHoursRemaining) + event.nonchargeableHours;
+                //                totalChargeableHours += totalChargeableHoursRemaining;
+                //                totalChargeableHoursRemaining = 0;
+                //            }
+                //        }
+                //        else {
+                //            totalNonChargeableHours += event.chargeableHours + event.nonchargeableHours;
+                //        }
+                //    } else {
+                //        //only one event on the day
+                //        totalChargeableHoursRemaining = 7.5;
+                //        totalChargeableHoursRemaining = totalChargeableHoursRemaining - event.chargeableHours;
+                //        totalChargeableHours += event.chargeableHours;
+                //        totalNonChargeableHours += event.nonchargeableHours;
+                //    }
+                //}
                 dayEvent = event.start;
 
                 //--------- [END] -----  CALCULATING INFO MONTH - CHARGEABLE HOURS HOURS / NON-CHARGEABLE HOURS HOURS / DAYS WORKED ------
@@ -182,7 +183,7 @@ function eventsCalendar(_events, dateCalendar) {
                         $(cell).find(".weekendDay").remove();
                         $(cell).find(".dayOutOfTheOffice").remove();
                         $(cell).attr("title", value.Description);
-                        cell.append("<div class='hollidayEvent' title='" + value.Description + "'>Holliday</div>");
+                        cell.append("<div class='hollidayEvent' title='" + value.Description + "'>" + value.Description + "</div>");
                     }
                 });
             },
@@ -211,8 +212,8 @@ function eventsCalendar(_events, dateCalendar) {
         $(".fc-other-month").each(function () {
             $(this).html("");
         });
-        $(".dayOutOfTheOffice").parent().css({ "background-color": "#FFF0F1", "vertical-align": "middle"}); //change the color for days without event
-        $(".weekendDay").parent().css({"background-color":"#F2F2F2", "vertical-align": "middle"}); //change the color for days without event
+        $(".dayOutOfTheOffice").parent().css({ "background-color": "#FFF0F1", "vertical-align": "middle" }); //change the color for days without event
+        $(".weekendDay").parent().css({ "background-color": "#F2F2F2", "vertical-align": "middle" }); //change the color for days without event
         $(".hollidayEvent").parent().css({ "background-color": "thistle", "vertical-align": "middle" }); //change the color for days without event
 
         $(".fc-content-skeleton tbody td").each(function (index, value) {
@@ -221,8 +222,8 @@ function eventsCalendar(_events, dateCalendar) {
             }
         });
 
-        Info();
-    });
+        //Info();
+    }, dateCalendar.getFullYear().toString());
 }
 
 function toggleClass(_class) {
@@ -237,7 +238,7 @@ function tooltipDaysListView() {
         });
     });
 }
- 
+
 function _formatDate(date, format, separator) {
 
     if (!separator) {
@@ -286,6 +287,31 @@ function formatTFSEventsForCalendar(_obj) {
             description: removeHTMLTagsFromString(_obj[i].Description),
             chargeableHours: _chargeableHours,
             nonchargeableHours: _nonchargeableHours,
+            comments: _obj[i].WorkItemsLinked,
+            state: _obj[i].State,
+            color: returnEventColor(_obj[i].State),
+            linkUrl: _obj[i].LinkUrl,
+            isWeekend: _obj[i].IsWeekend
+        });
+    }
+    return _calendarEvents;
+}
+function formatTFSEventsForCalendar_TESTE(_obj) {
+    var _calendarEvents = [];
+
+    for (i = 0; i < _obj.length; i++) {
+        var _startDate = new Date(parseInt(_obj[i].StartDate.substr(6))).toDateString();
+        _calendarEvents.push({
+            title: "[" + _obj[i].Id + "] " + " - " + _obj[i].Title,
+            titleOriginal: _obj[i].Title,
+            start: _startDate,
+            end: _startDate,
+            allDay: false,
+            day: _startDate,
+            workItem: _obj[i].Id,
+            description: removeHTMLTagsFromString(_obj[i].Description),
+            chargeableHours: _obj[i].CompletedHours,
+            nonchargeableHours: _obj[i].RemainingWork,
             comments: _obj[i].WorkItemsLinked,
             state: _obj[i].State,
             color: returnEventColor(_obj[i].State),
@@ -457,7 +483,15 @@ function LoadUserNames(_userName) {
         return $(this).text() === _userName;
     }).prop('selected', true);
 
-    connectToTFS();
+
+    isUserLoggedAdmin(function (_isUserLoggedAdmin) {
+        if (_isUserLoggedAdmin) {
+            $("#userNameTimesheet").prop("disabled", false);
+            $("#userNameTimesheet").attr("title", "");
+        }
+        connectToTFS();
+    });
+    //connectToTFS();
 }
 
 function LoadMonths() {
@@ -495,7 +529,13 @@ function getYearFromPage() {
 
 function bindUserNameDropdown() {
     $("#userNameTimesheet").on("change", function () {
-        connectToTFS();
+        isUserLoggedAdmin(function (_isUserLoggedAdmin) {
+            if (_isUserLoggedAdmin) {
+                $("#userNameTimesheet").prop("disabled", false);
+                $("#userNameTimesheet").attr("title", "");
+            }
+            connectToTFS();
+        });
     });
 }
 
@@ -582,7 +622,7 @@ function Info() {
                 //return;
             }
 
-            var rateIncVat = (rateExcVat * 1.21).toFixed(2);
+            var rateIncVat = (rateExcVat * 1.23).toFixed(2);
             var totalByDay = (totalChargeableHours / 7.5).toFixed(2);
             var totalExlVatInfoTxt = (totalByDay * rateExcVat).toFixed(2);
             var totalIncVatInfoTxt = (totalByDay * rateIncVat).toFixed(2);
@@ -591,6 +631,39 @@ function Info() {
             $("#rateIncVatInfoTxt").text(rateIncVat);
             $("#totalExlVatInfoTxt").text(totalExlVatInfoTxt);
             $("#totalIncVatInfoTxt").text(totalIncVatInfoTxt);
+            currencyMask('.currencyMask', '###,###,###.##');
+        } else {
+            $("#infoPanel").hide();
+        }
+    });
+}
+function Info_TESTE(obj) {
+    //console.log(obj);
+    clearInfoValues();
+    getUserName(function (loggedUserName) {
+        if (getAccessUserByName(loggedUserName) === "ADMIN") { //identify by role "admin"
+            $("#infoPanel").show();
+
+            $("#totalHoursInfoTxt").text(obj.TotalHours);
+            $("#dayWorkedInfoTxt").text(obj.WorkedDays);
+            $("#chargeableHoursInfoTxt").text(obj.ChargeableHours);
+            $("#nonchargeableHoursInfoTxt").text(obj.NonChargeableHours);
+
+            var rateExcVat = getRateUserByName(getUserNameFromPage());
+            if (rateExcVat === 0) {
+                toastrMessage("Rate is 0(zero)", "warning");
+                //return;
+            }
+
+            //var rateIncVat = (rateExcVat * 1.23).toFixed(2);
+            //var totalByDay = (totalChargeableHours / 7.5).toFixed(2);
+            //var totalExlVatInfoTxt = (totalByDay * rateExcVat).toFixed(2);
+            //var totalIncVatInfoTxt = (totalByDay * rateIncVat).toFixed(2);
+
+            $("#rateExlVatInfoTxt").text((obj.RateExcludingVAT).toFixed(2));
+            $("#rateIncVatInfoTxt").text((obj.RateIncludingVAT).toFixed(2));
+            $("#totalExlVatInfoTxt").text((obj.TotalExcludingVAT).toFixed(2));
+            $("#totalIncVatInfoTxt").text((obj.TotalIncludingVAT).toFixed(2));
             currencyMask('.currencyMask', '###,###,###.##');
         } else {
             $("#infoPanel").hide();
@@ -899,8 +972,10 @@ function connectToTFS() {
         dataType: "json",
         data: JSON.stringify(jsonObject),
         success: function (data) {
-            var eventsTFSFormatted = formatTFSEventsForCalendar(data[0]);
+            //console.log(data);
+            var eventsTFSFormatted = formatTFSEventsForCalendar_TESTE(data[0].ListWorkItem);
             eventsCalendar(eventsTFSFormatted, dateCalendar);
+            Info_TESTE(data[0]);
             eventsCalendarStartDateNotDefined(data[1]);
             listViewActive(eventsTFSFormatted);
             tooltipDaysListView();
@@ -1037,7 +1112,7 @@ function confirmationSavePath() {
             }
         })
     ).then(function (data, textStatus, jqXHR) {
-            SaveExcelFile(data);
+        SaveExcelFile(data);
     });
 }
 
@@ -1199,12 +1274,11 @@ function getWorkItemByDay(_day, callback) {
         },
         error: function (error) {
             ajaxErrorHandler("GetWorkItemByDay" + error);
-            //toastrMessage("error (getWorkItemById): " + JSON.stringify(error), "warning");
         }
     });
 }
 
-function ajaxCloseAllTasks(callback, errorCallback) {
+function ajaxCloseAllTasks(callback) {
     $.ajax({
         url: "/Home/CloseTasksMonth",
         type: "PUT",
@@ -1214,8 +1288,7 @@ function ajaxCloseAllTasks(callback, errorCallback) {
             callback(data);
         },
         error: function (error) {
-            errorCallback();
-            //toastrMessage("error (ajaxCloseAllTasks): " + JSON.stringify(error), "warning");
+            //errorCallback;
             ajaxErrorHandler("ajaxCloseAllTasks", error);
         }
     });
@@ -1336,33 +1409,38 @@ function linkWorkItem() {
 // --------------------------------------   LINK WORK ITEM END ------------------------------------
 
 function bindBtnMe() {
-    //$("#btnMe").on("click", function () {
-    //getUserName(function (_userName) {
-    //    $("#userNameTimesheet option").filter(function () {
-    //        return $(this).text() === _userName;
-    //    }).prop('selected', true);//.trigger('change');
-    //    connectToTFS();
-    //    closeAllTasksCurrentMonth_Tooltip();
-    //});
-    //connectToTFS();
-    //closeAllTasksCurrentMonth_Tooltip();
-    //alert($(".loggedUser").text());
     $("#userNameTimesheet option").filter(function () {
         return $(this).text() === $(".loggedUser").text();
     }).prop('selected', true).trigger('change');
-    //});
 }
 
 function prevNextMonthBtn(prevNext) {
-    //("#btnPrevMonth").on("click", function () {
     var _month = $("#monthTimesheet").children("option:selected").val();
-    if (prevNext === 0 && _month === 1 || prevNext === 1 && _month === 12) return; //First month - no previous month
+    //if (prevNext === 0 && _month === "1" || prevNext === 1 && _month === "12") {
+    //    toastrMessage("Change the YEAR dropdown");
+    //    return; //First/Last month - no previous month
+    //}
+
     if (prevNext === 0) {
-        _month = parseInt(_month) - 1;
+        if (_month === "1") { //dropdown is in January and user click "prev", goes to December like a circular list
+            _month = 12;
+        }
+        else {
+            _month = parseInt(_month) - 1;
+        }
     } else {
-        _month = parseInt(_month) + 1;
+        if (_month === "12") { //dropdown is in December and user click "prev", goes to January like a circular list
+            _month = 1;
+        } else {
+            _month = parseInt(_month) + 1;
+        }
     }
     $("#monthTimesheet").val(_month).trigger("change");
-    //});
 }
 
+function bindToggleInfoPanel() {
+    $("#infoPanel").on("click", function () {
+        $("#infoPanelContent").toggleClass("hideInfoPanel");    
+        $(this).toggleClass("toggleChevron");
+    });
+}

@@ -184,6 +184,32 @@
     background-color: black !important;
 }
 
+#fieldsetInfoPanel{
+    position:relative;
+}
+
+#infoPanel::after {
+    content: "";
+    display: block;
+    box-sizing: border-box;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-bottom: 2px solid;
+    border-right: 2px solid;
+    right: 7px;
+    top: 7px;
+    transform: rotate(225deg);
+}
+
+.toggleChevron::after {
+    transform: rotate(45deg) !important;
+}
+
+.hideInfoPanel {
+    display: none;
+}
+
 /*.teste {
     padding-left: 0 !important;
     position: absolute;
@@ -191,7 +217,6 @@
     left: 0;
     top: 37.2vh; //25vh height = (100 - 25) / 2 = 75/2 = 37.5
 }*/
-
 /*.displayInfoEvent{
     display:block !important;
 }
@@ -199,13 +224,11 @@
 .ontopEvent{
     background-color: #d87676;
 }*/
-
 // ----------------------------------------- INFO EVENT END --------------------------------------------------------------
 // ----------------------------------------- INFO PANEL INIT --------------------------------------------------------------
 /*#infoPanel {
     display: none;
 }*/
-
 // ----------------------------------------- INFO PANEL END --------------------------------------------------------------
 // ----------------------------------------- MODAL INIT --------------------------------------------------------------
 #linkWorkItemTable {

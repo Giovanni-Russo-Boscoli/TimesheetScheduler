@@ -160,4 +160,6 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 
 - Refresh button in the main page (do not reload the page, send the same query to update the same user and month selected)
 
-- aloow user connected to create task with their own user (currently using my user to create tasks)
+- allow user connected to create task with their own user (currently using my user to create tasks)
+
+- Create a new panel to show tasks created by you and not assisgned to anyone (similar to 'Start Date Not Defined' feature)

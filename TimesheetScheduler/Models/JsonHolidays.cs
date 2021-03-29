@@ -8,7 +8,6 @@ namespace TimesheetScheduler.Models
 {
     public class JsonHolidays
     {
-
         [Required]
         public int Id { get; set; }
 

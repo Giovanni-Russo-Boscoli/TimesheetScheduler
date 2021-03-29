@@ -53,7 +53,7 @@ function initTfsReferenceTab(destroyDataTable) {
 }
 
 function GetResult_AddNewUser(data) {
-    if (data === "True") {
+    if (data === "True" || data === true) {
         $('#editCreateUserModal').modal('hide');
         toastrMessage("User save successfully!", "success");
         initUsersTab(true);
@@ -64,7 +64,7 @@ function GetResult_AddNewUser(data) {
 }
 
 function GetResult_AddNewRole(data) {
-    if (data === true) {
+    if (data === "True" || data === true) {
         $('#editCreateRolesModal').modal('hide');
         toastrMessage("Role save successfully!", "success");
         initRolesTab(true);
@@ -75,7 +75,7 @@ function GetResult_AddNewRole(data) {
 }
 
 function GetResult_AddNewTFSProject(data) {
-    if (data === true) {
+    if (data === "True" || data === true){
         $('#editCreateTFSReferenceModal').modal('hide');
         toastrMessage("TFS Project save successfully!", "success");
         initTfsReferenceTab(true);
@@ -161,7 +161,7 @@ function callbackDataTablesUsers() {
                     data: "Active",
                     render: function (data, type, row, meta) {
                         var activeStatus = "dotGreenActive";
-                        if (data === false) {
+                        if (data === false || data === "False") {
                             activeStatus = "dotRedActive";
                         }
                         return "<span class='" + activeStatus + "' onclick='toggleActveStatus(" + row.Id + ");'></span>" + "<span class='hiddenSpan'>" + data + "</span>";
@@ -175,7 +175,7 @@ function callbackDataTablesUsers() {
                     data: "Chargeable",
                     render: function (data) {
                         var chargeableStatus = "dotGreenChargeable";
-                        if (data === false) {
+                        if (data === false || data === "False") {
                             chargeableStatus = "dotRedChargeable";
                         }
                         return "<span class='" + chargeableStatus + "'></span>";
@@ -340,7 +340,7 @@ function deleteUser(_userId) {
         dataType: "text",
         data: { userId: _userId},
         success: function (data) {
-            if (data === "True") {
+            if (data === "True" || data === true) {
                 toastrMessage("User deleted!", "success");
                 initUsersTab(true);
             } else {
@@ -360,7 +360,7 @@ function deleteRole(_roleId) {
         dataType: "json",
         data: { roleId: _roleId },
         success: function (data) {
-            if (data === true) {
+            if (data === "True" || data === true) {
                 toastrMessage("Role deleted!", "success");
                 initRolesTab(true);
             } else {
@@ -380,7 +380,7 @@ function deleteTFSProject(_tfsProjectId) {
         dataType: "json",
         data: { tfsProjectId: _tfsProjectId },
         success: function (data) {
-            if (data === true) {
+            if (data === "True" || data === true) {
                 toastrMessage("TFS Project deleted!", "success");
                 initTfsReferenceTab(true);
             } else {
