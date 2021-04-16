@@ -132,37 +132,37 @@
                 <form class="form-inline">
                     <div class="form-group">
                         <label for="dayTimesheet" title="Start Date">Day</label>
-                        <input class="form-control" title="Start Date" id="dayTimesheet" disabled />
+                        <input class="form-control onEnter watchChange" title="Start Date" id="dayTimesheet" disabled />
                     </div>
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
                         <label for="titleTimesheet">Title</label>
-                        <input class="form-control" id="titleTimesheet" />
+                        <input class="form-control onEnter watchChange" id="titleTimesheet" />
                     </div>
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
                         <label for="chargeableTimesheet">Chargeable Hours</label>
-                        <input required type="number" value="7.5" min="0" max="7.5" step="0.25" class="form-control" id="chargeableTimesheet" />
+                        <input required type="number" value="7.5" min="0" max="7.5" step="0.25" class="form-control onEnter watchChange" id="chargeableTimesheet" />
                     </div>
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
                         <label for="nonchargeableTimesheet">Non Chargeable Hours</label>
-                        <input type="number" value="0.0" min="0" max="7.5" step="0.25" class="form-control" id="nonchargeableTimesheet" />
+                        <input type="number" value="0.0" min="0" max="7.5" step="0.25" class="form-control onEnter watchChange" id="nonchargeableTimesheet" />
                     </div>
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
                         <label for="descriptionTimesheet">Description</label>
-                        <textarea class="form-control" id="descriptionTimesheet" placeholder="Description..." rows="4"></textarea>
+                        <textarea class="form-control watchChange" id="descriptionTimesheet" placeholder="Description..." rows="4"></textarea>
                     </div>
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
                         <label for="closeTaskTimesheet">Close Task</label>
-                        <select class="form-control" id="closeTaskTimesheet"></select>
+                        <select class="form-control watchChange" id="closeTaskTimesheet"></select>
                     </div>
                 </form>
                 <hr />

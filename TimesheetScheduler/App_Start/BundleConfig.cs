@@ -35,7 +35,8 @@ namespace TimesheetScheduler
 
             bundles.Add(new ScriptBundle("~/bundles/timesheetscheduler").Include(
                       "~/Scripts/TimesheetSchedulerCalendar.js"));
-                      //"~/Scripts/DataTables/jquery.dataTables.js"));
+
+            //"~/Scripts/DataTables/jquery.dataTables.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/login").Include(
                       "~/Scripts/Login.js"));
@@ -74,6 +75,9 @@ namespace TimesheetScheduler
                       "~/Content/progressBarAnimation.css",
                       "~/Content/TimesheetScheduler.css",
                       "~/Content/DataTables/css/jquery.dataTables.css"));
+
+            bundles.Add(new StyleBundle("~/Content/reportmodule").Include(
+                "~/Content/ReportModule.css"));
 
             bundles.Add(new StyleBundle("~/Content/login").Include(
                       "~/Content/Login.css"));

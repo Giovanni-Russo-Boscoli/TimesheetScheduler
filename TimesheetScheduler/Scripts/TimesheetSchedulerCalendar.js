@@ -840,7 +840,8 @@ function enterKeyForCopyTask() {
 
 function enterKeySaveEvent() {
     //, #descriptionTimesheet  -> removed to allow user to use enter/newline in the description field
-    $("#dayTimesheet, #titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet").keypress(function (e) {
+    //$("#dayTimesheet, #titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet").keypress(function (e) {
+    $(".onEnter").keypress(function (e) {
         var key = e.which;
         if (key === 13)  // the enter key code
         {
@@ -1190,12 +1191,14 @@ function closeAllTasksCurrentMonth_Tooltip() {
 function unsavedForm(onoff) {
     //#linkWorkItemTable managed in a different way (Work Item Link table)
     if (onoff) {
-        $("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet, #closeTaskTimesheet, #dayTimesheet").on("change", function () {
+        //$("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet, #closeTaskTimesheet, #dayTimesheet").on("change", function () {
+        $(".watchChange").on("change", function () {
             $(this).addClass("fieldChanged");
         });
     }
     else {
-        $("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet, #closeTaskTimesheet, #dayTimesheet").off();
+        //$("#titleTimesheet, #chargeableTimesheet, #nonchargeableTimesheet, #descriptionTimesheet, #closeTaskTimesheet, #dayTimesheet").off();
+        $(".watchChange").off();
     }
 }
 
@@ -1416,26 +1419,29 @@ function bindBtnMe() {
 
 function prevNextMonthBtn(prevNext) {
     var _month = $("#monthTimesheet").children("option:selected").val();
-    //if (prevNext === 0 && _month === "1" || prevNext === 1 && _month === "12") {
-    //    toastrMessage("Change the YEAR dropdown");
-    //    return; //First/Last month - no previous month
-    //}
-
+    var _year = 0;
     if (prevNext === 0) {
         if (_month === "1") { //dropdown is in January and user click "prev", goes to December like a circular list
             _month = 12;
+            _year = parseInt($("#yearTimesheet").children("option:selected").val()) - 1;
         }
         else {
             _month = parseInt(_month) - 1;
         }
     } else {
-        if (_month === "12") { //dropdown is in December and user click "prev", goes to January like a circular list
+        if (_month === "12") { //dropdown is in December and user click "next", goes to January like a circular list
             _month = 1;
+            _year = parseInt($("#yearTimesheet").children("option:selected").val()) + 1;
         } else {
             _month = parseInt(_month) + 1;
         }
     }
-    $("#monthTimesheet").val(_month).trigger("change");
+    if (_year > 0 && ($("#yearTimesheet option[value='" + _year + "']").length > 0)) {
+        $("#monthTimesheet").val(_month).trigger("change");
+        $("#yearTimesheet").val(_year).trigger("change");
+    } else if (_year === 0) {
+        $("#monthTimesheet").val(_month).trigger("change");
+    }
 }
 
 function bindToggleInfoPanel() {

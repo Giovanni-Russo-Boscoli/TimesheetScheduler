@@ -18,5 +18,9 @@
   {
     "outputFile": "Content/bootstrap-toggle.css",
     "inputFile": "Content/bootstrap-toggle.less"
+  },
+  {
+    "outputFile": "Content/ReportModule.css",
+    "inputFile": "Content/ReportModule.less"
   }
 ]

@@ -582,6 +582,12 @@
     <Content Include="Content\progressBarAnimation.min.css">
       <DependentUpon>progressBarAnimation.css</DependentUpon>
     </Content>
+    <Content Include="Content\ReportModule.css">
+      <DependentUpon>ReportModule.less</DependentUpon>
+    </Content>
+    <Content Include="Content\ReportModule.min.css">
+      <DependentUpon>ReportModule.css</DependentUpon>
+    </Content>
     <Content Include="Content\themes\base\accordion.css" />
     <Content Include="Content\themes\base\all.css" />
     <Content Include="Content\themes\base\autocomplete.css" />
@@ -690,6 +696,7 @@
     <Content Include="Content\bootstrap-toggle.less" />
     <Content Include="JsonData\Holidays\jsonHolidays2020.json" />
     <Content Include="JsonData\Holidays\jsonHolidays2021.json" />
+    <Content Include="Content\ReportModule.less" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.min.js" />
@@ -871,6 +878,7 @@
     <Content Include="Scripts\moment.js" />
     <Content Include="Scripts\moment.min.js" />
     <Content Include="Scripts\mustache.js" />
+    <Content Include="Scripts\ReportModule.js" />
     <Content Include="Scripts\TimesheetSchedulerCalendar.js" />
     <Content Include="Scripts\toastr.js" />
     <Content Include="Scripts\toastr.min.js" />
