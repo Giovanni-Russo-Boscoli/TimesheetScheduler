@@ -42,9 +42,12 @@ namespace TimesheetScheduler.Controllers
         {
             _utilService = new UtilService();
             requiredHours = _utilService.FetchRequiredHours();
+
+            _readJsonFilesService = new ReadJsonFiles();
         }
 
         private static IUtilService _utilService;
+        private static IReadJsonFiles _readJsonFilesService;
 
         private string jsonHolidaysServerPath = "~/JsonData/Holidays/jsonHolidays";//.json";
 
@@ -867,6 +870,7 @@ namespace TimesheetScheduler.Controllers
             }
         }
 
+
         private WorkItemCollection GetMonthlyRatesByTeam(UserDataSearchTFS userData)
         {//GetTFSUserData
             try
@@ -878,13 +882,17 @@ namespace TimesheetScheduler.Controllers
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
 
+                userData.UserName = userData.UserName.Replace("'", "''");
+
                 WorkItemCollection WIC = WIS.Query(
-                    " SELECT [Microsoft.VSTS.Scheduling.CompletedWork], " +
+                    " SELECT  [System.Id]," + 
+                    " [Microsoft.VSTS.Scheduling.CompletedWork], " +
                     " [System.AssignedTo] " +
                     " FROM WorkItems " +
                     " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
                     " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
-                    " AND [Assigned To]  in ('Giovanni Boscoli','Kevin Shortall')" +
+                    //" AND [Assigned To]  in ('Giovanni Boscoli','Kevin Shortall')" +
+                    " AND [Assigned To] ='" + userData.UserName + "'" +
                     " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
                     " AND [Microsoft.VSTS.Scheduling.StartDate] >= '" + $"{userData.Year}/{userData.Month}/01'" +
                     " AND [Microsoft.VSTS.Scheduling.StartDate] <= '" + $"{userData.Year}/{userData.Month}/{DateTime.DaysInMonth(userData.Year, userData.Month)}'" +
@@ -898,32 +906,57 @@ namespace TimesheetScheduler.Controllers
             }
         }
 
-        public ConsolidatedMonthUserData ConsolidatedReportData(UserDataSearchTFS userData)
+        [HttpPost]
+        public JsonResult ConsolidatedReportData(IList<UserDataSearchTFS> userData)
         {
             try
             {
                 IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
+                IList<ConsolidatedMonthUserData> listConsolidatedDataUser = new List<ConsolidatedMonthUserData>();
+                IList<ConsolidatedRateMonthly> listConsolidatedRateMonthly = new List<ConsolidatedRateMonthly>();
+
+                IEnumerable<string> memberNames = userData.Select(x => x.UserName.Replace("''", "'"));
 
                 var _urlTFS = GetUrlTfs();
-
-                foreach (WorkItem wi in GetMonthlyRatesByTeam(userData))
+                foreach (var member in userData)
                 {
-                    var _item = new WorkItemSerialized()
+                    foreach (WorkItem wi in GetMonthlyRatesByTeam(member)) //change to make only one sql request using a list of members instead
                     {
-                        StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                        Description = wi["Assigned To"].ToString(),
-                        //WorkItemsLinked = _workItemsLinked,
-                        //State = wi.State,
-                        //LinkUrl = _urlTFS + userData.ProjectNameTFS + "/_queries?id=" + wi["Id"].ToString(),
-                        IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null,
-                        CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : 0,
-                        RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : 0
-                    };
+                        var _item = new WorkItemSerialized()
+                        {
+                            Id = wi["Id"].ToString(),
+                            StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
+                            Description = wi["Assigned To"].ToString(),
+                            IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null,
+                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : 0,
+                            RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : 0
+                        };
 
-                    listWorkItems.Add(_item);
+                        listWorkItems.Add(_item);
+                    }
+                    listConsolidatedDataUser.Add(formatTFSResult(ref listWorkItems, member.UserName));
+                    listWorkItems = new List<WorkItemSerialized>(); //reinitialize list
                 }
 
-                return formatTFSResult(ref listWorkItems, userData.UserName);
+                var count = 0;
+                foreach (var item in listConsolidatedDataUser)
+                {
+                    var _itemRate = new ConsolidatedRateMonthly()
+                    {
+                        MemberName = memberNames.ElementAt(count),
+                        DaysWorked = item.WorkedDays,
+                        RateExcVat = item.RateExcludingVAT,
+                        RateIncVat = item.RateIncludingVAT,
+                        DayRateExcVat = item.TotalExcludingVAT,
+                        DayRateIncVat = item.TotalIncludingVAT,
+                        TeamDivision = _readJsonFilesService.GetMemberTeamDivision(memberNames.ElementAt(count))
+                    };
+
+                    listConsolidatedRateMonthly.Add(_itemRate);
+                    count++;
+                }
+
+                return Json(listConsolidatedRateMonthly, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {

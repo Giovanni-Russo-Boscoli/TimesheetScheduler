@@ -1,20 +1,80 @@
-﻿.navBarReportModule {
+﻿.reportsContent {
   margin-top: 40px;
+}
+.navBarReportModule {
+  padding: 20px;
 }
 #excelBulk,
 #consolidatedReport {
   margin-top: 20px;
 }
 /* ---------------------------------------------- CONSOLIDATED REPORT INIT ---------------------------------------------------------- */
-#consolidatedReport table {
-  display: table;
+.figuresPanel {
+  float: right;
+  width: 49%;
+}
+.figureCell {
+  border: 1px solid lightgray;
+  border-radius: 8px;
+  padding: 5px;
+}
+.figureCell label {
+  margin-bottom: 0;
+}
+.dataRateMonthlyHidden {
+  display: none;
+}
+.dataRateMonthlyHidden.displayTable {
+  display: block !important;
+}
+.half-top-left,
+.half-top-right {
+  min-height: 380px;
+}
+#tableConsolidatedReport {
+  display: table !important;
   border-collapse: collapse;
   border: 1px solid lightgrey;
+  margin-top: 20px;
+  /*
+    td.rateExcVatCol {
+        background-color: rgba(118, 181, 108, 0.44);
+    }
+
+    td.rateIncVatCol {
+        background-color: rgba(186, 190, 185, 0.44);
+    }
+
+    td.daysWorkedCol {
+        background-color: rgba(109, 173, 242, 0.44);
+    }*/
 }
-#consolidatedReport table th,
-#consolidatedReport table td {
+#tableConsolidatedReport tbody tr:nth-child(even) {
+  background-color: rgba(177, 176, 176, 0.26) /*background-color: lightgray;*/ /*opacity: 0.3;*/;
+}
+#tableConsolidatedReport th,
+#tableConsolidatedReport td {
   padding: 5px;
   border: 1px solid lightgray;
+}
+#tableConsolidatedReport td.memberNameCol {
+  /*background-color: rgba(126, 215, 232, 0.44);*/
+  white-space: nowrap;
+}
+#tableConsolidatedReport td.dayRateExcVatCol {
+  background-color: rgba(230, 227, 157, 0.41);
+}
+#tableConsolidatedReport td.dayRateIncVatCol {
+  background-color: rgba(230, 197, 157, 0.41);
+}
+.btnHideTableMonthlyRate {
+  float: right;
+  padding-right: 0;
+  display: block;
+}
+#btnSelectAllBoxSelection {
+  width: 93%;
+  margin: 6px 0;
 }
 /* ---------------------------------------------- CONSOLIDATED REPORT END ---------------------------------------------------------- */
 .ms-container {

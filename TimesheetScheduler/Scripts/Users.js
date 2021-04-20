@@ -170,7 +170,7 @@ function callbackDataTablesUsers() {
                 },
                 { data: "Name" },
                 { data: "Role" },
-                { data: "Category" },
+                { data: "TeamDivision" },
                 {
                     data: "Chargeable",
                     render: function (data) {
@@ -422,8 +422,8 @@ function openEditUserModal(rowIndex, create) {
             return $(this).text() === data.Role;
         }).prop('selected', true);
 
-        //CATEGORY
-        $("#userCategorySelect").val(data.Category);
+        //TeamDivision
+        $("#userCategorySelect").val(data.TeamDivision);
 
        //CHARGEABLE
         $('#checkBoxChargeable').prop('checked', data.Chargeable).change();

@@ -71,5 +71,7 @@ namespace TimesheetScheduler.Interface
         bool IsUserLoggedAdmin();
 
         string GetUserNameLogged();
+
+        string GetMemberTeamDivision(string username);
     }
 }

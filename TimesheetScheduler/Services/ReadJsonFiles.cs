@@ -113,6 +113,12 @@ namespace TimesheetScheduler.Services
             return result;
         }
 
+        public string GetMemberTeamDivision(string username)
+        {
+            var result = DeserializeReadJsonUserFile().Where(x => x.Name.Equals(username)).FirstOrDefault().TeamDivision;
+            return result;
+        }
+
         public IList<JsonProjectIteration> DeserializeReadJsonProjectIterationFile()
         {
             using (StreamReader r = new StreamReader(_server.MapPath(jsonProjectIterationServerPath)))
@@ -210,7 +216,7 @@ namespace TimesheetScheduler.Services
                 item.Name = jsonFile.Name;
                 item.Email = jsonFile.Email;
                 item.Role = jsonFile.Role;
-                item.Category = jsonFile.Category;
+                item.TeamDivision = jsonFile.TeamDivision;
                 item.Chargeable = jsonFile.Chargeable;
                 item.ProjectNameTFS = jsonFile.ProjectNameTFS;
                 item.Access = jsonFile.Access;
@@ -437,5 +443,7 @@ namespace TimesheetScheduler.Services
         {
             return _session["userLoggedName"] as string;
         }
+
+        
     }
 }

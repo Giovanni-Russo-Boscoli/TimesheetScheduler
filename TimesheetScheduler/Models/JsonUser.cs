@@ -129,18 +129,18 @@ namespace TimesheetScheduler.Models
             }
         }
 
-        private string category { get; set; }
+        private string teamDivision{ get; set; }
 
         [Required]
-        public string Category
+        public string TeamDivision
         {
             get
             {
-                return category;
+                return teamDivision;
             }
             set
             {
-                category = value;
+                teamDivision = value;
             }
         }
 

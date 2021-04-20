@@ -38,7 +38,7 @@
                         <th>Active</th>
                         <th>Name</th>
                         <th>Role</th>
-                        <th>Category</th>
+                        <th>Team Division</th>
                         <th>Chargeable</th>
                         <th>Email</th>
                         <th>Project Name TFS</th>
@@ -133,16 +133,16 @@
                     <div class="form-group">
                         <div class="LabelAndInputField">
                             @{
-                                var listItemCategory = new List<SelectListItem>
+                                var listItemTeamDivision = new List<SelectListItem>
                                                 {
                                                     new SelectListItem { Selected = false, Text = "Core", Value = "Core"},
                                                     new SelectListItem { Selected = true, Text = "Drawdown", Value = "Drawdown"},
                                                 };
                             }
-                            @Html.LabelFor(m => m.Category, new { @class = "lblUserEditModal" })
-                            @Html.DropDownListFor(m => m.Category, listItemCategory, new { @class = "form-control inputUserEditModal", id = "userCategorySelect" })
+                            @Html.LabelFor(m => m.TeamDivision, new { @class = "lblUserEditModal" })
+                            @Html.DropDownListFor(m => m.TeamDivision, listItemTeamDivision, new { @class = "form-control inputUserEditModal", id = "userCategorySelect" })
                         </div>
-                        @Html.ValidationMessageFor(m => m.Category, "", new { @class = "text-danger" })
+                        @Html.ValidationMessageFor(m => m.TeamDivision, "", new { @class = "text-danger" })
                     </div>
                     <div class="form-group">
                         <div class="LabelAndInputField">

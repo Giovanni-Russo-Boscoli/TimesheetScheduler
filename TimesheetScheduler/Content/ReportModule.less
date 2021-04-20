@@ -1,5 +1,9 @@
-﻿.navBarReportModule{
-    margin-top:40px;
+﻿.reportsContent {
+    margin-top: 40px;
+}
+
+.navBarReportModule {
+    padding:20px;
 }
 
 #excelBulk, #consolidatedReport {
@@ -8,19 +12,86 @@
 
 /* ---------------------------------------------- CONSOLIDATED REPORT INIT ---------------------------------------------------------- */
 
-#consolidatedReport table {
-    display: table;
-    border-collapse: collapse;
-    border: 1px solid lightgrey;
+.figuresPanel{
+    float:right;
+    width:49%;
+}
 
-    th, td {
-        padding:5px;
-        border: 1px solid lightgray;
+.figureCell {
+    border: 1px solid lightgray;
+    border-radius: 8px;
+    padding: 5px;
+    label{
+        margin-bottom:0;
     }
 }
 
-/* ---------------------------------------------- CONSOLIDATED REPORT END ---------------------------------------------------------- */
+.dataRateMonthlyHidden {
+    display: none;
+}
 
+.dataRateMonthlyHidden.displayTable {
+    display: block !important;
+}
+
+.half-top-left, .half-top-right{
+    min-height:380px;
+}
+
+#tableConsolidatedReport {
+    display: table !important;
+    border-collapse: collapse;
+    border: 1px solid lightgrey;
+    margin-top: 20px;
+
+    tbody tr:nth-child(even) {
+        background-color: rgba(177, 176, 176, 0.26)
+        /*background-color: lightgray;*/
+        /*opacity: 0.3;*/
+    }
+
+    th, td {
+        padding: 5px;
+        border: 1px solid lightgray;
+    }
+
+    td.memberNameCol {
+        /*background-color: rgba(126, 215, 232, 0.44);*/
+        white-space: nowrap;
+    }
+    /*
+    td.rateExcVatCol {
+        background-color: rgba(118, 181, 108, 0.44);
+    }
+
+    td.rateIncVatCol {
+        background-color: rgba(186, 190, 185, 0.44);
+    }
+
+    td.daysWorkedCol {
+        background-color: rgba(109, 173, 242, 0.44);
+    }*/
+    td.dayRateExcVatCol {
+        background-color: rgba(230, 227, 157, 0.41)
+    }
+
+    td.dayRateIncVatCol {
+        background-color: rgba(230, 197, 157, 0.41)
+    }
+}
+
+.btnHideTableMonthlyRate {
+    float: right;
+    padding-right: 0;
+    display: block;
+}
+
+#btnSelectAllBoxSelection{
+    width: 93%;
+    margin: 6px 0;
+}
+
+/* ---------------------------------------------- CONSOLIDATED REPORT END ---------------------------------------------------------- */
 .ms-container {
     width: 500px !important;
 }

@@ -427,6 +427,7 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\CellObject.cs" />
     <Compile Include="Models\ConsolidatedMonthUserData.cs" />
+    <Compile Include="Models\ConsolidatedRateMonthly.cs" />
     <Compile Include="Models\EmailSender.cs" />
     <Compile Include="Models\ExcelExport.cs" />
     <Compile Include="Models\JsonHolidays.cs" />

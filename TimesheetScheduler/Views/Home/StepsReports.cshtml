@@ -12,73 +12,81 @@
     <script src="~/Scripts/ReportModule.js"></script>
 }
 
-
 <link rel="stylesheet" type="text/css" href="~/Content/multi-select.css">
 <link rel="stylesheet" type="text/css" href="~/Content/DataTables/css/jquery.dataTables.css">
 
 <body>
-    <div class="col-lg-12">
+    <div class="container reportsContent">
 
-       
-
-        <div class="col-lg-4">
-            <label for="monthTimesheet">Month</label>
-            <div class="monthSelection">
-                <button id="btnPrevMonth" title="Previous Month" class="btn btn-primary" onclick="prevNextMonthBtn2(0);"><</button>
-                <select class="form-control" id="monthTimesheet"></select>
-                <button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="prevNextMonthBtn2(1);">></button>
-            </div>
-
-            <br />
-
-            <label for="yearTimesheet">Year</label>
-            <select class="form-control" id="yearTimesheet"></select>
-            <br />
-            <div class="col-lg-12 row">
-                <div class="col-lg-6 divSwitchMembers">
-                    <button id="btnSelectAllBoxSelection" class="btn btn-default selectAll">Select All</button>
+        <div class="col-lg-6 well half-top-left">
+            <fieldset>
+                <legend>Report Filters</legend>
+                <div class="col-lg-8">
+                    <button id="btnSelectAllBoxSelection" class="form-control btn btn-default selectAll">Select All</button>
+                    <select id='boxUserSelection' multiple='multiple' class="form-control"></select>
                 </div>
-            </div>
-            <br />
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="monthTimesheet">Month</label>
+                        <div class="monthSelection">
+                            <button id="btnPrevMonth" title="Previous Month" class="btn btn-primary" onclick="prevNextMonthBtn2(0);"><</button>
+                            <select class="form-control" id="monthTimesheet"></select>
+                            <button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="prevNextMonthBtn2(1);">></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="yearTimesheet">Year</label>
+                        <select class="form-control" id="yearTimesheet"></select>
 
-            <select id='boxUserSelection' multiple='multiple'></select>
+                    </div>
+
+                    <button id="btnExportExcelBulk" class="btn btn-success btn-block" onclick="confirmationSavePath();" disabled>Export Timesheets</button>
+                    <button id="btnGetConsolidatedReportMonthly" class="btn btn-success btn-block" onclick="getConsolidatedReportMonthly();" disabled>Monthly Rate Report</button>
+
+                </div>
+            </fieldset>
         </div>
 
-        <div class="col-lg-8 tab-content">
+        <div class="col-lg-6 well dataRateMonthlyHidden figuresPanel half-top-right">
+            <fieldset>
+                <legend>Figures</legend>
+                <script id="figuresTemplate" type="x-tmpl-mustache">
+                    <div class="col-lg-12">
+                        <div class="row">
+                            {{#figuresData}}
+                            <div class="col-lg-6 figureCell">
+                                <label class="col-sm-7">{{labelText}}</label>
+                                <span class="col-sm-5">{{valueText}}</span>
+                            </div>
+                            {{/figuresData}}
+                        </div>
+                    </div>
+                </script>
+                <div id="targetFigures">
 
-            <div class="navBarReportModule">
-                <ul class="nav nav-tabs">
-                    <li class="active"><a data-toggle="tab" id="tabExcelBulk" href="#excelBulk">Export Excel - BULK</a></li>
-                    <li><a data-toggle="tab" id="tabConsolidatedReport" href="#consolidatedReport">Consolidated Report</a></li>
-                </ul>
-            </div>
-
-            <div id="excelBulk" class="tab-pane fade in active">
-                <div class="col-lg-4">
-
-
-                    <br />
-                    <button id="btnExportExcelBulk" class="btn btn-success" onclick="confirmationSavePath();" disabled>Export</button>
                 </div>
+            </fieldset>
+        </div>
+
+        <div class="col-lg-12 well dataRateMonthlyHidden">
+            <div class="col-lg-1 form-group btnHideTableMonthlyRate">
+                <button class="btn btn-info form-control " onclick="hideTableRateMonthly();">Hide Figures Data</button>
             </div>
-            <div id="consolidatedReport" class="tab-pane fade">
-                <div class="col-lg-12">
-                    <table id="tableConsolidatedReport">
-                        <thead>
-                            <tr>
-                                <th>Id</th>
-                                @*<th>Period</th>*@
-                                <th>Name</th>
-                                <th>Rate(Exc.VAT)</th>
-                                <th>Rate(Inc.VAT)</th>
-                                <th>Days worked</th>
-                                <th>Day Rate(Exc.VAT)</th>
-                                <th>Day Rate(Inc.VAT)</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </div>
+            <table id="tableConsolidatedReport">
+                <thead>
+                    <tr>
+                        @*<th>Id</th>*@
+                        @*<th>Period</th>*@
+                        <th>Name</th>
+                        <th>Rate(Exc.VAT)</th>
+                        <th>Rate(Inc.VAT)</th>
+                        <th>Days worked</th>
+                        <th>Day Rate(Exc.VAT)</th>
+                        <th>Day Rate(Inc.VAT)</th>
+                        <th>Team Division</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
 </body>

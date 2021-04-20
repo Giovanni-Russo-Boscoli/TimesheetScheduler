@@ -4,7 +4,7 @@ var countBoxUserSelection = 0;
 
 $(document).ready(function () {
     init();
-    loadConsolidatedReport();
+    renderHello();
 });
 
 function init() {
@@ -32,6 +32,43 @@ function readJsonUserFile(callback) {
             ajaxErrorHandler(error);
         }
     });
+}
+
+function getConsolidatedReportMonthly() {
+    
+    var jsonObject = [];
+    var _month = getMonthFromPage2() + 1;
+    var _year = getYearFromPage2();
+
+    $(".ms-selection .ms-list .ms-elem-selection").each(function (index, value) {
+        if ($(value).is(":visible")) {
+            var userData = getUserDataByName2($(value).find("span").text());
+            var _selected = {
+                "UserName": userData.Name,
+                "ProjectNameTFS": userData.ProjectNameTFS,
+                "IterationPathTFS": userData.IterationPathTFS,
+                "Month": _month,
+                "Year": _year
+            }
+            jsonObject.push(_selected);
+        }
+    });
+
+    if (jsonObject.length > 0) {
+        $.ajax({
+            url: "/Home/ConsolidatedReportData",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(jsonObject),
+            success: function (data) {
+                loadConsolidatedReport(data);
+                deselectAll();
+            },
+            function(error) {
+                ajaxErrorHandler("ConsolidatedReportData", error);
+            }
+        });
+    }
 }
 
 function loadUsers() {
@@ -62,14 +99,34 @@ function bindBoxUserSelection() {
             countBoxUserSelection = countItemsBoxUserSelection();
             $("#btnExportExcelBulk").removeAttr('disabled');
             $("#btnExportExcelBulk").prop("title", "Export Excel File (" + countBoxUserSelection + " file(s))");
+
+            $("#btnGetConsolidatedReportMonthly").removeAttr('disabled');
+            $("#btnGetConsolidatedReportMonthly").prop("title", "Show Monthly Team Rates Report (" + countBoxUserSelection + " member(s))");
+
+            $("#btnSelectAllBoxSelection").text("Deselect All");
+
+            if (!$("#btnSelectAllBoxSelection").hasClass("allSelected")) {
+                $("#btnSelectAllBoxSelection").addClass("allSelected");
+            }
         },
         afterDeselect: function (values) {
             countBoxUserSelection = countItemsBoxUserSelection();
             if (countBoxUserSelection === 0) {
                 $("#btnExportExcelBulk").attr('disabled', 'disabled');
                 $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
+
+                $("#btnGetConsolidatedReportMonthly").attr('disabled', 'disabled');
+                $("#btnGetConsolidatedReportMonthly").prop("title", emptyBoxUSerSelection);
+
+                $("#btnSelectAllBoxSelection").text("Select All");
+
+                if ($("#btnSelectAllBoxSelection").hasClass("allSelected")) {
+                    $("#btnSelectAllBoxSelection").removeClass("allSelected");
+                }
+
             } else {
                 $("#btnExportExcelBulk").prop("title", "Export Excel File (" + countBoxUserSelection + " file(s))");
+                $("#btnGetConsolidatedReportMonthly").prop("title", "Show Monthly Team Rates Report (" + countBoxUserSelection + " member(s))");
             }
         }
     });
@@ -89,16 +146,21 @@ function bindBtnUserSelection() {
 
     $("#btnSelectAllBoxSelection").on("click", function () {
         if ($(this).hasClass("allSelected")) {
-            $('#boxUserSelection').multiSelect('deselect_all');
-            $(this).text("Select All");
+            deselectAll();
         }
         else {
-            $('#boxUserSelection').multiSelect('select_all');
-            $(this).text("Deselect All");
+            selectAll();
         }
-        $(this).toggleClass("allSelected");
     });
 
+}
+
+function deselectAll() {
+    $('#boxUserSelection').multiSelect('deselect_all');
+}
+
+function selectAll() {
+    $('#boxUserSelection').multiSelect('select_all');
 }
 
 function readSelected() {
@@ -130,7 +192,6 @@ function confirmationSavePath() {
         BulkSaveExcelFile(data);
     });
 }
-
 
 function BulkSaveExcelFile(strPath) {
     //var msgPath = "The Excel files will be saved in the following directory: \n" + strPath + ".xls";
@@ -201,16 +262,30 @@ function LoadMonths2() {
 }
 
 function prevNextMonthBtn2(prevNext) {
-    //("#btnPrevMonth").on("click", function () {
+
     var _month = $("#monthTimesheet").children("option:selected").val();
-    if (prevNext === 0 && _month === 1 || prevNext === 1 && _month === 12) return; //First month - no previous month
-    if (prevNext === 0) {
-        _month = parseInt(_month) - 1;
-    } else {
-        _month = parseInt(_month) + 1;
+    _month = parseInt(_month);
+
+    if (prevNext === 0 && _month === 1) {
+        _month = 12;
+        $("#monthTimesheet").val(_month).trigger("change");
+        return;
     }
+    else if (prevNext === 1 && _month === 12) {
+        _month = 1;
+        $("#monthTimesheet").val(_month).trigger("change");
+        return;
+    }
+
+    if (prevNext === 0) {
+        _month = _month - 1;
+    }
+    else {
+        _month = _month + 1;
+    }
+
     $("#monthTimesheet").val(_month).trigger("change");
-    //});
+
 }
 
 function getMonthFromPage2() {
@@ -228,66 +303,53 @@ function getYearFromPage2() {
     return $("#yearTimesheet").val();
 }
 
-function loadConsolidatedReport() {
+function loadConsolidatedReport(_data) {
 
-    var jsonData = [
-        {
-            "Id": "id data",
-            "Period": "period data",
-            "Name": "name data",
-            "RateExcVat": 995,
-            "RateIncVat": 1223.85,
-            "DaysWorked": 20,
-            "DayRateExcVat": 3313.35,
-            "DayRateIncVat": 4075.42,
-        },
-        {
-            "Id": "id data",
-            "Period": "period data",
-            "Name": "name data",
-            "RateExcVat": 515,
-            "RateIncVat": 633.45,
-            "DaysWorked": 21.5,
-            "DayRateExcVat": 11075.50,
-            "DayRateIncVat": 13619.17,
-        }
-    ]
-
+    $('.dataRateMonthlyHidden').addClass("displayTable");
+    $('#tableConsolidatedReport').DataTable().destroy();
     $('#tableConsolidatedReport').DataTable({
-        data: jsonData,
-        //"order": [[1, "desc"], [2, "asc"]], //ordered first by Active and then by Name
+        data: _data,
+        "order": [[6, "asc"], [1, "desc"], [0, "asc"]], //ordered first by Active and then by Name
         "bPaginate": false,
         "bLengthChange": false,
         "bFilter": true,
         "bInfo": false,
         "bAutoWidth": false,
-        //"searching": false,
+        "searching": false,
         "columns": [
-            { data: "Id" },
-            //{ data: "Period" },
-            { data: "Name" },
-            { data: "RateExcVat", render: $.fn.dataTable.render.number(',', '.', 2, '€') },
-            { data: "RateIncVat", render: $.fn.dataTable.render.number(',', '.', 2, '€') },
-            { data: "DaysWorked" },
-            { data: "DayRateExcVat", render: $.fn.dataTable.render.number(',', '.', 2, '€') },
-            { data: "DayRateIncVat", render: $.fn.dataTable.render.number(',', '.', 2, '€') },
+            { data: "MemberName", className:"memberNameCol" },
+            { data: "RateExcVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className:"rateExcVatCol" },
+            { data: "RateIncVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className:"rateIncVatCol" },
+            { data: "DaysWorked", className:"daysWorkedCol" },
+            { data: "DayRateExcVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className:"dayRateExcVatCol" },
+            { data: "DayRateIncVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className:"dayRateIncVatCol"},
+            { data: "TeamDivision", className:"teamDivisionCol" },
         ],
         "columnDefs": [
-            { "className": "dt-center", "targets": "_all" },
-            //{
-            //    "targets": [11], //EDIT/DELETE BUTTONS
-            //    "orderable": false
-            //},
-            {
-                "targets": [0], //Id
-                "visible": false
-            },
-            //{
-            //    "targets": 3,
-            //    "createdCell": function (td, cellData, rowData, row, col) {
-            //        $(this).attr('title', rowData.Rate);
-            //    }
-            //}
+            { "className": "dt-center", "targets": "_all" }
         ]
     });
+}
+
+function hideTableRateMonthly() {
+    $('.dataRateMonthlyHidden').removeClass("displayTable");
+    $('#tableConsolidatedReport').DataTable().destroy();
+}
+
+function renderHello() {
+
+    var data = {
+        "figuresData": [
+            { labelText: 'Vat Applied', valueText: '23%' },
+            { labelText: 'Period Searched', valueText: 'March 2021' },
+            { labelText: 'Total Core Excl. VAT', valueText: '€12,658.23' },
+            { labelText: 'Total Drawdown Excl. VAT', valueText: '€10,174.95' },
+            { labelText: 'Total Core Incl. VAT', valueText: '€16,988.58' },
+            { labelText: 'Total Drawdown Incl. VAT', valueText: '€13,734.29' },
+        ]
+    };
+
+    var template = document.getElementById('figuresTemplate').innerHTML;
+    var rendered = Mustache.render(template, data);
+    document.getElementById('targetFigures').innerHTML = rendered;
 }
