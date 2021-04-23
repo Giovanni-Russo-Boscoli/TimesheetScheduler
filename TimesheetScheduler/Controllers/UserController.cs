@@ -1,4 +1,6 @@
-﻿using System.Web;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using TimesheetScheduler.Interface;
 using TimesheetScheduler.Models;
@@ -118,6 +120,33 @@ namespace TimesheetScheduler.Controllers
             return Current.GetUserNameLogged();
         }
 
+        [HttpPost]
+        public JsonResult SelectUsersByTeamDivision(int teamId) {
+
+            var project = Current.DeserializeReadJsonProjectIterationFile().Where(x => x.Id == teamId).FirstOrDefault();
+
+            var usersGroupedByTeamDivision = Current.DeserializeReadJsonUserFile().Where(x=>x.Active && x.ProjectId == project.Id).GroupBy(x=>x.TeamDivision);
+
+            IList<UsersByTeamDivisionDTO> _formattedList = new List<UsersByTeamDivisionDTO>();
+
+            foreach (var user in usersGroupedByTeamDivision)
+            {
+                _formattedList.Add(new UsersByTeamDivisionDTO()
+                {
+                    TeamDivision = user.Key,
+                    TeamMembers = user.OrderBy(x=>x.Name).ToList()
+                });
+            }
+
+            return Json(_formattedList, JsonRequestBehavior.AllowGet);
+        }
+
+        //[HttpGet]
+        //public JsonResult SelectTeams ()
+        //{
+        //    return Json(Current.DeserializeReadJsonProjectIterationFile(), JsonRequestBehavior.AllowGet);
+        //}
+
         //[HttpGet]
         //public decimal GetMemberRate(string username) {
         //    var rates = ReadJsonRatesAndRolesFile();
@@ -125,7 +154,7 @@ namespace TimesheetScheduler.Controllers
         //    {
         //        item.
         //    }
-            
+
         //}
     }
 

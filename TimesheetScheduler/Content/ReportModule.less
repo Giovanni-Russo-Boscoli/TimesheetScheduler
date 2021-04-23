@@ -17,14 +17,16 @@
     width:49%;
 }
 
-.figureCell {
+/*.figureCell {
     border: 1px solid lightgray;
     border-radius: 8px;
     padding: 5px;
-    label{
-        margin-bottom:0;
+    margin: 5px 0;
+
+    label {
+        margin-bottom: 0;
     }
-}
+}*/
 
 .dataRateMonthlyHidden {
     display: none;
@@ -32,6 +34,37 @@
 
 .dataRateMonthlyHidden.displayTable {
     display: block !important;
+
+    legend {
+        margin-bottom: 2px
+    }
+    /*.figureCell:nth-child(even){
+        margin-right:2px;
+    }*/
+    .figureCell {
+        border: 1px solid lightgray;
+        border-radius: 8px;
+        padding: 5px;
+        margin: 1px 0;
+
+        label {
+            margin-bottom: 0;
+        }
+    }
+
+    .mainFigure {
+        .figureCell {
+            margin: 0;
+        }
+    }
+
+    .figureExcVat {
+        background-color: rgba(230, 227, 157, 0.41);
+    }
+
+    .figureIncVat {
+        background-color: rgba(230, 197, 157, 0.41);
+    }
 }
 
 .half-top-left, .half-top-right{
@@ -78,19 +111,65 @@
     td.dayRateIncVatCol {
         background-color: rgba(230, 197, 157, 0.41)
     }
+
+    &.highlightedTable {
+        tbody tr {
+            background-color: rgba(90, 90 ,90, 0.73);
+
+            &:not(.highlightedRow) {
+                color: #b1acac;
+            }
+
+            &.highlightedRow {
+                background-color: white;
+            }
+
+            &.highlightedRow:nth-child(even) {
+                background-color: rgba(204, 198, 198, 0.54)
+            }
+        }
+    }
+}
+
+.divResetTableBackground {
+    float: left;
+    display: none;
+    &.displayResetTableBackgroundBtn{
+        display:block;
+    }
+    button {
+        border: 1px solid gray;
+        border-radius: 50%;
+        background-color: rgba(47, 46, 46, 0.73);
+        width: 30px;
+        height: 30px;
+        padding:1px;
+        i{
+            color:white;
+        }
+    }
 }
 
 .btnHideTableMonthlyRate {
     float: right;
-    padding-right: 0;
+    padding: 2px;
     display: block;
 }
 
-#btnSelectAllBoxSelection{
+#btnSelectAllBoxSelection , #targetSelectTeams {
     width: 93%;
     margin: 6px 0;
+
+    select {
+        width: 100% !important;
+        max-width:none;
+    }
 }
 
+.ms-optgroup-label span{
+    color:black !important;
+    font-weight: bold !important;
+}
 /* ---------------------------------------------- CONSOLIDATED REPORT END ---------------------------------------------------------- */
 .ms-container {
     width: 500px !important;

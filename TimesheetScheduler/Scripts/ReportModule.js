@@ -4,19 +4,17 @@ var countBoxUserSelection = 0;
 
 $(document).ready(function () {
     init();
-    renderHello();
 });
 
 function init() {
+    loadTeams();
     users = [];
     countBoxUserSelection = 0;
+    LoadMonths2();
+    LoadYears2();
+    $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
     readJsonUserFile(function (data) {
         users = data;
-        loadUsers();
-        LoadMonths2();
-        LoadYears2();
-        bindBtnUserSelection();
-        $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
     });
 }
 
@@ -35,34 +33,32 @@ function readJsonUserFile(callback) {
 }
 
 function getConsolidatedReportMonthly() {
-    
-    var jsonObject = [];
+
     var _month = getMonthFromPage2() + 1;
     var _year = getYearFromPage2();
 
-    $(".ms-selection .ms-list .ms-elem-selection").each(function (index, value) {
-        if ($(value).is(":visible")) {
-            var userData = getUserDataByName2($(value).find("span").text());
-            var _selected = {
-                "UserName": userData.Name,
-                "ProjectNameTFS": userData.ProjectNameTFS,
-                "IterationPathTFS": userData.IterationPathTFS,
-                "Month": _month,
-                "Year": _year
-            }
-            jsonObject.push(_selected);
-        }
+    var selectedOptions = [];
+    $("#boxUserSelection option:selected").each(function (index, value) {
+        selectedOptions.push(parseInt($(value).val()));
     });
 
-    if (jsonObject.length > 0) {
+    var jsonObject = {
+        "Month": _month,
+        "SelectedMembersId": selectedOptions,
+        "Year": parseInt(_year)
+    };
+
+    if (jsonObject) {
         $.ajax({
             url: "/Home/ConsolidatedReportData",
             type: "POST",
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(jsonObject),
+            //contentType: "application/json; charset=utf-8",
+            data: jsonObject,
+            dataType: 'json',
             success: function (data) {
-                loadConsolidatedReport(data);
+                loadConsolidatedReport(data.Members);
                 deselectAll();
+                loadFigures(data);
             },
             function(error) {
                 ajaxErrorHandler("ConsolidatedReportData", error);
@@ -71,65 +67,92 @@ function getConsolidatedReportMonthly() {
     }
 }
 
-function loadUsers() {
-    var names = [];
+function loadUsers(teamId) {
+    $.ajax({
+        url: "/User/SelectUsersByTeamDivision",
+        type: "POST",
+        data: {
+            teamId: teamId
+        },
+        success: function (data) {
 
-    $(users).each(function (index, value) {
-        if (value.Active) {
-            names.push(value.Name);
+            data.forEach(function (value, index) {
+                value.TeamDivision = value.TeamDivision.replaceAll(" ", ""); //spaces in the group option cause errors (it uses the first string fragment when find a space)
+            });
+
+            var _data = {
+                "TeamDivisionList": data
+            };
+
+            loadMustacheTemplate("teamMembersTemplate", "targetTeamMembers", _data);
+
+            if (data.length > 0) {
+                $("#btnSelectAllBoxSelection").removeAttr('disabled');
+            } else {
+                $("#btnSelectAllBoxSelection").attr('disabled', 'disabled');
+                $("#btnExportExcelBulk").attr('disabled', 'disabled');
+                $("#btnGetConsolidatedReportMonthly").attr('disabled', 'disabled');
+            }
+
+            hideTableRateMonthly();
+            bindBtnUserSelection();
+            bindBoxUserSelection();
+        },
+        function(error) {
+            ajaxErrorHandler("ConsolidatedReportData", error);
         }
     });
-
-    names.sort();//ordering A-Z
-
-    var options = "";
-    for (i = 0; i < names.length; i++) {
-        options += "<option value='" + (i + 1) + "'>" + names[i] + "</option>";
-    }
-    //$("#boxUserSelection").append(options);
-    $("#boxUserSelection").html(options);
-
-    bindBoxUserSelection();
 }
+
+//function SortByName(a, b) {
+//    var aName = a.Name.toLowerCase();
+//    var bName = b.Name.toLowerCase();
+//    return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+//}
 
 function bindBoxUserSelection() {
     //http://loudev.com/#project
-    $('#boxUserSelection').multiSelect({
-        afterSelect: function (values) {
-            countBoxUserSelection = countItemsBoxUserSelection();
-            $("#btnExportExcelBulk").removeAttr('disabled');
-            $("#btnExportExcelBulk").prop("title", "Export Excel File (" + countBoxUserSelection + " file(s))");
+    $('#boxUserSelection').multiSelect(
+        {
+            afterSelect: function (value) {
+                countBoxUserSelection = countItemsBoxUserSelection();
+                if (countBoxUserSelection > 0) {
 
-            $("#btnGetConsolidatedReportMonthly").removeAttr('disabled');
-            $("#btnGetConsolidatedReportMonthly").prop("title", "Show Monthly Team Rates Report (" + countBoxUserSelection + " member(s))");
+                    $("#btnExportExcelBulk").removeAttr('disabled');
+                    $("#btnExportExcelBulk").prop("title", "Export Excel File (" + countBoxUserSelection + " file(s))");
 
-            $("#btnSelectAllBoxSelection").text("Deselect All");
+                    $("#btnGetConsolidatedReportMonthly").removeAttr('disabled');
+                    $("#btnGetConsolidatedReportMonthly").prop("title", "Show Monthly Team Rates Report (" + countBoxUserSelection + " member(s))");
 
-            if (!$("#btnSelectAllBoxSelection").hasClass("allSelected")) {
-                $("#btnSelectAllBoxSelection").addClass("allSelected");
-            }
-        },
-        afterDeselect: function (values) {
-            countBoxUserSelection = countItemsBoxUserSelection();
-            if (countBoxUserSelection === 0) {
-                $("#btnExportExcelBulk").attr('disabled', 'disabled');
-                $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
+                    $("#btnSelectAllBoxSelection").text("Deselect All");
 
-                $("#btnGetConsolidatedReportMonthly").attr('disabled', 'disabled');
-                $("#btnGetConsolidatedReportMonthly").prop("title", emptyBoxUSerSelection);
-
-                $("#btnSelectAllBoxSelection").text("Select All");
-
-                if ($("#btnSelectAllBoxSelection").hasClass("allSelected")) {
-                    $("#btnSelectAllBoxSelection").removeClass("allSelected");
+                    if (!$("#btnSelectAllBoxSelection").hasClass("allSelected")) {
+                        $("#btnSelectAllBoxSelection").addClass("allSelected");
+                    }
                 }
+            },
+            afterDeselect: function (value) {
+                countBoxUserSelection = countItemsBoxUserSelection();
+                if (countBoxUserSelection === 0) {
+                    $("#btnExportExcelBulk").attr('disabled', 'disabled');
+                    $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
 
-            } else {
-                $("#btnExportExcelBulk").prop("title", "Export Excel File (" + countBoxUserSelection + " file(s))");
-                $("#btnGetConsolidatedReportMonthly").prop("title", "Show Monthly Team Rates Report (" + countBoxUserSelection + " member(s))");
-            }
-        }
-    });
+                    $("#btnGetConsolidatedReportMonthly").attr('disabled', 'disabled');
+                    $("#btnGetConsolidatedReportMonthly").prop("title", emptyBoxUSerSelection);
+
+                    $("#btnSelectAllBoxSelection").text("Select All");
+
+                    if ($("#btnSelectAllBoxSelection").hasClass("allSelected")) {
+                        $("#btnSelectAllBoxSelection").removeClass("allSelected");
+                    }
+
+                } else {
+                    $("#btnExportExcelBulk").prop("title", "Export Excel File (" + countBoxUserSelection + " file(s))");
+                    $("#btnGetConsolidatedReportMonthly").prop("title", "Show Monthly Team Rates Report (" + countBoxUserSelection + " member(s))");
+                }
+            },
+            selectableOptgroup: true
+        });
 }
 
 function countItemsBoxUserSelection() {
@@ -143,7 +166,6 @@ function countItemsBoxUserSelection() {
 }
 
 function bindBtnUserSelection() {
-
     $("#btnSelectAllBoxSelection").on("click", function () {
         if ($(this).hasClass("allSelected")) {
             deselectAll();
@@ -152,7 +174,6 @@ function bindBtnUserSelection() {
             selectAll();
         }
     });
-
 }
 
 function deselectAll() {
@@ -307,7 +328,7 @@ function loadConsolidatedReport(_data) {
 
     $('.dataRateMonthlyHidden').addClass("displayTable");
     $('#tableConsolidatedReport').DataTable().destroy();
-    $('#tableConsolidatedReport').DataTable({
+    var table = $('#tableConsolidatedReport').DataTable({
         data: _data,
         "order": [[6, "asc"], [1, "desc"], [0, "asc"]], //ordered first by Active and then by Name
         "bPaginate": false,
@@ -317,17 +338,47 @@ function loadConsolidatedReport(_data) {
         "bAutoWidth": false,
         "searching": false,
         "columns": [
-            { data: "MemberName", className:"memberNameCol" },
-            { data: "RateExcVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className:"rateExcVatCol" },
-            { data: "RateIncVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className:"rateIncVatCol" },
-            { data: "DaysWorked", className:"daysWorkedCol" },
-            { data: "DayRateExcVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className:"dayRateExcVatCol" },
-            { data: "DayRateIncVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className:"dayRateIncVatCol"},
-            { data: "TeamDivision", className:"teamDivisionCol" },
+            { data: "MemberName", className: "memberNameCol" },
+            { data: "RateExcVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className: "rateExcVatCol" },
+            { data: "RateIncVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className: "rateIncVatCol" },
+            { data: "DaysWorked", className: "daysWorkedCol" },
+            { data: "DayRateExcVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className: "dayRateExcVatCol" },
+            { data: "DayRateIncVat", render: $.fn.dataTable.render.number(',', '.', 2, '€'), className: "dayRateIncVatCol" },
+            { data: "TeamDivision", className: "teamDivisionCol" },
         ],
         "columnDefs": [
             { "className": "dt-center", "targets": "_all" }
         ]
+    });
+
+    highlightRow("tableConsolidatedReport");
+}
+
+function highlightRow(elementId) {
+
+    $('#' + elementId + ' tbody tr').each(function () {
+        this.setAttribute('title', "Click to highlight this row");
+    });
+
+    //var table = $('#' + elementId).DataTable();
+    $('#' + elementId + ' tbody').on('click', 'tr', function () {
+        $(this).closest("table").addClass("highlightedTable");
+        $(this).toggleClass("highlightedRow");
+        $(".divResetTableBackground").addClass("displayResetTableBackgroundBtn");
+        if ($(".highlightedRow").length === 0) {
+            resetTableBackground();
+        }
+
+        if ($(this).hasClass("highlightedRow")) {
+            this.setAttribute('title', "Click to unhighlight this row");
+        } else {
+            this.setAttribute('title', "Click to highlight this row");
+        }
+
+        
+        //var data = table.row(this).data();
+        //console.log(data);
+        //alert('You clicked on ' + data.MemberName + '\'s row');
     });
 }
 
@@ -336,20 +387,63 @@ function hideTableRateMonthly() {
     $('#tableConsolidatedReport').DataTable().destroy();
 }
 
-function renderHello() {
+function loadFigures(_data) {
+
+    console.log(_data);
 
     var data = {
-        "figuresData": [
-            { labelText: 'Vat Applied', valueText: '23%' },
-            { labelText: 'Period Searched', valueText: 'March 2021' },
-            { labelText: 'Total Core Excl. VAT', valueText: '€12,658.23' },
-            { labelText: 'Total Drawdown Excl. VAT', valueText: '€10,174.95' },
-            { labelText: 'Total Core Incl. VAT', valueText: '€16,988.58' },
-            { labelText: 'Total Drawdown Incl. VAT', valueText: '€13,734.29' },
-        ]
+        "FiguresByTeamDivision": _data.FiguresByTeamDivision,
+        "FiguresIndexes": _data.FiguresByTeamDivision,
+        "TeamName": _data.TeamName,
+        "VatApplied": _data.VatApplied,
+        "PeriodSearched": _data.PeriodSearched,
+        "TotalExclVat": _data.TotalExclVat,
+        "TotalInclVat": _data.TotalInclVat,
     };
 
-    var template = document.getElementById('figuresTemplate').innerHTML;
-    var rendered = Mustache.render(template, data);
-    document.getElementById('targetFigures').innerHTML = rendered;
+    loadMustacheTemplate("figuresTemplate","targetFigures",data);
+
+    currencyMask('.currencyFigures', "##,##0.00", "€");
+
+    $(".figuresByTeamDivision .div-wrap-figure").each(function (index, value) {
+        var lblText = $(value).find("label");
+        if (lblText && $(lblText).text().indexOf("Total Incl VAT:") > -1) {
+            $(this).addClass("figureIncVat");
+        }
+        if (lblText && $(lblText).text().indexOf("Total Excl VAT:") > -1) {
+            $(this).addClass("figureExcVat");
+        }
+    });
+}
+
+function resetTableBackground() {
+    $("#tableConsolidatedReport").removeClass("highlightedTable");
+    $(".highlightedRow").removeClass("highlightedRow");
+    $(".divResetTableBackground").removeClass("displayResetTableBackgroundBtn");
+}
+
+function loadTeams() {
+    $.ajax({
+        url: "/User/ReadJsonProjectIterationFile",
+        type: "GET",
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            formatDataLoadTeams(data);
+        },
+        function(error) {
+            ajaxErrorHandler(error);
+        }
+    });
+}
+
+function formatDataLoadTeams(data) {
+    var _data = {
+        "teams": data
+    };
+    loadMustacheTemplate('selectTeamsTemplate', 'targetSelectTeams', _data);
+}
+
+function loadMembersByTeam(_this) {
+    console.log($("#selectTeamsElement option:selected").val());
+    loadUsers($("#selectTeamsElement option:selected").val());
 }

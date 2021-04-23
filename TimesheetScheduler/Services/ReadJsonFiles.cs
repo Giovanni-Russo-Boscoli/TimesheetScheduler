@@ -142,9 +142,10 @@ namespace TimesheetScheduler.Services
                 string json = r.ReadToEnd();
                 JavaScriptSerializer jss = new JavaScriptSerializer();
                 Items = jss.Deserialize<List<JsonUser>>(json);
-
                 jsonFile.Rate = ReturnRateByRole(jsonFile.Role);
-                jsonFile.IterationPathTFS = ReturnIterationPathByProjectName(jsonFile.ProjectNameTFS);
+                jsonFile.ProjectId = jsonFile.ProjectId;
+                jsonFile.IterationPathTFS = jsonFile.Project.IterationPathTFS;
+                jsonFile.ProjectNameTFS = jsonFile.Project.ProjectNameTFS;
                 jsonFile.Id = ReturnNextId_Users();
 
                 Items.Add(jsonFile);
@@ -189,6 +190,7 @@ namespace TimesheetScheduler.Services
                     jsonTFS.Id = ReturnNextId_TFSProjects();
                     jsonTFS.IterationPathTFS = jsonTFS.IterationPathTFS;
                     jsonTFS.ProjectNameTFS = jsonTFS.ProjectNameTFS;
+                    jsonTFS.TeamName = jsonTFS.TeamName;
                     Items.Add(jsonTFS);
                 }
 
@@ -276,6 +278,7 @@ namespace TimesheetScheduler.Services
                     tfsProjectIterationName = item.IterationPathTFS;//delete when using db
                     item.ProjectNameTFS = jsonTFS.ProjectNameTFS;
                     item.IterationPathTFS = jsonTFS.IterationPathTFS;
+                    item.TeamName = jsonTFS.TeamName;
                     Items[Items.FindIndex(ind => ind.Id == jsonTFS.Id)] = item;
                 }
 
@@ -444,6 +447,23 @@ namespace TimesheetScheduler.Services
             return _session["userLoggedName"] as string;
         }
 
-        
+        public IEnumerable<JsonUser> SelectUsersById(IList<int> ids)
+        {
+            return DeserializeReadJsonUserFile().Where(x => ids.Contains(x.Id));
+        }
+
+        public string GetTeamNameByProjectId(int projectId) {
+            return DeserializeReadJsonProjectIterationFile().Where(x => x.Id == projectId).FirstOrDefault().TeamName;
+        }
+
+        public JsonProjectIteration GetProjectByTeamName(string teamName)
+        {
+            return DeserializeReadJsonProjectIterationFile().Where(x => x.TeamName == teamName).FirstOrDefault();
+        }
+
+        public JsonProjectIteration GetProjectById(int projectId)
+        {
+            return DeserializeReadJsonProjectIterationFile().Where(x => x.Id == projectId).FirstOrDefault();
+        }
     }
 }

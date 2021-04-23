@@ -1,4 +1,62 @@
-﻿function toastrMessage(msg, typeMessage) {
+﻿Array.prototype.firstOrDefault = function (func) {
+    return this.where(func)[0] || null;
+};
+
+Array.prototype.where = function (filter) {
+
+    var collection = this;
+
+    switch (typeof filter) {
+
+        case 'function':
+            return $.grep(collection, filter);
+
+        case 'object':
+            for (var property in filter) {
+                if (!filter.hasOwnProperty(property))
+                    continue; // ignore inherited properties
+
+                collection = $.grep(collection, function (item) {
+                    return item[property] === filter[property];
+                });
+            }
+            return collection.slice(0); // copy the array 
+        // (in case of empty object filter)
+
+        default:
+            throw new TypeError('func must be either a' +
+                'function or an object of properties and values to filter by');
+    }
+};
+
+//function groupByCustom(dataArray) {
+//    //abcArr = [["A", 10], ["B", 20], ["A", 30], ["C", 40]];
+
+//    var items = {}, base, key;
+//    for (var i = 0; i < dataArray.length; i++) {
+//        base = dataArray[i];
+//        key = base[0];
+//        // if not already present in the map, add a zeroed item in the map
+//        if (!items[key]) {
+//            items[key] = 0;
+//        }
+//        // add new item to the map entry
+//        items[key] += base[1];
+//    }
+
+//    // Now, generate new array
+//    var outputArr = [], temp;
+//    for (key in items) {
+//        // create array entry for the map value
+//        temp = [key, items[key]]
+//        // put array entry into the output array
+//        outputArr.push(temp);
+//    }
+
+//    return outputArr;
+//}
+
+function toastrMessage(msg, typeMessage) {
     toastr.options = {
         "closeButton": false,
         "debug": false,
@@ -92,6 +150,12 @@ function isUserLoggedAdmin(callback) {
     });
 }
 
+function loadMustacheTemplate(templateId, targetId, data) {
+    var template = document.getElementById(templateId).innerHTML;
+    var rendered = Mustache.render(template, data);
+    document.getElementById(targetId).innerHTML = rendered;
+}
+
 //function sendEmail() {
 //    $.ajax({
 //        url: "/EmailSender/SendEmail",
@@ -161,9 +225,16 @@ function clearJqValidErrors(formElement) {
     $(formElement).find(".error").removeClass("error");
 }
 
-function currencyMask(element, maskFormat) {
+function currencyMask(element, maskFormat, prefix) {
     $(element).unmask();
     $(element).mask(maskFormat, { reverse: true });
+    if (prefix) {
+        $(element).each(function (index, value) {
+            $(value).val(prefix + $(value).val());
+            $(value).text(prefix + $(value).text());
+        }); 
+    }
+    //parseFloat($(element)).toFixed(2);
     //$(element).mask('###,###,###.##', { reverse: true });
 }
 
@@ -212,29 +283,30 @@ function fromJsonDateToDateStringFormatted(strDate) {
 
 //var _holidays = holidays.where({ Year: "2020" });
 
-Array.prototype.where = function (filter) {
+//Array.prototype.where = function (filter) {
 
-    var collection = this;
+//    var collection = this;
 
-    switch (typeof filter) {
+//    switch (typeof filter) {
 
-        case 'function':
-            return $.grep(collection, filter);
+//        case 'function':
+//            return $.grep(collection, filter);
 
-        case 'object':
-            for (var property in filter) {
-                if (!filter.hasOwnProperty(property))
-                    continue; // ignore inherited properties
+//        case 'object':
+//            for (var property in filter) {
+//                if (!filter.hasOwnProperty(property))
+//                    continue; // ignore inherited properties
 
-                collection = $.grep(collection, function (item) {
-                    return item[property] === filter[property];
-                });
-            }
-            return collection.slice(0); // copy the array 
-        // (in case of empty object filter)
+//                collection = $.grep(collection, function (item) {
+//                    return item[property] === filter[property];
+//                });
+//            }
+//            return collection.slice(0); // copy the array 
+//        // (in case of empty object filter)
 
-        default:
-            throw new TypeError('func must be either a' +
-                'function or an object of properties and values to filter by');
-    }
-};
+//        default:
+//            throw new TypeError('func must be either a' +
+//                'function or an object of properties and values to filter by');
+//    }
+//};
+

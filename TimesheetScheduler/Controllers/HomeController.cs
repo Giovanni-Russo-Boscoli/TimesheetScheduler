@@ -127,13 +127,13 @@ namespace TimesheetScheduler.Controllers
             //var _userLoggedName = _userController.GetUserNameLogged();
             //if (_isUserLoggedAdmin || userData.UserName.Equals(_userLoggedName))
             //{
-                IList<object> joinWorkitems = new List<object>();
-                userData.UserName = userData.UserName.Replace("'", "''");
-                joinWorkitems.Add(ReturnTFSEvents_ListWorkItems(userData));
-                joinWorkitems.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userData));
-                //FormatTasksForEmailConfirmation(userData);
-                //ConsolidatedReportData(userData);
-                return Json(joinWorkitems, JsonRequestBehavior.AllowGet);
+            IList<object> joinWorkitems = new List<object>();
+            userData.UserName = userData.UserName.Replace("'", "''");
+            joinWorkitems.Add(ReturnTFSEvents_ListWorkItems(userData));
+            joinWorkitems.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userData));
+            //FormatTasksForEmailConfirmation(userData);
+            //ConsolidatedReportData(userData);
+            return Json(joinWorkitems, JsonRequestBehavior.AllowGet);
             //}
             //else
             //{
@@ -198,6 +198,51 @@ namespace TimesheetScheduler.Controllers
             return Json(names, JsonRequestBehavior.AllowGet);
         }
 
+        private WorkItemSerialized convertTFSObjectToWorkItemSerialized(WorkItem wi, string projectNameTFS, bool withoutStartDate = false)
+        {
+
+            var _urlTFS = GetUrlTfs();
+
+            var _workItemsLinked = "";
+            for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+            {
+                _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+            }
+            var wiSerialized = new WorkItemSerialized();
+
+            wiSerialized.Id = wi["Id"].ToString();
+            wiSerialized.Title = wi["Title"].ToString();
+            wiSerialized.WorkItemsLinked = _workItemsLinked;
+            wiSerialized.State = wi.State;
+            wiSerialized.LinkUrl = _urlTFS + projectNameTFS + "/_queries?id=" + wi["Id"].ToString();
+            wiSerialized.CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : 0;
+            wiSerialized.RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : 0;
+            wiSerialized.CreationDate = wi.CreatedDate;
+
+            ////        Id = wi["Id"].ToString(),
+            //        Title = wi["Title"].ToString(),
+            //        Description = wi["Description"].ToString(),
+            //        CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+            //        WorkItemsLinked = _workItemsLinked,
+            //        State = wi.State,
+            //        CreationDate = wi.CreatedDate
+
+            if (withoutStartDate)
+            {
+                wiSerialized.Description = wi["Description"].ToString();
+                //wiSerialized.CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null;
+            }
+            else
+            {
+                wiSerialized.StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null;
+                wiSerialized.Description = WebUtility.HtmlDecode(wi["Description"].ToString());
+                wiSerialized.IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null;
+                //wiSerialized.CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : 0;
+            }
+
+            return wiSerialized;
+        }
+
         public ConsolidatedMonthUserData ReturnTFSEvents_ListWorkItems(UserDataSearchTFS userData)
         {
             try
@@ -208,36 +253,7 @@ namespace TimesheetScheduler.Controllers
 
                 foreach (WorkItem wi in GetTFSTaskByMonth(userData))
                 {
-                    //if (wi["Start Date"] != null)
-                    //{
-                    //DateTime _startDate = (DateTime)wi["Start Date"];
-                    //if (_startDate.Month == (userData.Month == 0 ? DateTime.Now.Month : userData.Month)
-                    //    && _startDate.Year == (userData.Year == 0 ? DateTime.Now.Year : userData.Year))
-                    //{
-                    var _workItemsLinked = "";
-                    for (int i = 0; i < wi.WorkItemLinks.Count; i++)
-                    {
-                        _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
-                    }
-
-                    var _item = new WorkItemSerialized()
-                    {
-                        Id = wi["Id"].ToString(),
-                        Title = wi["Title"].ToString(),
-                        StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                        Description = WebUtility.HtmlDecode(wi["Description"].ToString()),
-                        WorkItemsLinked = _workItemsLinked,
-                        State = wi.State,
-                        LinkUrl = _urlTFS + userData.ProjectNameTFS + "/_queries?id=" + wi["Id"].ToString(),
-                        IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null,
-                        CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : 0,
-                        RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : 0
-                    };
-
-                    listWorkItems.Add(_item);
-
-                    //}
-                    //}
+                    listWorkItems.Add(convertTFSObjectToWorkItemSerialized(wi, userData.ProjectNameTFS, false));
                 }
 
                 return formatTFSResult(ref listWorkItems, userData.UserName);
@@ -257,22 +273,23 @@ namespace TimesheetScheduler.Controllers
             {
                 //if (wi["Start Date"] == null)
                 //{
-                var _workItemsLinked = "";
-                for (int i = 0; i < wi.WorkItemLinks.Count; i++)
-                {
-                    _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
-                }
+                //var _workItemsLinked = "";
+                //for (int i = 0; i < wi.WorkItemLinks.Count; i++)
+                //{
+                //    _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
+                //}
 
-                listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
-                {
-                    Id = wi["Id"].ToString(),
-                    Title = wi["Title"].ToString(),
-                    Description = wi["Description"].ToString(),
-                    CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-                    WorkItemsLinked = _workItemsLinked,
-                    State = wi.State,
-                    CreationDate = wi.CreatedDate
-                });
+                //listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
+                //{
+                //    Id = wi["Id"].ToString(),
+                //    Title = wi["Title"].ToString(),
+                //    Description = wi["Description"].ToString(),
+                //    CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
+                //    WorkItemsLinked = _workItemsLinked,
+                //    State = wi.State,
+                //    CreationDate = wi.CreatedDate
+                //});
+                listWorkItemsWithoutStartDate.Add(convertTFSObjectToWorkItemSerialized(wi, userData.ProjectNameTFS, true));
 
                 //}
             }
@@ -871,8 +888,43 @@ namespace TimesheetScheduler.Controllers
         }
 
 
-        private WorkItemCollection GetMonthlyRatesByTeam(UserDataSearchTFS userData)
-        {//GetTFSUserData
+        //private WorkItemCollection GetMonthlyRatesByTeam(UserDataSearchTFS userData)
+        //{//GetTFSUserData
+        //    try
+        //    {
+        //        Uri tfsUri = new Uri(GetUrlTfs());
+        //        TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+        //        WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+        //        var projectName = GetProjectNameTFS();
+        //        var _iterationPath = GetIterationPathTFS();
+
+        //        userData.UserName = userData.UserName.Replace("'", "''");
+
+        //        WorkItemCollection WIC = WIS.Query(
+        //            " SELECT  [System.Id]," + 
+        //            " [Microsoft.VSTS.Scheduling.CompletedWork], " +
+        //            " [System.AssignedTo] " +
+        //            " FROM WorkItems " +
+        //            " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
+        //            " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
+        //            " AND [Assigned To]  in ('Giovanni Boscoli','Kevin Shortall')" +
+        //            //" AND [Assigned To] ='" + userData.UserName + "'" +
+        //            " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
+        //            " AND [Microsoft.VSTS.Scheduling.StartDate] >= '" + $"{userData.Year}/{userData.Month}/01'" +
+        //            " AND [Microsoft.VSTS.Scheduling.StartDate] <= '" + $"{userData.Year}/{userData.Month}/{DateTime.DaysInMonth(userData.Year, userData.Month)}'" +
+        //            " ORDER BY [Assigned To] ");
+
+        //        return WIC;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+        private WorkItemCollection GetMonthlyRatesByTeam(JsonUser userData, int Month, int Year)
+        {
             try
             {
                 Uri tfsUri = new Uri(GetUrlTfs());
@@ -882,20 +934,17 @@ namespace TimesheetScheduler.Controllers
                 var projectName = GetProjectNameTFS();
                 var _iterationPath = GetIterationPathTFS();
 
-                userData.UserName = userData.UserName.Replace("'", "''");
-
                 WorkItemCollection WIC = WIS.Query(
-                    " SELECT  [System.Id]," + 
+                    " SELECT  [System.Id]," +
                     " [Microsoft.VSTS.Scheduling.CompletedWork], " +
                     " [System.AssignedTo] " +
                     " FROM WorkItems " +
                     " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
                     " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
-                    //" AND [Assigned To]  in ('Giovanni Boscoli','Kevin Shortall')" +
-                    " AND [Assigned To] ='" + userData.UserName + "'" +
+                    " AND [Assigned To] = '" + userData.Name.Replace("'", "''") + "'" +
                     " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
-                    " AND [Microsoft.VSTS.Scheduling.StartDate] >= '" + $"{userData.Year}/{userData.Month}/01'" +
-                    " AND [Microsoft.VSTS.Scheduling.StartDate] <= '" + $"{userData.Year}/{userData.Month}/{DateTime.DaysInMonth(userData.Year, userData.Month)}'" +
+                    " AND [Microsoft.VSTS.Scheduling.StartDate] >= '" + $"{Year}/{Month}/01'" +
+                    " AND [Microsoft.VSTS.Scheduling.StartDate] <= '" + $"{Year}/{Month}/{DateTime.DaysInMonth(Year, Month)}'" +
                     " ORDER BY [Assigned To] ");
 
                 return WIC;
@@ -907,56 +956,66 @@ namespace TimesheetScheduler.Controllers
         }
 
         [HttpPost]
-        public JsonResult ConsolidatedReportData(IList<UserDataSearchTFS> userData)
+        public JsonResult ConsolidatedReportData(ReportRequestByUsersDTO selectedMembers)
         {
             try
             {
-                IList<WorkItemSerialized> listWorkItems = new List<WorkItemSerialized>();
-                IList<ConsolidatedMonthUserData> listConsolidatedDataUser = new List<ConsolidatedMonthUserData>();
+                IList<WorkItemSerialized> listWorkItems;
                 IList<ConsolidatedRateMonthly> listConsolidatedRateMonthly = new List<ConsolidatedRateMonthly>();
 
-                IEnumerable<string> memberNames = userData.Select(x => x.UserName.Replace("''", "'"));
-
-                var _urlTFS = GetUrlTfs();
-                foreach (var member in userData)
+                foreach (var member in selectedMembers.SelectedMembers)
                 {
-                    foreach (WorkItem wi in GetMonthlyRatesByTeam(member)) //change to make only one sql request using a list of members instead
-                    {
-                        var _item = new WorkItemSerialized()
-                        {
-                            Id = wi["Id"].ToString(),
-                            StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null,
-                            Description = wi["Assigned To"].ToString(),
-                            IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null,
-                            CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : 0,
-                            RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : 0
-                        };
+                    listWorkItems = new List<WorkItemSerialized>();
 
-                        listWorkItems.Add(_item);
+                    var userWorkItemList = GetMonthlyRatesByTeam(member, selectedMembers.Month, selectedMembers.Year);
+
+                    foreach (WorkItem wi in userWorkItemList)
+                    {
+                        listWorkItems.Add(convertTFSObjectToWorkItemSerialized(wi, member.ProjectNameTFS, false));
                     }
-                    listConsolidatedDataUser.Add(formatTFSResult(ref listWorkItems, member.UserName));
-                    listWorkItems = new List<WorkItemSerialized>(); //reinitialize list
-                }
 
-                var count = 0;
-                foreach (var item in listConsolidatedDataUser)
-                {
-                    var _itemRate = new ConsolidatedRateMonthly()
+                    var _item = formatTFSResult(ref listWorkItems, member.Name);
+
+                    listConsolidatedRateMonthly.Add(new ConsolidatedRateMonthly()
                     {
-                        MemberName = memberNames.ElementAt(count),
-                        DaysWorked = item.WorkedDays,
-                        RateExcVat = item.RateExcludingVAT,
-                        RateIncVat = item.RateIncludingVAT,
-                        DayRateExcVat = item.TotalExcludingVAT,
-                        DayRateIncVat = item.TotalIncludingVAT,
-                        TeamDivision = _readJsonFilesService.GetMemberTeamDivision(memberNames.ElementAt(count))
-                    };
-
-                    listConsolidatedRateMonthly.Add(_itemRate);
-                    count++;
+                        MemberName = member.Name,
+                        DaysWorked = _item.WorkedDays,
+                        RateExcVat = _item.RateExcludingVAT,
+                        RateIncVat = _item.RateIncludingVAT,
+                        DayRateExcVat = _item.TotalExcludingVAT,
+                        DayRateIncVat = _item.TotalIncludingVAT,
+                        TeamDivision = member.TeamDivision,
+                        ProjectNameTFS = _readJsonFilesService.GetTeamNameByProjectId(member.ProjectId) //member.ProjectNameTFS
+                    });
                 }
 
-                return Json(listConsolidatedRateMonthly, JsonRequestBehavior.AllowGet);
+                FiguresDTO _figures = new FiguresDTO();
+                _figures.Members = listConsolidatedRateMonthly;
+                _figures.TeamName = listConsolidatedRateMonthly.FirstOrDefault().ProjectNameTFS;
+                _figures.VatApplied = _utilService.FetchVat().ToString() + "%"; //make a valid range of date to VAT (eg. 23 valid from dd/mm/yyyy until dd/mm/yyyy) and retrieve the correct VAT value based on the period
+                _figures.PeriodSearched = new DateTime(selectedMembers.Year, selectedMembers.Month, 1).ToString("MMMM yyyy");
+
+                foreach (var item in listConsolidatedRateMonthly.GroupBy(x=>x.TeamDivision))
+                {
+                    var _currentFigure = new FiguresByTeamDivisionDTO() { TeamDivision = item.Key };
+
+                    _currentFigure.FiguresIndexes.Add(new FiguresIndexesDTO()
+                    {
+                        Label = "Total Excl VAT:",
+                        Value = item.Sum(x => x.DayRateExcVat).ToString()
+                    });
+                    _currentFigure.FiguresIndexes.Add(new FiguresIndexesDTO()
+                    {
+                        Label = "Total Incl VAT:",
+                        Value = item.Sum(x => x.DayRateIncVat).ToString()
+                    });
+
+                    _figures.FiguresByTeamDivision.Add(_currentFigure);
+                }
+
+                _figures.TotalExclVat = listConsolidatedRateMonthly.Sum(x => x.DayRateExcVat).ToString();
+                _figures.TotalInclVat = listConsolidatedRateMonthly.Sum(x => x.DayRateIncVat).ToString();
+                return Json(_figures, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {

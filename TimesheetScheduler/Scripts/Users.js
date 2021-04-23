@@ -277,6 +277,7 @@ function callbackDataTablesTfsReference() {
                 },
                 { data: "ProjectNameTFS" },
                 { data: "IterationPathTFS" },
+                { data: "TeamName" },
                 {
                     data: function (data, type, row, meta) {
                         return "<i class='fa fa-pencil-square-o editTFSProject' title='Edit TFS Project' onclick='openEditTFSReferenceModal(" + meta.row + "," + false + ")'></i> " +
@@ -294,9 +295,10 @@ function callbackDataTablesTfsReference() {
                     "targets": [0], //Id
                     "visible": false
                 },
-                { "width": "50%", "targets": 1 },
+                { "width": "25%", "targets": 1 },
                 { "width": "25%", "targets": 2 },
-                { "width": "25%", "targets": 3 }
+                { "width": "25%", "targets": 3 },
+                { "width": "25%", "targets": 4 }
             ]
         });
 
@@ -324,7 +326,7 @@ function hideColumnsForNonAdminRole_RolesTable() {
 function hideColumnsForNonAdminRole_TFSReference() {
     var tfsReference = $('#tfsReferenceTable').DataTable();
     isUserLoggedAdmin(function (_visibleColumns) {
-        tfsReference.column(3).visible(_visibleColumns);
+        tfsReference.column(4).visible(_visibleColumns);
         $("#btnTFSReferenceItem").toggle(_visibleColumns);
     });
 }
@@ -340,7 +342,8 @@ function deleteUser(_userId) {
         dataType: "text",
         data: { userId: _userId},
         success: function (data) {
-            if (data === "True" || data === true) {
+            if (data.toString().toLowerCase() === "true") {
+            //if (data === "True" || data === true) {
                 toastrMessage("User deleted!", "success");
                 initUsersTab(true);
             } else {
@@ -566,7 +569,8 @@ function populateSelectEditUserModal() {
     //PROJECT NAME TFS
     var _optionsProjectNameTfs = "<option></option>";
     $(projectNames).each(function (index, value) {
-        _optionsProjectNameTfs += "<option value='" + value.ProjectNameTFS + "' title='" + value.IterationPathTFS + "'>" + value.ProjectNameTFS + "</option>";
+        //_optionsProjectNameTfs += "<option value='" + value.ProjectNameTFS + "' title='" + value.IterationPathTFS + "'>" + value.ProjectNameTFS + "</option>";
+        _optionsProjectNameTfs += "<option value='" + value.Id + "' title='" + value.IterationPathTFS + "'>" + value.TeamName + "</option>";
     });
     $("#userProjectNameTFSSelect").html(_optionsProjectNameTfs);
 

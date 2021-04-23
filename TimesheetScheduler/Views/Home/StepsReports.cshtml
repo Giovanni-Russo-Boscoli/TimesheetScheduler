@@ -22,8 +22,31 @@
             <fieldset>
                 <legend>Report Filters</legend>
                 <div class="col-lg-8">
-                    <button id="btnSelectAllBoxSelection" class="form-control btn btn-default selectAll">Select All</button>
-                    <select id='boxUserSelection' multiple='multiple' class="form-control"></select>
+                    <script id="selectTeamsTemplate" type="x-tmpl-mustache">
+                        <select id="selectTeamsElement" class="form-control" onchange="loadMembersByTeam();">
+                            <option value="" disabled selected>Please select a team</option>
+                            {{#teams}}
+                            <option value={{Id}}>{{TeamName}}</option>
+                            {{/teams}}
+                        </select>
+                    </script>
+                    <div id="targetSelectTeams"></div>
+                    <script id="teamMembersTemplate" type="x-tmpl-mustache">
+                        <select id='boxUserSelection' multiple='multiple' class="form-control">
+                            {{#TeamDivisionList}}
+                            <optgroup label={{TeamDivision}}>
+                                {{#TeamMembers}}
+                                <option value={{Id}}>{{Name}}</option>
+                                {{/TeamMembers}}
+                            </optgroup>
+                            {{/TeamDivisionList}}
+                            {{^TeamDivisionList}}
+                                <option value="" disabled>No Options</option>
+                            {{/TeamDivisionList}}
+                        </select>
+                        <button id="btnSelectAllBoxSelection" class="form-control btn btn-default selectAll" disabled>Select All</button>
+                    </script>
+                    <div id="targetTeamMembers"></div>                   
                 </div>
                 <div class="col-lg-4">
                     <div class="form-group">
@@ -37,40 +60,60 @@
                     <div class="form-group">
                         <label for="yearTimesheet">Year</label>
                         <select class="form-control" id="yearTimesheet"></select>
-
                     </div>
-
                     <button id="btnExportExcelBulk" class="btn btn-success btn-block" onclick="confirmationSavePath();" disabled>Export Timesheets</button>
                     <button id="btnGetConsolidatedReportMonthly" class="btn btn-success btn-block" onclick="getConsolidatedReportMonthly();" disabled>Monthly Rate Report</button>
-
                 </div>
             </fieldset>
         </div>
 
         <div class="col-lg-6 well dataRateMonthlyHidden figuresPanel half-top-right">
-            <fieldset>
-                <legend>Figures</legend>
-                <script id="figuresTemplate" type="x-tmpl-mustache">
-                    <div class="col-lg-12">
-                        <div class="row">
-                            {{#figuresData}}
-                            <div class="col-lg-6 figureCell">
-                                <label class="col-sm-7">{{labelText}}</label>
-                                <span class="col-sm-5">{{valueText}}</span>
-                            </div>
-                            {{/figuresData}}
+            <script id="figuresTemplate" type="x-tmpl-mustache">
+                <div class="col-lg-12 figureCell mainFigure">
+                    <fieldset>
+                        <legend>Figures - {{TeamName}}</legend>
+                        <div class="col-lg-6 figureCell">
+                            <label class="col-sm-8">VAT Applied</label>
+                            <span class="col-sm-4">{{VatApplied}}</span>
                         </div>
-                    </div>
-                </script>
-                <div id="targetFigures">
-
+                        <div class="col-lg-6 figureCell">
+                            <label class="col-sm-8">Period</label>
+                            <span class="col-sm-4">{{PeriodSearched}}</span>
+                        </div>
+                        <div class="col-lg-6 figureCell figureExcVat">
+                            <label class="col-sm-8">Total Excl VAT</label>
+                            <span class="col-sm-4 currencyFigures">{{TotalExclVat}}</span>
+                        </div>
+                        <div class="col-lg-6 figureCell figureIncVat">
+                            <label class="col-sm-8">Total Incl VAT</label>
+                            <span class="col-sm-4 currencyFigures">{{TotalInclVat}}</span>
+                        </div>
+                    </fieldset>
                 </div>
-            </fieldset>
+                {{#FiguresByTeamDivision}}
+                <div class="col-lg-6 figureCell figuresByTeamDivision">
+                    <fieldset>
+                        <legend>{{TeamDivision}}</legend>
+                        {{#FiguresIndexes}}
+                        <div class="col-lg-12 div-wrap-figure figureCell">
+                            <label class="col-sm-8">{{Label}}</label>
+                            <span class="col-sm-4 currencyFigures">{{Value}}</span>
+                        </div>
+                        {{/FiguresIndexes}}
+                    </fieldset>
+                </div>
+                {{/FiguresByTeamDivision}}
+
+            </script>
+            <div id="targetFigures"></div>
         </div>
 
         <div class="col-lg-12 well dataRateMonthlyHidden">
+            <div class="col-lg-1 form-group divResetTableBackground">
+                <button id="btnResetTableBackground" class="btn form-control" onclick="resetTableBackground();" title="Reset Highlighted Rows"><i class="fa fa-refresh"></i></button>
+            </div>
             <div class="col-lg-1 form-group btnHideTableMonthlyRate">
-                <button class="btn btn-info form-control " onclick="hideTableRateMonthly();">Hide Figures Data</button>
+                <button class="btn btn-info form-control" onclick="hideTableRateMonthly();">Hide Figures Data</button>
             </div>
             <table id="tableConsolidatedReport">
                 <thead>
@@ -88,5 +131,6 @@
                 </thead>
             </table>
         </div>
+
     </div>
 </body>

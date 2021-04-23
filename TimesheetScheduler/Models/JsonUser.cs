@@ -1,10 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using TimesheetScheduler.Interface;
+using TimesheetScheduler.Services;
 
 namespace TimesheetScheduler.Models
 {
     public class JsonUser//: IValidatableObject
     {
+
+        public JsonUser()
+        {
+            _readJsonFilesService = new ReadJsonFiles();
+        }
+
+        private static IReadJsonFiles _readJsonFilesService;
+
         private int id { get; set; }
         public int Id
         {
@@ -129,7 +140,7 @@ namespace TimesheetScheduler.Models
             }
         }
 
-        private string teamDivision{ get; set; }
+        private string teamDivision { get; set; }
 
         [Required]
         public string TeamDivision
@@ -170,6 +181,29 @@ namespace TimesheetScheduler.Models
             set
             {
                 iterationPathTFS = value;
+            }
+        }
+
+        private int projectId { get; set; }
+
+        public int ProjectId
+        {
+            get
+            {
+                return projectId;
+            }
+            set
+            {
+                projectId = value;
+            }
+        }
+
+        public JsonProjectIteration Project
+        {
+            get
+            {
+                if (ProjectId == 0) return new JsonProjectIteration();
+                return _readJsonFilesService.DeserializeReadJsonProjectIterationFile().Where(x => x.Id == this.ProjectId).FirstOrDefault();
             }
         }
     }

@@ -73,5 +73,10 @@ namespace TimesheetScheduler.Interface
         string GetUserNameLogged();
 
         string GetMemberTeamDivision(string username);
+
+        string GetTeamNameByProjectId(int projectId);
+
+        IEnumerable<JsonUser> SelectUsersById(IList<int> ids);
+        
     }
 }

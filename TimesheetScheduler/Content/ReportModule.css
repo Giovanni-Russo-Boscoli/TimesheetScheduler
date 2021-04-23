@@ -13,19 +13,45 @@
   float: right;
   width: 49%;
 }
-.figureCell {
-  border: 1px solid lightgray;
-  border-radius: 8px;
-  padding: 5px;
-}
-.figureCell label {
-  margin-bottom: 0;
-}
+/*.figureCell {
+    border: 1px solid lightgray;
+    border-radius: 8px;
+    padding: 5px;
+    margin: 5px 0;
+
+    label {
+        margin-bottom: 0;
+    }
+}*/
 .dataRateMonthlyHidden {
   display: none;
 }
 .dataRateMonthlyHidden.displayTable {
   display: block !important;
+  /*.figureCell:nth-child(even){
+        margin-right:2px;
+    }*/
+}
+.dataRateMonthlyHidden.displayTable legend {
+  margin-bottom: 2px;
+}
+.dataRateMonthlyHidden.displayTable .figureCell {
+  border: 1px solid lightgray;
+  border-radius: 8px;
+  padding: 5px;
+  margin: 1px 0;
+}
+.dataRateMonthlyHidden.displayTable .figureCell label {
+  margin-bottom: 0;
+}
+.dataRateMonthlyHidden.displayTable .mainFigure .figureCell {
+  margin: 0;
+}
+.dataRateMonthlyHidden.displayTable .figureExcVat {
+  background-color: rgba(230, 227, 157, 0.41);
+}
+.dataRateMonthlyHidden.displayTable .figureIncVat {
+  background-color: rgba(230, 197, 157, 0.41);
 }
 .half-top-left,
 .half-top-right {
@@ -67,14 +93,54 @@
 #tableConsolidatedReport td.dayRateIncVatCol {
   background-color: rgba(230, 197, 157, 0.41);
 }
-.btnHideTableMonthlyRate {
-  float: right;
-  padding-right: 0;
+#tableConsolidatedReport.highlightedTable tbody tr {
+  background-color: rgba(90, 90, 90, 0.73);
+}
+#tableConsolidatedReport.highlightedTable tbody tr:not(.highlightedRow) {
+  color: #b1acac;
+}
+#tableConsolidatedReport.highlightedTable tbody tr.highlightedRow {
+  background-color: white;
+}
+#tableConsolidatedReport.highlightedTable tbody tr.highlightedRow:nth-child(even) {
+  background-color: rgba(204, 198, 198, 0.54);
+}
+.divResetTableBackground {
+  float: left;
+  display: none;
+}
+.divResetTableBackground.displayResetTableBackgroundBtn {
   display: block;
 }
-#btnSelectAllBoxSelection {
+.divResetTableBackground button {
+  border: 1px solid gray;
+  border-radius: 50%;
+  background-color: rgba(47, 46, 46, 0.73);
+  width: 30px;
+  height: 30px;
+  padding: 1px;
+}
+.divResetTableBackground button i {
+  color: white;
+}
+.btnHideTableMonthlyRate {
+  float: right;
+  padding: 2px;
+  display: block;
+}
+#btnSelectAllBoxSelection,
+#targetSelectTeams {
   width: 93%;
   margin: 6px 0;
+}
+#btnSelectAllBoxSelection select,
+#targetSelectTeams select {
+  width: 100% !important;
+  max-width: none;
+}
+.ms-optgroup-label span {
+  color: black !important;
+  font-weight: bold !important;
 }
 /* ---------------------------------------------- CONSOLIDATED REPORT END ---------------------------------------------------------- */
 .ms-container {

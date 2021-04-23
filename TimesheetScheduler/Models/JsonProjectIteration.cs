@@ -16,5 +16,8 @@ namespace TimesheetScheduler.Models
 
         [Required]
         public string IterationPathTFS { get; set; }
+
+        [Required]
+        public string TeamName { get; set; }
     }
 }
