@@ -6,6 +6,7 @@ var users = [];
 var holidays = [];
 
 $(document).ready(function ($) {
+    eventsCalendar(null, new Date()); //shows an empty calendar while there is a long delay retrieving tasks from TFS
     readJsonUserFile(function (data) {
         users = data;
         LoadMonths();
@@ -16,41 +17,10 @@ $(document).ready(function ($) {
         closeAllTasksCurrentMonth_Tooltip();
         getUserName(LoadUserNames); //this method call ConnectTFS() - async method [need select the user name from windows authentication defore retrieve the events]
         saveEvent();
-        //applyBtnClassesInActionsSelect();
         reminderNoEventCreationForToday();
         copyTask();
         linkWorkItem();
         bindToggleInfoPanel();
-
-        //$("#datepicker").datepicker({
-        //    showButtonPanel: true,
-        //    //gotoCurrent: false,
-        //    dateFormat: 'dd/mm/yy',
-        //    closeText: '&times;'
-        //})
-
-        //.on('click', function () {
-        //    $(".ui-datepicker-current").css("display", "none");
-        //    setTimeout(function () {
-        //        //$("#ui-datepicker-div").css("display", "none");
-        //        //e = jQuery.Event("keyup");
-        //        //e.which = 27;
-        //        //$(this).trigger(e);
-        //        $(".ui-datepicker").datepicker("hide");
-        //        //$("#ui-datepicker-div").datepicker("hide");
-        //        //$(".ui-datepicker-close").click();
-        //        //$("#datepicker").trigger({
-        //        //    type: 'keyup',
-        //        //    which: 27 //escape
-        //        //});
-        //    }, 3000);
-        //});
-
-        //$("#datepicker").datepicker();
-        //$("#datepicker").datepicker("show");
-
-        //setTimeout(function () { $("#datepicker").datepicker("hide"); }, 3000);
-
     });
 });
 
@@ -237,33 +207,6 @@ function tooltipDaysListView() {
             placement: "bottom"
         });
     });
-}
-
-function _formatDate(date, format, separator) {
-
-    if (!separator) {
-        separator = "/";
-    }
-
-    var d = new Date(date),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
-
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-
-    switch (format) {
-        case "yyyymmdd": {
-            return year + separator + month + separator + day;
-        }
-        case "ddmmyyyy": {
-            return day + separator + month + separator + year;
-        }
-        default: {
-            return day + separator + month + separator + year;
-        }
-    }
 }
 
 function formatDate(date) {
@@ -648,6 +591,7 @@ function Info_TESTE(obj) {
             $("#dayWorkedInfoTxt").text(obj.WorkedDays);
             $("#chargeableHoursInfoTxt").text(obj.ChargeableHours);
             $("#nonchargeableHoursInfoTxt").text(obj.NonChargeableHours);
+            $("#vatFeeInfoTxt").text(obj.Vat_Fee + "%");
 
             var rateExcVat = getRateUserByName(getUserNameFromPage());
             if (rateExcVat === 0) {
@@ -680,6 +624,7 @@ function clearInfoValues() {
     $("#rateIncVatInfoTxt").text("");
     $("#totalExlVatInfoTxt").text("");
     $("#totalIncVatInfoTxt").text("");
+    $("#vatFeeInfoTxt").text("");
 }
 
 function ModalEvent(event, eventCreation) {
@@ -973,7 +918,7 @@ function connectToTFS() {
         dataType: "json",
         data: JSON.stringify(jsonObject),
         success: function (data) {
-            //console.log(data);
+            console.log(data);
             var eventsTFSFormatted = formatTFSEventsForCalendar_TESTE(data[0].ListWorkItem);
             eventsCalendar(eventsTFSFormatted, dateCalendar);
             Info_TESTE(data[0]);
@@ -1448,5 +1393,21 @@ function bindToggleInfoPanel() {
     $("#infoPanel").on("click", function () {
         $("#infoPanelContent").toggleClass("hideInfoPanel");    
         $(this).toggleClass("toggleChevron");
+    });
+}
+
+function captureScreen() {
+    $.ajax({
+        url: "/Home/CaptureImage",
+        type: "GET",
+        dataType: "text",
+        data: { activeScreenOnly: true },
+        success: function (data) {
+            toastrMessage("Success capturing screen");
+        },
+        error: function (error) {
+            //errorCallback;
+            ajaxErrorHandler("ajaxCloseAllTasks", error);
+        }
     });
 }

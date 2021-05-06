@@ -44,11 +44,13 @@ namespace TimesheetScheduler.Interface
 
         bool UpdateRole(JsonRatesAndRoles jsonRole);
 
-        bool UpdateTFSProject(JsonProjectIteration jsonTFS);
+        bool UpdateTFSProject(JsonProjectIteration jsonTFS, bool cascadeUpdate);
 
         bool SubmitRoleButton(JsonRatesAndRoles jsonRoles, string ButtonType);
 
         bool SubmitTFSReferenceButton(JsonProjectIteration jsonTFS, string ButtonType);
+
+        bool SubmitTeamDivisionButton(TeamDivision jsonTeamDivision, int teamId, string ButtonType);
 
         bool SubmitUserButton(JsonUser jsonFile, string ButtonType);
 
@@ -58,6 +60,8 @@ namespace TimesheetScheduler.Interface
 
         bool DeleteTFSProject(int tfsProjectId);
 
+        bool DeleteTeamDivision(int teamDivisionId, int teamId);
+
         void updateUsersRoles(string originalRole, string newRole, decimal rate);
 
         void updateUsersTFSProject(string originalTFSProject, string newIterationPathTFS, string newTFSProject);
@@ -65,6 +69,8 @@ namespace TimesheetScheduler.Interface
         bool allowToDeleteRole(int roleId);
 
         bool allowToDeleteTFSProject(int tfsProjectId);
+
+        bool allowToDeleteTeamDivision(int teamDivisionId, int teamId);
 
         string modelStateErrors(ICollection<ModelState> modelStateValues);
 
@@ -77,6 +83,9 @@ namespace TimesheetScheduler.Interface
         string GetTeamNameByProjectId(int projectId);
 
         IEnumerable<JsonUser> SelectUsersById(IList<int> ids);
-        
+
+        IList<JsonVAT> DeserializeReadJsonVATFile();
+
+
     }
 }

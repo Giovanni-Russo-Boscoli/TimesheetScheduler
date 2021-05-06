@@ -18,6 +18,7 @@ namespace TimesheetScheduler.Services
         private string jsonUserServerPath = "~/JsonData/jsonUser.json";
         private string jsonRatesAndRolesServerPath = "~/JsonData/ratesAndRoles.json";
         private string jsonProjectIterationServerPath = "~/JsonData/projectIteration.json";
+        private string jsonVATServerPath = "~/JsonData/jsonVAT.json";
 
         private HttpServerUtility _server;
         private System.Web.SessionState.HttpSessionState _session;
@@ -143,9 +144,10 @@ namespace TimesheetScheduler.Services
                 JavaScriptSerializer jss = new JavaScriptSerializer();
                 Items = jss.Deserialize<List<JsonUser>>(json);
                 jsonFile.Rate = ReturnRateByRole(jsonFile.Role);
-                jsonFile.ProjectId = jsonFile.ProjectId;
+                //jsonFile.ProjectId = jsonFile.ProjectId;
                 jsonFile.IterationPathTFS = jsonFile.Project.IterationPathTFS;
                 jsonFile.ProjectNameTFS = jsonFile.Project.ProjectNameTFS;
+                jsonFile.TeamDivision = jsonFile.Project.TeamDivision.Where(x => x.Id.ToString() == jsonFile.TeamDivision).FirstOrDefault().Division;
                 jsonFile.Id = ReturnNextId_Users();
 
                 Items.Add(jsonFile);
@@ -191,6 +193,7 @@ namespace TimesheetScheduler.Services
                     jsonTFS.IterationPathTFS = jsonTFS.IterationPathTFS;
                     jsonTFS.ProjectNameTFS = jsonTFS.ProjectNameTFS;
                     jsonTFS.TeamName = jsonTFS.TeamName;
+                    jsonTFS.TeamDivision = new List<TeamDivision>();
                     Items.Add(jsonTFS);
                 }
 
@@ -201,7 +204,6 @@ namespace TimesheetScheduler.Services
                 throw ex;
             }
         }
-
 
         public bool UpdateUser(JsonUser jsonFile)
         {
@@ -218,12 +220,15 @@ namespace TimesheetScheduler.Services
                 item.Name = jsonFile.Name;
                 item.Email = jsonFile.Email;
                 item.Role = jsonFile.Role;
-                item.TeamDivision = jsonFile.TeamDivision;
                 item.Chargeable = jsonFile.Chargeable;
-                item.ProjectNameTFS = jsonFile.ProjectNameTFS;
+
+                item.ProjectId = jsonFile.ProjectId;
+                item.IterationPathTFS = jsonFile.Project.IterationPathTFS;
+                item.ProjectNameTFS = jsonFile.Project.ProjectNameTFS;
+                item.TeamDivision = jsonFile.Project.TeamDivision.Where(x => x.Id.ToString() == jsonFile.TeamDivision).FirstOrDefault().Division;
+
                 item.Access = jsonFile.Access;
                 item.Rate = ReturnRateByRole(jsonFile.Role);
-                item.IterationPathTFS = ReturnIterationPathByProjectName(jsonFile.ProjectNameTFS);
 
                 Items[Items.FindIndex(ind => ind.Id == jsonFile.Id)] = item;
             }
@@ -262,7 +267,7 @@ namespace TimesheetScheduler.Services
             }
         }
 
-        public bool UpdateTFSProject(JsonProjectIteration jsonTFS)
+        public bool UpdateTFSProject(JsonProjectIteration jsonTFS, bool cascadeUpdate)
         {
             try
             {
@@ -279,11 +284,37 @@ namespace TimesheetScheduler.Services
                     item.ProjectNameTFS = jsonTFS.ProjectNameTFS;
                     item.IterationPathTFS = jsonTFS.IterationPathTFS;
                     item.TeamName = jsonTFS.TeamName;
+                    item.TeamDivision = jsonTFS.TeamDivision;
                     Items[Items.FindIndex(ind => ind.Id == jsonTFS.Id)] = item;
                 }
 
-                //UPDATE USERS WITH THIS ROLE
-                updateUsersTFSProject(tfsProjectIterationName, jsonTFS.IterationPathTFS, jsonTFS.ProjectNameTFS);
+                if (cascadeUpdate)
+                {
+                    //UPDATE USERS WITH THIS ROLE
+                    updateUsersTFSProject(tfsProjectIterationName, jsonTFS.IterationPathTFS, jsonTFS.ProjectNameTFS);
+                }
+
+                return WriteJsonTFSProjectFile(Items);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool UpdateTeamDivision(JsonProjectIteration jsonProjectIteration)
+        {
+            try
+            {
+                var Items = new List<JsonProjectIteration>();
+                using (StreamReader r = new StreamReader(_server.MapPath(jsonProjectIterationServerPath)))
+                {
+                    string json = r.ReadToEnd();
+                    JavaScriptSerializer jss = new JavaScriptSerializer();
+                    Items = jss.Deserialize<List<JsonProjectIteration>>(json);
+
+                    Items[Items.FindIndex(ind => ind.Id == jsonProjectIteration.Id)] = jsonProjectIteration;
+                }
 
                 return WriteJsonTFSProjectFile(Items);
             }
@@ -324,11 +355,36 @@ namespace TimesheetScheduler.Services
                     }
                 case "UpdateTFSProject":
                     {
-                        result = this.UpdateTFSProject(jsonTFS);
+                        result = this.UpdateTFSProject(jsonTFS, true);
                         break;
                     }
             }
             //return result;
+            return result;
+        }
+
+        public bool SubmitTeamDivisionButton(TeamDivision jsonTeamDivision, int teamId, string ButtonType)
+        {
+
+            var jsonTeam = DeserializeReadJsonProjectIterationFile().Where(x => x.Id == teamId).FirstOrDefault();
+
+            bool result = false;
+            switch (ButtonType)
+            {
+                case "CreateTeamDivision":
+                    {
+                        jsonTeam.TeamDivision.Add(jsonTeamDivision);
+                        result = this.UpdateTFSProject(jsonTeam, false);
+                        break;
+                    }
+                case "UpdateTeamDivision":
+                    {
+                        jsonTeam.TeamDivision.Where(y => y.Id == jsonTeamDivision.Id).FirstOrDefault().Division = jsonTeamDivision.Division;
+
+                        result = this.UpdateTeamDivision(jsonTeam);
+                        break;
+                    }
+            }
             return result;
         }
 
@@ -395,6 +451,23 @@ namespace TimesheetScheduler.Services
             return this.WriteJsonTFSProjectFile(Items);
         }
 
+        public bool DeleteTeamDivision(int teamDivisionId, int teamId)
+        {
+
+            //NESTED OBJECTS IN JSON FILES NEEDS TO BE REFACTORED EVERYTIME WHEN PARENT OR CHILD CHANGES
+            //IT WON'T BE AN ISSUE WHEN IMPLEMENT THE REAL DB
+
+            var Items = DeserializeReadJsonProjectIterationFile().ToList();
+            var tfsProjectEdited = Items.Where(x => x.Id == teamId).FirstOrDefault();
+
+            var teamDivision = tfsProjectEdited.TeamDivision.Where(y => y.Id == teamDivisionId).FirstOrDefault();
+
+            tfsProjectEdited.TeamDivision.Remove(teamDivision);
+
+            Items[Items.FindIndex(ind => ind.Id == tfsProjectEdited.Id)] = tfsProjectEdited;
+
+            return this.WriteJsonTFSProjectFile(Items);
+        }
 
         public void updateUsersRoles(string originalRole, string newRole, decimal rate)
         {
@@ -420,6 +493,13 @@ namespace TimesheetScheduler.Services
         {
             var tfsProject = DeserializeReadJsonProjectIterationFile().Where(x => x.Id == tfsProjectId).FirstOrDefault();
             return DeserializeReadJsonUserFile().Where(x => x.IterationPathTFS == tfsProject.IterationPathTFS).Count() < 1;
+        }
+
+        public bool allowToDeleteTeamDivision(int teamDivisionId, int teamId) {
+
+            var tfsProject = DeserializeReadJsonProjectIterationFile().Where(x => x.Id == teamId).FirstOrDefault().TeamDivision.Where(y=>y.Id == teamDivisionId).FirstOrDefault();
+
+            return DeserializeReadJsonUserFile().Where(x => x.ProjectId == teamId && x.TeamDivision == tfsProject.Division).Count() < 1;
         }
 
         public string modelStateErrors(ICollection<ModelState> modelStateValues)
@@ -464,6 +544,23 @@ namespace TimesheetScheduler.Services
         public JsonProjectIteration GetProjectById(int projectId)
         {
             return DeserializeReadJsonProjectIterationFile().Where(x => x.Id == projectId).FirstOrDefault();
+        }
+
+        public IList<JsonVAT> DeserializeReadJsonVATFile()
+        {
+            try
+            {
+                using (StreamReader r = new StreamReader(_server.MapPath(jsonVATServerPath)))
+                {
+                    string json = r.ReadToEnd();
+                    JavaScriptSerializer jss = new JavaScriptSerializer();
+                    var result = jss.Deserialize<List<JsonVAT>>(json);
+                    return result;
+                }
+            }
+            catch (Exception ex) {
+                throw ex;
+            }
         }
     }
 }

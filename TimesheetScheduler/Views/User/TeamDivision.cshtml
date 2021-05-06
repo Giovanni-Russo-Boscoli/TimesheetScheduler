@@ -1,0 +1,41 @@
+﻿@using TimesheetScheduler.Models
+@model TeamDivision
+
+<!-- Modal Edit TFS Reference-->
+<div class="modal fade" id="editCreateTeamDivisionModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span id="headerLabelTeamDivision"></span></h4>
+            </div>
+            @using (Ajax.BeginForm("SubmitTeamDivisionButton", "User", FormMethod.Post, new AjaxOptions()
+            {
+                OnSuccess = "GetResult_AddNewTeamDivision",
+                //OnBegin = "RemoveMask_AddNewRole($(this))",
+                OnFailure = "AddNewTeamDivisionFailure"
+            }, new { id = "TeamDivisionForm" }))
+            {
+                @Html.AntiForgeryToken()
+            <div class="modal-body">
+                @Html.HiddenFor(x => x.Id, new { id = "hiddenTeamDivisionId" })
+                @Html.Hidden("hiddenTeamId")
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @Html.LabelFor(m => m.Division, new { @class = "lblTeamDivisionEditModal" })
+                        @Html.TextBoxFor(m => m.Division, new { @class = "form-control inputTeamDivisionEditModal", id = "teamDivisionTxt" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Division, "", new { @class = "text-danger" })
+                </div>
+            </div>
+                <div class="modal-footer">
+                    <button id="btnUpdateTeamDivision" name="ButtonType" type="submit" class="btn btn-success" value="UpdateTeamDivision">Update</button>
+                    <button id="btnCreateTeamDivision" name="ButtonType" type="submit" class="btn btn-success" value="CreateTeamDivision">Create</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+

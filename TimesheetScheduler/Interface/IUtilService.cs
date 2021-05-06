@@ -8,9 +8,17 @@ namespace TimesheetScheduler.Interface
 {
     public interface IUtilService
     {
-        decimal FetchVat();
+        decimal FetchActiveVat();
+        decimal FetchVatByDate(DateTime date);
+
+        string FetchActiveVatText();
+        string FetchVatTextByDate(DateTime date);
 
         double FetchRequiredHours();
+
+        //void CaptureActiveScreen();
+
+        //void CaptureWholeScreen();
 
     }
 }

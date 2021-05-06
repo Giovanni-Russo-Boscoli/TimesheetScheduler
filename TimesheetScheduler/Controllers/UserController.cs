@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -62,6 +64,12 @@ namespace TimesheetScheduler.Controllers
             return Json(Current.DeserializeReadJsonProjectIterationFile(), JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public JsonResult ReadJsonVATFile()
+        {
+            return Json(Current.DeserializeReadJsonVATFile(), JsonRequestBehavior.AllowGet);
+        }
+        
         [HttpPost]
         public JsonResult SubmitUserButton(JsonUser jsonFile, string ButtonType) {
             return Json(Current.SubmitUserButton(jsonFile, ButtonType), JsonRequestBehavior.AllowGet);
@@ -77,6 +85,16 @@ namespace TimesheetScheduler.Controllers
         public JsonResult SubmitTFSReferenceButton(JsonProjectIteration jsonTFS, string ButtonType)
         {
             return Json(Current.SubmitTFSReferenceButton(jsonTFS, ButtonType), JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult SubmitTeamDivisionButton(TeamDivision jsonTeamDivision, string ButtonType)
+        {
+            int teamId;
+            if (!int.TryParse(Request.Form["hiddenTeamId"], out teamId)) {
+                throw new Exception("(SubmitTeamDivisionButton) -> Error when converting teamId value");
+            }
+            return Json(Current.SubmitTeamDivisionButton(jsonTeamDivision, teamId, ButtonType), JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -106,6 +124,17 @@ namespace TimesheetScheduler.Controllers
                 return Json(Current.DeleteTFSProject(tfsProjectId), JsonRequestBehavior.AllowGet);
             }
             return Json("There are users associated with this TFS Project.", JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult DeleteTeamDivision(int teamDivisionId, int teamId)
+        {
+            //CHECK IF THERE ARE ANY USERS WITH THIS PROJECT ASSOCIATED, IF YES PREVENT DELETION
+            if (Current.allowToDeleteTeamDivision(teamDivisionId, teamId))
+            {
+                return Json(Current.DeleteTeamDivision(teamDivisionId, teamId), JsonRequestBehavior.AllowGet);
+            }
+            return Json("There are users associated with this Team Division.", JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
@@ -141,6 +170,12 @@ namespace TimesheetScheduler.Controllers
             return Json(_formattedList, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpPost]
+        public JsonResult GetTeamDivisionByTeamId(int teamId) {
+            var teamDivision = Current.DeserializeReadJsonProjectIterationFile().Where(x => x.Id == teamId).FirstOrDefault();
+            var result = (teamDivision != null ? teamDivision.TeamDivision : null);
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
         //[HttpGet]
         //public JsonResult SelectTeams ()
         //{

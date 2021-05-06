@@ -23,12 +23,12 @@ table#userTable.dataTable tbody tr:hover {
     display: inline-block;
 }
 
-.deleteUser, .deleteRole, .deleteTFSProject {
+.deleteUser, .deleteRole, .deleteTFSProject, .deleteTeamDivision {
     font-size: 24px;
     color: red
 }
 
-.editUser, .editRole, .editTFSProject {
+.editUser, .editRole, .editTFSProject, .editTeamDivision{
     font-size: 20px;
     margin-right: 5px;
 }
@@ -39,14 +39,15 @@ table#userTable.dataTable tbody tr:hover {
 
 #editCreateUserModal,
 #editCreateRolesModal,
-#editCreateTFSReferenceModal {
+#editCreateTFSReferenceModal,
+#editCreateTeamDivisionModal {
 
     .modal-body {
-        .lblUserEditModal, .lblRolesEditModal, .lblProjectNameTFSditModal {
+        .lblUserEditModal, .lblRolesEditModal, .lblProjectNameTFSditModal, .lblTeamDivisionEditModal {
             width: 160px !important;
         }
 
-        .inputUserEditModal, .inputRolesEditModal, .inputProjectNameTFSEditModal {
+        .inputUserEditModal, .inputRolesEditModal, .inputProjectNameTFSEditModal, .inputTeamDivisionEditModal {
             width: 380px !important;
             max-width: none;
         }
@@ -138,3 +139,22 @@ input:checked + .slider:before {
 }
 
 /*------------------------------------------------------------------ END TOGGLE SWITCH ------------------------------------------------------------------- */
+
+#teamDivisionTable, #btnTeamDivision {
+    display: none;
+
+    &.showDivisionTable {
+        display: table;
+    }
+}
+
+#teamDivisionTable_wrapper {
+    width: 40%;
+}
+
+#divMsg {
+    padding:5px !important;
+    width: 260px;
+    margin-bottom:5px;
+    background-color: rgba(87, 243, 243, 0.40)
+}

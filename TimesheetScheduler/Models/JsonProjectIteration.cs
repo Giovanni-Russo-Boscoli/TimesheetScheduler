@@ -8,6 +8,12 @@ namespace TimesheetScheduler.Models
 {
     public class JsonProjectIteration
     {
+
+        public JsonProjectIteration()
+        {
+            this.TeamDivision = new List<TeamDivision>();
+        }
+
         [Required]
         public int Id { get; set; }
 
@@ -19,5 +25,7 @@ namespace TimesheetScheduler.Models
 
         [Required]
         public string TeamName { get; set; }
+
+        public IList<TeamDivision> TeamDivision { get; set; }
     }
 }

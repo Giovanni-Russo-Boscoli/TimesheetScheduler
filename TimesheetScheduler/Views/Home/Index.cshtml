@@ -38,6 +38,7 @@
                 <div id="divActionsBtns">
                     <button id="btnSaveExcelFile" class="btnActions" title="Export to an Excel File" onclick="confirmationSavePath();"></button>
                     <button id="btnCloseAllTasks" class="btnActions" onclick="closeAllTasksCurrentMonth();"></button>
+                    @*<button id="btnCaptureScreen" class="btnActions" onclick="captureScreen();">Capture Screen</button>*@
                     @*<button id="btnSendEmail" class="btnActions" onclick="sendEmail();">SEND EMAIL</button>*@
                 </div>
                 <br />
@@ -72,6 +73,10 @@
                             <div>
                                 <label id="nonchargeableHoursInfoLbl" class="modalLbl" for="nonchargeableHoursInfoTxt">Non-Chargeable Hours: </label>
                                 <label id="nonchargeableHoursInfoTxt"></label>
+                            </div>
+                            <div>
+                                <label id="vatFeeInfoLbl" class="modalLbl" for="vatFeeInfoTxt">VAT Applied: </label>
+                                <label id="vatFeeInfoTxt"></label>
                             </div>
                             <div>
                                 <label id="rateExcVatInfoLbl" class="modalLbl" for="rateExlVatInfoTxt">Rate (exc. VAT): </label>

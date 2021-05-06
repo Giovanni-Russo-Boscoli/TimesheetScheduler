@@ -23,6 +23,7 @@
         <li class="active"><a data-toggle="tab" id="tabMenuUsers" href="#userTab">User</a></li>
         <li><a data-toggle="tab" id="tabMenuRoles" href="#rolesTab">Rates and Roles</a></li>
         <li><a data-toggle="tab" id="tabMenuTfsReference" href="#tfsReferenceTab">TFS Reference</a></li>
+        <li><a data-toggle="tab" id="tabVatReference" href="#vatTab">VAT</a></li>
     </ul>
 
     <div class="tab-content">
@@ -36,17 +37,18 @@
                     <tr>
                         <th>Id</th>
                         <th>Active</th>
+                        <th>Chargeable</th>
+                        <th>Team Name</th>
+                        <th>Team Division</th>
                         <th>Name</th>
                         <th>Role</th>
-                        <th>Team Division</th>
-                        <th>Chargeable</th>
                         <th>Email</th>
-                        <th>Project Name TFS</th>
-                        <th>Iteration Path TFS</th>
+                        @*<th>Project Name TFS</th>
+        <th>Iteration Path TFS</th>*@
                         <th>Access</th>
                         <th>Rate</th>
                         <th>Edit</th>
-                </thead>
+</thead>
             </table>
         </div>
         <div id="rolesTab" class="tab-pane fade">
@@ -67,17 +69,46 @@
         </div>
         <div id="tfsReferenceTab" class="tab-pane fade">
             <br />
+
             <div class="form-group">
                 <button id="btnTFSReferenceItem" type="button" class="btn btn-success" onclick="openEditTFSReferenceModal(0, true);">New TFS Item</button>
             </div>
+            <div id="divMsg" class="well"><span>Click in any row to add a Team Division</span></div>
             <table id="tfsReferenceTable" class="display hover" style="width:100%">
                 <thead>
                     <tr>
                         <th>Id</th>
+                        <th>Team Name</th>
                         <th>Project Name TFS</th>
                         <th>Iteration Path TFS</th>
-                        <th>Team Name</th>
                         <th>Edit</th>
+                </thead>
+            </table>
+
+            <div class="form-group">
+                <button id="btnTeamDivision" type="button" class="btn btn-success" onclick="openEditTeamDivisionModal(0, true);">New Team Division</button>
+            </div>
+            <table id="teamDivisionTable" class="display hover well" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Team Id</th>
+                        <th>Team Name</th>
+                        <th>Team Division</th>
+                        <th>Edit</th>
+                </thead>
+            </table>
+        </div>
+        <div id="vatTab" class="tab-pane fade">
+            <br />
+            <table id="vatTable" class="display hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>VAT</th>
+                        <th>Start Period</th>
+                        <th>End Period</th>
+                        <th>Active</th>
                 </thead>
             </table>
         </div>
@@ -104,82 +135,83 @@
             }, new { id = "UserForm" }))
             {
                 @Html.AntiForgeryToken()
-                <div class="modal-body">
-                    @Html.HiddenFor(x => x.Id, new { id = "hiddenUserId" })
-                    <div class="form-group">
-                        @Html.LabelFor(m => m.Active, new { @class = "lblUserEditModal" })
-                        @Html.CheckBoxFor(m => m.Active, new { @class = "form-control inputUserEditModal", id = "checkBoxContentActive", data_size = "mini" })
+            <div class="modal-body">
+                @Html.HiddenFor(x => x.Id, new { id = "hiddenUserId" })
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Active, new { @class = "lblUserEditModal" })
+                    @Html.CheckBoxFor(m => m.Active, new { @class = "form-control inputUserEditModal", id = "checkBoxContentActive", data_size = "mini" })
+                </div>
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @Html.LabelFor(m => m.Name, new { @class = "lblUserEditModal" })
+                        @Html.TextBoxFor(m => m.Name, new { @class = "form-control inputUserEditModal", id = "userNameTxt" })
                     </div>
-                    <div class="form-group">
-                        <div class="LabelAndInputField">
-                            @Html.LabelFor(m => m.Name, new { @class = "lblUserEditModal" })
-                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control inputUserEditModal", id = "userNameTxt" })
-                        </div>
-                        @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                    @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @Html.LabelFor(m => m.Email, new { @class = "lblUserEditModal" })
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control inputUserEditModal", id = "userEmailTxt" })
                     </div>
-                    <div class="form-group">
-                        <div class="LabelAndInputField">
-                            @Html.LabelFor(m => m.Email, new { @class = "lblUserEditModal" })
-                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control inputUserEditModal", id = "userEmailTxt" })
-                        </div>
-                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @Html.LabelFor(m => m.Role, new { @class = "lblUserEditModal" })
+                        @Html.DropDownListFor(m => m.Role, new SelectList(""), new { @class = "form-control inputUserEditModal", id = "userRolesSelect" })
                     </div>
-                    <div class="form-group">
-                        <div class="LabelAndInputField">
-                            @Html.LabelFor(m => m.Role, new { @class = "lblUserEditModal" })
-                            @Html.DropDownListFor(m => m.Role, new SelectList(""), new { @class = "form-control inputUserEditModal", id = "userRolesSelect" })
-                        </div>
-                        @Html.ValidationMessageFor(m => m.Role, "", new { @class = "text-danger" })
+                    @Html.ValidationMessageFor(m => m.Role, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @Html.LabelFor(m => m.Project, new { @class = "lblUserEditModal" })
+                        @Html.DropDownListFor(m => m.ProjectId, new SelectList(""), new { @class = "form-control inputUserEditModal", id = "userProjectNameTFSSelect" })
                     </div>
-                    <div class="form-group">
-                        <div class="LabelAndInputField">
-                            @{
-                                var listItemTeamDivision = new List<SelectListItem>
-                                                                            {
-                                                                                new SelectListItem { Selected = false, Text = "Core", Value = "Core"},
-                                                                                new SelectListItem { Selected = true, Text = "Drawdown", Value = "Drawdown"},
-                                                                            };
-                            }
-                            @Html.LabelFor(m => m.TeamDivision, new { @class = "lblUserEditModal" })
-                            @Html.DropDownListFor(m => m.TeamDivision, listItemTeamDivision, new { @class = "form-control inputUserEditModal", id = "userCategorySelect" })
-                        </div>
-                        @Html.ValidationMessageFor(m => m.TeamDivision, "", new { @class = "text-danger" })
+                    @Html.ValidationMessageFor(m => m.Project.TeamName, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @Html.LabelFor(m => m.TeamDivision, new { @class = "lblUserEditModal" })
+                        @Html.DropDownListFor(m => m.TeamDivision, new SelectList(""), new { @class = "form-control inputUserEditModal", id = "userCategorySelect" })
                     </div>
-                    <div class="form-group">
-                        <div class="LabelAndInputField">
-                            @Html.LabelFor(m => m.Chargeable, new { @class = "lblUserEditModal" })
-                            @Html.CheckBoxFor(m => m.Chargeable, new { @class = "form-control inputUserEditModal", id = "checkBoxChargeable", data_size = "mini" })
-                        </div>
-                    </div>
-                    @*<div class="form-group">
-                        <div class="LabelAndInputField">
-                            @Html.LabelFor(m => m.ProjectNameTFS, new { @class = "lblUserEditModal" })
-                            @Html.DropDownListFor(m => m.ProjectNameTFS, new SelectList(""), new { @class = "form-control inputUserEditModal", id = "userProjectNameTFSSelect" })
-                        </div>
-                        @Html.ValidationMessageFor(m => m.ProjectNameTFS, "", new { @class = "text-danger" })
-                    </div>*@
-                    <div class="form-group">
-                            <div class="LabelAndInputField">
-                                @Html.LabelFor(m => m.ProjectId, new { @class = "lblUserEditModal" })
-                                @Html.DropDownListFor(m => m.ProjectId, new SelectList(""), new { @class = "form-control inputUserEditModal", id = "userProjectNameTFSSelect" })
-                            </div>
-                            @Html.ValidationMessageFor(m => m.Project.TeamName, "", new { @class = "text-danger" })
-                        </div>
-                    <div class="form-group">
-                        <div class="LabelAndInputField">
-                            @{
-                                var listItemAccess = new List<SelectListItem>
-                                                                            {
-                                                                                new SelectListItem { Selected = false, Text = "Admin", Value = "Admin"},
-                                                                                new SelectListItem { Selected = true, Text = "User", Value = "User"},
-                                                                            };
-                            }
-                            @Html.LabelFor(m => m.Access, new { @class = "lblUserEditModal" })
-                            @Html.DropDownListFor(m => m.Access, listItemAccess, new { @class = "form-control inputUserEditModal", id = "userAccessSelect" })
-                        </div>
-                        @Html.ValidationMessageFor(m => m.Access, "", new { @class = "text-danger" })
+                    @Html.ValidationMessageFor(m => m.TeamDivision, "", new { @class = "text-danger" })
+                </div>
+                @*<div class="form-group">
+            <div class="LabelAndInputField">
+                @{
+                    var listItemTeamDivision = new List<SelectListItem>
+                                                                                {
+                                                                                    new SelectListItem { Selected = false, Text = "Core", Value = "Core"},
+                                                                                    new SelectListItem { Selected = true, Text = "Drawdown", Value = "Drawdown"},
+                                                                                };
+                }
+                @Html.LabelFor(m => m.TeamDivision, new { @class = "lblUserEditModal" })
+                @Html.DropDownListFor(m => m.TeamDivision, listItemTeamDivision, new { @class = "form-control inputUserEditModal", id = "userCategorySelect" })
+            </div>
+            @Html.ValidationMessageFor(m => m.TeamDivision, "", new { @class = "text-danger" })
+        </div>*@
+
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @Html.LabelFor(m => m.Chargeable, new { @class = "lblUserEditModal" })
+                        @Html.CheckBoxFor(m => m.Chargeable, new { @class = "form-control inputUserEditModal", id = "checkBoxChargeable", data_size = "mini" })
                     </div>
                 </div>
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @{
+                            var listItemAccess = new List<SelectListItem>
+                                                                                                    {
+                                                                                                        new SelectListItem { Selected = false, Text = "Admin", Value = "Admin"},
+                                                                                                        new SelectListItem { Selected = true, Text = "User", Value = "User"},
+                                                                                                    };
+                        }
+                        @Html.LabelFor(m => m.Access, new { @class = "lblUserEditModal" })
+                        @Html.DropDownListFor(m => m.Access, listItemAccess, new { @class = "form-control inputUserEditModal", id = "userAccessSelect" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Access, "", new { @class = "text-danger" })
+                </div>
+            </div>
                 <div class="modal-footer">
                     <button id="btnUpdateUser" name="ButtonType" type="submit" class="btn btn-success" value="UpdateUser">Update</button>
                     <button id="btnCreateUser" name="ButtonType" type="submit" class="btn btn-success" value="CreateUser">Create</button>
@@ -192,5 +224,6 @@
 
 @Html.Partial("PartialRatesAndRoles")
 @Html.Partial("TFSReference")
+@Html.Partial("TeamDivision")
 
 @*https://developercommunity.visualstudio.com/content/problem/571416/all-instances-of-expressions-in-razor-editor-asks.html*@

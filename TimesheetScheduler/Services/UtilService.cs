@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Web;
 using TimesheetScheduler.Interface;
@@ -9,6 +10,13 @@ namespace TimesheetScheduler.Services
 {
     public class UtilService: IUtilService
     {
+
+        private static IReadJsonFiles _service;
+        public UtilService()
+        {
+            _service = new ReadJsonFiles();
+        }
+
         public double FetchRequiredHours()
         {
             double required_hours;
@@ -23,18 +31,48 @@ namespace TimesheetScheduler.Services
             }
         }
 
-        public decimal FetchVat()
+        public decimal FetchActiveVat()
         {
-            decimal _vat_billing;
-            var _vatExists = decimal.TryParse(ConfigurationManager.AppSettings["vat_billing"], out _vat_billing);
-            if (_vatExists)
-            {
-                return _vat_billing;
-            }
-            else
-            {
-                throw new Exception("'VAT' not found!");
-            }
+            return _service.DeserializeReadJsonVATFile().Where(x => x.Active).FirstOrDefault().VAT;
         }
+
+        public decimal FetchVatByDate(DateTime date)
+        {
+            var result = _service.DeserializeReadJsonVATFile().Where(x => date >= x.StartPeriod && (x.EndPeriod != null ? (date <= x.EndPeriod) : true)).FirstOrDefault();
+            
+            if (result == null)
+            {
+                throw new Exception("VAT not found by date: " + date.ToShortDateString());
+            }
+            return result.VAT;
+        }
+
+        public string FetchActiveVatText()
+        {
+            return _service.DeserializeReadJsonVATFile().Where(x => x.Active).FirstOrDefault().VATText;
+        }
+
+        public string FetchVatTextByDate(DateTime date)
+        {
+            var result = _service.DeserializeReadJsonVATFile().Where(x => date >= x.StartPeriod && (x.EndPeriod != null ? (date <= x.EndPeriod) : true)).FirstOrDefault();
+
+            if (result == null)
+            {
+                throw new Exception("VAT not found by date: " + date.ToShortDateString());
+            }
+            return result.VATText;
+        }
+
+        //public void CaptureWholeScreen()
+        //{
+        //    var image = ScreenCapture.CaptureDesktop();
+        //    image.Save(@"C:\temp\snippetsource.jpg", ImageFormat.Jpeg);
+        //}
+
+        //public void CaptureActiveScreen()
+        //{
+        //    var image = ScreenCapture.CaptureActiveWindow();
+        //    image.Save(@"C:\temp\snippetsource.jpg", ImageFormat.Jpeg);
+        //}
     }
 }

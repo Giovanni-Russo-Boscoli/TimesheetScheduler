@@ -20,6 +20,7 @@
                 @Html.AntiForgeryToken()
             <div class="modal-body">
                 @Html.HiddenFor(x => x.Id, new { id = "hiddenTFSId" })
+                @Html.Hidden("hiddenTeamSelected")
                 @*<div class="form-group">
             <div class="LabelAndInputField">
                 @Html.LabelFor(m => m.Role, new { @class = "lblRolesEditModal" })
@@ -27,6 +28,13 @@
             </div>
             @Html.ValidationMessageFor(m => m.Role, "", new { @class = "text-danger" })
         </div>*@
+                <div class="form-group">
+                    <div class="LabelAndInputField">
+                        @Html.LabelFor(m => m.TeamName, new { @class = "lblProjectNameTFSditModal" })
+                        @Html.TextBoxFor(m => m.TeamName, new { @class = "form-control inputProjectNameTFSEditModal", id = "teamNameTFSTxt" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.IterationPathTFS, "", new { @class = "text-danger" })
+                </div>
                 <div class="form-group">
                     <div class="LabelAndInputField">
                         @Html.LabelFor(m => m.ProjectNameTFS, new { @class = "lblProjectNameTFSditModal" })
@@ -38,13 +46,6 @@
                     <div class="LabelAndInputField">
                         @Html.LabelFor(m => m.IterationPathTFS, new { @class = "lblProjectNameTFSditModal" })
                         @Html.TextBoxFor(m => m.IterationPathTFS, new { @class = "form-control inputProjectNameTFSEditModal", id = "iterationPathTFSTxt" })
-                    </div>
-                    @Html.ValidationMessageFor(m => m.IterationPathTFS, "", new { @class = "text-danger" })
-                </div>
-                <div class="form-group">
-                    <div class="LabelAndInputField">
-                        @Html.LabelFor(m => m.TeamName, new { @class = "lblProjectNameTFSditModal" })
-                        @Html.TextBoxFor(m => m.TeamName, new { @class = "form-control inputProjectNameTFSEditModal", id = "teamNameTFSTxt" })
                     </div>
                     @Html.ValidationMessageFor(m => m.IterationPathTFS, "", new { @class = "text-danger" })
                 </div>

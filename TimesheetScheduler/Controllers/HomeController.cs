@@ -256,7 +256,7 @@ namespace TimesheetScheduler.Controllers
                     listWorkItems.Add(convertTFSObjectToWorkItemSerialized(wi, userData.ProjectNameTFS, false));
                 }
 
-                return formatTFSResult(ref listWorkItems, userData.UserName);
+                return formatTFSResult(ref listWorkItems, userData.UserName, new DateTime(userData.Year,userData.Month,1));
             }
             catch (Exception ex)
             {
@@ -298,7 +298,7 @@ namespace TimesheetScheduler.Controllers
 
         }
 
-        private ConsolidatedMonthUserData formatTFSResult(ref IList<WorkItemSerialized> listWorkItems, string username)
+        private ConsolidatedMonthUserData formatTFSResult(ref IList<WorkItemSerialized> listWorkItems, string userName, DateTime period)
         {
             try
             {
@@ -384,9 +384,10 @@ namespace TimesheetScheduler.Controllers
 
                 }
 
-                consolidatedMonthUserData.UserName = username;
+                consolidatedMonthUserData.UserName = userName;
+                consolidatedMonthUserData.Period = period;
                 consolidatedMonthUserData.TotalExcludingVAT = consolidatedMonthUserData.RateExcludingVAT * (decimal)consolidatedMonthUserData.WorkedDays;
-                consolidatedMonthUserData.TotalIncludingVAT = consolidatedMonthUserData.TotalExcludingVAT + (consolidatedMonthUserData.TotalExcludingVAT * (_utilService.FetchVat() / 100));
+                consolidatedMonthUserData.TotalIncludingVAT = consolidatedMonthUserData.TotalExcludingVAT + (consolidatedMonthUserData.TotalExcludingVAT * (_utilService.FetchVatByDate(period)/ 100));
 
                 return consolidatedMonthUserData;
             }
@@ -974,7 +975,8 @@ namespace TimesheetScheduler.Controllers
                         listWorkItems.Add(convertTFSObjectToWorkItemSerialized(wi, member.ProjectNameTFS, false));
                     }
 
-                    var _item = formatTFSResult(ref listWorkItems, member.Name);
+                    var period = new DateTime(selectedMembers.Year, selectedMembers.Month, 1);
+                    var _item = formatTFSResult(ref listWorkItems, member.Name, period);
 
                     listConsolidatedRateMonthly.Add(new ConsolidatedRateMonthly()
                     {
@@ -989,11 +991,12 @@ namespace TimesheetScheduler.Controllers
                     });
                 }
 
+                var _period = new DateTime(selectedMembers.Year, selectedMembers.Month, 1);
                 FiguresDTO _figures = new FiguresDTO();
                 _figures.Members = listConsolidatedRateMonthly;
                 _figures.TeamName = listConsolidatedRateMonthly.FirstOrDefault().ProjectNameTFS;
-                _figures.VatApplied = _utilService.FetchVat().ToString() + "%"; //make a valid range of date to VAT (eg. 23 valid from dd/mm/yyyy until dd/mm/yyyy) and retrieve the correct VAT value based on the period
-                _figures.PeriodSearched = new DateTime(selectedMembers.Year, selectedMembers.Month, 1).ToString("MMMM yyyy");
+                _figures.VatApplied = _utilService.FetchVatTextByDate(_period);
+                _figures.PeriodSearched = _period.ToString("MMMM yyyy");
 
                 foreach (var item in listConsolidatedRateMonthly.GroupBy(x=>x.TeamDivision))
                 {
@@ -1001,7 +1004,7 @@ namespace TimesheetScheduler.Controllers
 
                     _currentFigure.FiguresIndexes.Add(new FiguresIndexesDTO()
                     {
-                        Label = "Total Excl VAT:",
+                        Label = "Total Excl VAT:",//it has to be refactor (not need anymore to have labels being set here)
                         Value = item.Sum(x => x.DayRateExcVat).ToString()
                     });
                     _currentFigure.FiguresIndexes.Add(new FiguresIndexesDTO()
@@ -2165,6 +2168,19 @@ namespace TimesheetScheduler.Controllers
                 throw ex;
             }
         }
+
+        //[HttpGet]
+        //public void CaptureImage(bool activeScreenOnly)
+        //{
+        //    if (activeScreenOnly)
+        //    {
+        //        _utilService.CaptureActiveScreen();
+        //    }
+        //    else
+        //    {
+        //        _utilService.CaptureWholeScreen();
+        //    }
+        //}
 
     }
 

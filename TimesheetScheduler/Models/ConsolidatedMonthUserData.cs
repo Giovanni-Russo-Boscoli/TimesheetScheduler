@@ -24,7 +24,8 @@ namespace TimesheetScheduler.Models
             //TotalHours = 0;
             _readJsonFilesService = new ReadJsonFiles();
             _utilService = new UtilService();
-            Vat_Fee = _utilService.FetchVat();
+            //Vat_Fee = _utilService.FetchActiveVat();
+            //Vat_Fee = _utilService.FetchVatByDate(this.ListWorkItem.First().StartDate.Value);
         }
 
         private string userName { get; set; }
@@ -39,7 +40,9 @@ namespace TimesheetScheduler.Models
 
         public decimal? Vat_Fee
         {
-            get;internal set;
+            get {
+                return _utilService.FetchVatByDate(this.Period);
+            }
         }
 
         public IList<WorkItemSerialized> ListWorkItem { get; set; }
@@ -109,6 +112,9 @@ namespace TimesheetScheduler.Models
                 _totalIncludingVAT = value;
             }
         }
+
+        public DateTime Period { get; set; }
+
 
     }
 }

@@ -263,9 +263,38 @@ Number.prototype.formatMoney = function (decPlaces, thouSeparator, decSeparator)
 
 // From /Date(1560330289910)/ to DD/MM/YYYY
 function fromJsonDateToDateStringFormatted(strDate) {
-    return _formatDate(new Date(parseInt(strDate.substr(6))).toDateString(), "/");
+    if (!strDate) return "";
+    var _parseStrDate = parseInt(strDate.substr(6));
+    if (_parseStrDate < 0) return "";
+    return _formatDate(new Date(_parseStrDate).toDateString(), "/");
 }
 
+function _formatDate(date, format, separator) {
+    //console.log("_formatDate: " + date);
+    if (!separator) {
+        separator = "/";
+    }
+
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    switch (format) {
+        case "yyyymmdd": {
+            return year + separator + month + separator + day;
+        }
+        case "ddmmyyyy": {
+            return day + separator + month + separator + year;
+        }
+        default: {
+            return day + separator + month + separator + year;
+        }
+    }
+}
 
 //USAGE
 //var holidays = [

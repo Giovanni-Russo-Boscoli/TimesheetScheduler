@@ -280,6 +280,10 @@ function LoadMonths2() {
     }
     $("#monthTimesheet").append(options);
     $('#monthTimesheet option[value="' + getCurrentMonth() + '"]').prop('selected', true);
+
+    $("#monthTimesheet").on("change", function () {
+        hideTableRateMonthly();
+    });
 }
 
 function prevNextMonthBtn2(prevNext) {
@@ -318,6 +322,10 @@ function LoadYears2() {
     $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
     $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
     $('#yearTimesheet option[value="' + _currentYear + '"]').prop('selected', true);
+
+    $("#yearTimesheet").on("change", function () {
+        hideTableRateMonthly();
+    });
 }
 
 function getYearFromPage2() {

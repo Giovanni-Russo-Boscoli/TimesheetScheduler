@@ -438,10 +438,12 @@
     <Compile Include="Models\FiguresIndexesDTO.cs" />
     <Compile Include="Models\JsonHolidays.cs" />
     <Compile Include="Models\JsonProjectIteration.cs" />
+    <Compile Include="Models\JsonVAT.cs" />
     <Compile Include="Models\LoginTimesheetScheduler.cs" />
     <Compile Include="Models\ParamsFormatCell.cs" />
     <Compile Include="Models\ReportRequestByUsersDTO.cs" />
     <Compile Include="Models\SessionExpireOverride.cs" />
+    <Compile Include="Models\TeamDivision.cs" />
     <Compile Include="Models\TimesheetWorkItem.cs" />
     <Compile Include="Models\UsersByTeamDivisionDTO.cs" />
     <Compile Include="Models\WorkItemRecord.cs" />
@@ -706,6 +708,7 @@
     <Content Include="JsonData\Holidays\jsonHolidays2020.json" />
     <Content Include="JsonData\Holidays\jsonHolidays2021.json" />
     <Content Include="Content\ReportModule.less" />
+    <Content Include="JsonData\jsonVAT.json" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.min.js" />
@@ -915,6 +918,7 @@
     <Content Include="Views\Home\SampleTest.cshtml" />
     <Content Include="Views\User\PartialRatesAndRoles.cshtml" />
     <Content Include="Views\User\TFSReference.cshtml" />
+    <Content Include="Views\User\TeamDivision.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
