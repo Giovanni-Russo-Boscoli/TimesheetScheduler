@@ -43,6 +43,11 @@
 }
 .dataRateMonthlyHidden.displayTable .figureCell label {
   margin-bottom: 0;
+  width: 50% !important;
+}
+.dataRateMonthlyHidden.displayTable .figureCell span {
+  width: 50% !important;
+  text-align: right !important;
 }
 .dataRateMonthlyHidden.displayTable .mainFigure .figureCell {
   margin: 0;

@@ -7,6 +7,7 @@ using System.Web.Mvc;
 using TimesheetScheduler.Interface;
 using TimesheetScheduler.Models;
 using TimesheetScheduler.Services;
+using Microsoft.Office.Interop.Word;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -136,7 +137,7 @@ namespace TimesheetScheduler.Controllers
             }
             return Json("There are users associated with this Team Division.", JsonRequestBehavior.AllowGet);
         }
-
+ 
         [HttpGet]
         public bool IsUserLoggedAdmin()
         {
@@ -191,6 +192,30 @@ namespace TimesheetScheduler.Controllers
         //    }
 
         //}
+
+
+        [HttpGet]
+        public void OpenWordDoc()
+        {
+            string _mypath = @"C:\EditableDocuments\ca94a2f4-3f66-4ee7-9534-e3f8166cc5bf.docx";
+
+            //Microsoft.Office.Interop.Word.Application app = new Microsoft.Office.Interop.Word.Application();
+            //Microsoft.Office.Interop.Word.WordApplication.Documents.Add();
+            try
+            {
+                //System.Diagnostics.Process.Start(_mypath);
+
+                Microsoft.Office.Interop.Word.Application ap = new Microsoft.Office.Interop.Word.Application();
+                ap.Visible = true;
+                Microsoft.Office.Interop.Word.Document document = ap.Documents.Open(_mypath);
+                var a = "!";
+                a += "-";
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 
 }

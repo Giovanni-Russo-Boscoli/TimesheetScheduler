@@ -77,6 +77,12 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
+        public ActionResult TFSTaskFinder()
+        {
+            //ViewBag.Message = "Tracking Process.";
+            return View();
+        }
+
         public string GetUserName()
         {
             return string.IsNullOrEmpty(UserPrincipal.Current.DisplayName) ? FormatDomainUserName(GetDomainUserName()) : UserPrincipal.Current.DisplayName;
@@ -1027,6 +1033,32 @@ namespace TimesheetScheduler.Controllers
 
         }
 
+        [HttpGet]
+        public string FindTFSTask(int workItemId)
+        {
+            var _urlTFS = GetUrlTfs();
+            Uri tfsUri = new Uri(_urlTFS);
+            TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
+            WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
+
+            var projectName = GetProjectNameTFS();
+            var _iterationPath = GetIterationPathTFS();
+
+            WorkItem workItem;
+
+            try
+            {
+                workItem = WIS.GetWorkItem(workItemId);
+            }
+            catch (Exception ex)
+            {
+                //throw new Exception("The work item does not exist, or you do not have permission to access it. (" + workItemId + ")");
+                throw new Exception(ex.Message  + " - (" + workItemId + ")");
+            }
+
+            return _urlTFS + workItem.Project.Name + "/_queries?id=" + workItem["Id"].ToString();
+        }
+
         #endregion TFS
 
         #region EXCEL
@@ -1898,7 +1930,7 @@ namespace TimesheetScheduler.Controllers
                 InitExcelVariables(userData.UserName, userData.Month, userData.Year);
 
                 worksheet = (Worksheet)worKbooK.ActiveSheet;
-                worksheet.Name = "Timesheet_" + userData.UserName;//.Replace(" ", "_");
+                //worksheet.Name = "Timesheet_" + userData.UserName;//.Replace(" ", "_");
 
                 CreateHeader(worksheet);
                 tableEventCount = CreateTable(worksheet, userData);
@@ -1925,7 +1957,7 @@ namespace TimesheetScheduler.Controllers
             catch (Exception ex)
             {
                 Console.Write(ex.Message);
-                return "Interal Code (1) - " + ex.Message;
+                return "Internal Code (1) - " + ex.Message;
             }
             finally
             {
@@ -2181,6 +2213,8 @@ namespace TimesheetScheduler.Controllers
         //        _utilService.CaptureWholeScreen();
         //    }
         //}
+
+       
 
     }
 

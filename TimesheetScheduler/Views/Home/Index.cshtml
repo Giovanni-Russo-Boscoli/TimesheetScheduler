@@ -13,6 +13,8 @@
         <div class="row">
             <div class="form-group col-xs-2 leftContent">
 
+                @*<button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="openWordDoc();">WORD DOC</button>*@
+
                 <label for="userNameTimesheet">User</label>
                 <div class="userSelection">
                     <select class="form-control" id="userNameTimesheet" title="Only admin user can see other members' timesheet data" disabled></select>
@@ -74,23 +76,23 @@
                                 <label id="nonchargeableHoursInfoLbl" class="modalLbl" for="nonchargeableHoursInfoTxt">Non-Chargeable Hours: </label>
                                 <label id="nonchargeableHoursInfoTxt"></label>
                             </div>
-                            <div>
+                            <div class="adminVisibleValues">
                                 <label id="vatFeeInfoLbl" class="modalLbl" for="vatFeeInfoTxt">VAT Applied: </label>
                                 <label id="vatFeeInfoTxt"></label>
                             </div>
-                            <div>
+                            <div class="adminVisibleValues">
                                 <label id="rateExcVatInfoLbl" class="modalLbl" for="rateExlVatInfoTxt">Rate (exc. VAT): </label>
                                 <label id="rateExlVatInfoTxt" class="currencyMask"></label>
                             </div>
-                            <div>
+                            <div class="adminVisibleValues">
                                 <label id="rateIncVatInfoLbl" class="modalLbl" for="rateIncVatInfoTxt">Rate (inc. VAT): </label>
                                 <label id="rateIncVatInfoTxt" class="currencyMask"></label>
                             </div>
-                            <div>
+                            <div class="adminVisibleValues">
                                 <label id="totalExcVatInfoLbl" class="modalLbl" for="totalExlVatInfoTxt">Total (exc. VAT): </label>
                                 <label id="totalExlVatInfoTxt" class="currencyMask"></label>
                             </div>
-                            <div>
+                            <div class="adminVisibleValues">
                                 <label id="totalIncVatInfoLbl" class="modalLbl" for="totalIncVatInfoTxt">Total (inc. VAT): </label>
                                 <label id="totalIncVatInfoTxt" class="currencyMask"></label>
                             </div>

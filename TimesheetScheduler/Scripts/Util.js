@@ -177,9 +177,10 @@ function loadMustacheTemplate(templateId, targetId, data) {
 //}
 
 function sendEmail() {
+    alert("aaaaaaa");
     $.ajax({
         url: "/EmailSender/SendEmail",
-        type: "GET",
+        type: "POST",
         //data: {
         //    "from": "GiovanniRB",
         //    "email": "boscoli.giovanni@gmail.com2",
@@ -188,7 +189,7 @@ function sendEmail() {
         //},
         success: function (data) {
             alert(data);
-            console.log("Sucess");
+            console.log("Success");
         },
         function(error) {
             ajaxErrorHandler(error);
@@ -236,6 +237,11 @@ function currencyMask(element, maskFormat, prefix) {
     }
     //parseFloat($(element)).toFixed(2);
     //$(element).mask('###,###,###.##', { reverse: true });
+}
+
+function maskWorkItem(id) {
+    var mask = '999999';
+    $("#" + id).mask(mask, { placeholder: mask });
 }
 
 //HOW TO USE

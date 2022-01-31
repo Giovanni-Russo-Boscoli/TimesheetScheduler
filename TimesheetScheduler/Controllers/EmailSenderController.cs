@@ -15,7 +15,8 @@ namespace TimesheetScheduler.Controllers
             return View();
         }
 
-        public string sendEmail()
+        [HttpPost]
+        public string SendEmail()
         {
             try
             {
@@ -36,20 +37,21 @@ namespace TimesheetScheduler.Controllers
                 //return "Email sent!";
 
                 string _sender = "giovanni.boscoli@welfare.ie";
-                string _password = "?bCh+*p#d8MQ24";
+                //string _password = "ssss";
 
-                SmtpClient client = new SmtpClient("smtp-mail.outlook.com");
+                //SmtpClient client = new SmtpClient("smtp-mail.outlook.com");
+                SmtpClient client = new SmtpClient("apprelay.welfare.irlgov.ie");
 
-                client.Port = 587;
-                client.DeliveryMethod = SmtpDeliveryMethod.Network;
-                client.UseDefaultCredentials = false;
-                System.Net.NetworkCredential credentials =
-                    new System.Net.NetworkCredential(_sender, _password);
-                client.EnableSsl = true;
-                client.Credentials = credentials;
+                client.Port = 25; // 587;
+                //client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                //client.UseDefaultCredentials = false;
+                //System.Net.NetworkCredential credentials =
+                //    new System.Net.NetworkCredential(_sender, _password);
+                //client.EnableSsl = true;
+                //client.Credentials = credentials;
 
-                MailMessage message = new MailMessage(_sender, "giovanni.boscoli@welfare.ie");
-                message.Subject = "teste email";
+                MailMessage message = new MailMessage("timesheet@timesheetscheduler.ie", "giovanni.boscoli@welfare.ie");
+                message.Subject = "test email";
                 message.Body = "test email body";
                 client.Send(message);
                 return "Email sent!";

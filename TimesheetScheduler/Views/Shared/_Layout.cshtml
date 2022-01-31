@@ -20,20 +20,24 @@
                 @Html.ActionLink("Timesheet Scheduler", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse user-menu">
-                @if (HttpContext.Current.User.Identity.IsAuthenticated)
-                {
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Data", "Index", "User")</li>
-                    <li>@Html.ActionLink("Report", "StepsReports", "Home")</li>
-                    @*@if(@Html.("GetDomainUserName", "Home"))
-        {
-            <li>@Html.ActionLink("Data", "Index", "User")</li>
-            <li>@Html.ActionLink("Report", "StepsReports", "Home")</li>
-        }*@
+            <ul class="nav navbar-nav">
+                <li>@Html.ActionLink("Data", "Index", "User")</li>
+                <li>@Html.ActionLink("Report", "StepsReports", "Home", null, new { @class = "adminMenu" })</li>
+                <li>@Html.ActionLink("TFS Task Finder", "TFSTaskFinder", "Home")</li>
+            </ul>
+        </div>
 
-                </ul>
-                }
-            </div>                
+            @*<script id="menuTemplate" type="x-tmpl-mustache">
+                <div class="navbar-collapse collapse user-menu">
+                    <ul class="nav navbar-nav">
+                        {{#menuItems}}
+                        <li>Html.ActionLink({{linkText }}, {{actionName}}, {{controllerName}})</li>
+                        {{/menuItems}}
+                    </ul>
+                </div>
+            </script>
+            <div id="targetMenu"></div>*@
+
             <div class="userLogged">
                 <ul class="userLoggedUl">
                     <li class="loggedUser" title=@Html.Action("GetDomainUserName", "Home")>@Html.Action("GetUserLoggedName", "Home")</li>
@@ -52,18 +56,18 @@
     </div>
     <div class="modalPleaseWait"><!-- Place at bottom of page --></div>
     @*@section scripts {*@
-        @Scripts.Render("~/bundles/jquery")
-        @Scripts.Render("~/bundles/jqueryval")
-        @Scripts.Render("~/bundles/jqueryui")
-        @Scripts.Render("~/bundles/momentjs")
-        @Scripts.Render("~/bundles/bootstrap")
-        @Scripts.Render("~/bundles/mustachejs")
-        @Scripts.Render("~/bundles/fullcalendarjs")
-        @Scripts.Render("~/bundles/jquerydateformat")
-        @Scripts.Render("~/bundles/toastrjs")
-        @Scripts.Render("~/bundles/util")
-        @Scripts.Render("~/bundles/jquerymask")
-        @Scripts.Render("~/bundles/jquery-multiselect")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/jqueryui")
+    @Scripts.Render("~/bundles/momentjs")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/mustachejs")
+    @Scripts.Render("~/bundles/fullcalendarjs")
+    @Scripts.Render("~/bundles/jquerydateformat")
+    @Scripts.Render("~/bundles/toastrjs")
+    @Scripts.Render("~/bundles/util")
+    @Scripts.Render("~/bundles/jquerymask")
+    @Scripts.Render("~/bundles/jquery-multiselect")
     @*}*@
     @*<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"></script>*@
     @RenderSection("scripts", required: false)
@@ -75,10 +79,28 @@
             //enable or disable menu options based on the admin role
             //isUserLoggedAdmin(function (isAdmin) {
             //    if (isAdmin) {
-            //        $(".user-menu").removeClass("user-menu").addClass("admin-menu");
+            //        $(".adminMenu").addClass("showMenu");
+            //        $(".adminMenu").removeClass("hideMenu");
+            //    }
+            //    else {
+            //        $(".adminMenu").addClass("hideMenu");
+            //        $(".adminMenu").removeClass("showMenu");
             //    }
             //});
+
+            //formatDataLoadMenu();
         });
+
+        function formatDataLoadMenu(data) {
+            var _data = {
+                "menuItems": [
+                    { "linkText": "'Data'", "actionName": "'Index'", "controllerName": "'User'" },
+                    { "linkText": "'Report'", "actionName": "'StepsReports'", "controllerName": "'Home'" }
+                ]
+            };
+            console.log(_data);
+            loadMustacheTemplate('menuTemplate', 'targetMenu', _data);
+        }
 
         function registerTriggerAjax() {
             jQuery.ajaxSetup({
@@ -98,7 +120,7 @@
 </html>
 <style>
 
-     /*----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------*/
+    /*----------------------------------------- PLEASE WAIT GIF INIT -----------------------------------------------------*/
     .modalPleaseWait {
         display: none;
         position: fixed;
@@ -117,11 +139,19 @@
         overflow: hidden;
     }
 
-     /*----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------*/
+    /*----------------------------------------- PLEASE WAIT GIF END -----------------------------------------------------*/
 
     #toast-container.toast-bottom-right > div {
         width: auto !important;
         max-width: none !important;
+    }
+
+    .showMenu {
+        display: block !important;
+    }
+
+    .hideMenu {
+        display: none !important;
     }
 
     /*.navbar-collapse.collapse.user-menu {
@@ -150,13 +180,13 @@
             display: flex;
         }
 
-    .userLoggedUl li{
-        margin-left:10px;
+    .userLoggedUl li {
+        margin-left: 10px;
     }
 
-           .logoutUser:hover {
-            cursor: pointer;
-        }
+    .logoutUser:hover {
+        cursor: pointer;
+    }
 
     .container.body-content {
         width: 98% !important;

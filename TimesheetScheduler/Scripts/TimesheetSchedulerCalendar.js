@@ -239,6 +239,7 @@ function formatTFSEventsForCalendar(_obj) {
     }
     return _calendarEvents;
 }
+
 function formatTFSEventsForCalendar_TESTE(_obj) {
     var _calendarEvents = [];
 
@@ -451,6 +452,7 @@ function LoadYears() {
     var _currentYear = getCurrentYear();
     $("#yearTimesheet").append("<option value='" + (_currentYear - 1) + "'>" + (_currentYear - 1) + "</option>");
     $("#yearTimesheet").append("<option value='" + _currentYear + "'>" + _currentYear + "</option>");
+    //$("#yearTimesheet").append("<option value='" + (_currentYear + 1) + "'>" + (_currentYear + 1) + "</option>");
     $('#yearTimesheet option[value="' + _currentYear + '"]').prop('selected', true);
 }
 
@@ -538,11 +540,6 @@ function dateMaskById(id, mask) {
     $("#" + id).mask("99/99/9999", { placeholder: mask });
 }
 
-function maskWorkItem(id) {
-    var mask = '999999';
-    $("#" + id).mask(mask, { placeholder: mask });
-}
-
 function IsWeekend(date) {
     var day = date.getDay();
     return day === 6 || day === 0;
@@ -576,21 +573,27 @@ function Info() {
             $("#totalIncVatInfoTxt").text(totalIncVatInfoTxt);
             currencyMask('.currencyMask', '###,###,###.##');
         } else {
-            $("#infoPanel").hide();
+            $("#fieldsetInfoPanel").hide();
         }
     });
 }
 function Info_TESTE(obj) {
     //console.log(obj);
     clearInfoValues();
+
+    $("#totalHoursInfoTxt").text(obj.TotalHours);
+    $("#dayWorkedInfoTxt").text(obj.WorkedDays);
+    $("#chargeableHoursInfoTxt").text(obj.ChargeableHours);
+    $("#nonchargeableHoursInfoTxt").text(obj.NonChargeableHours);
+
     getUserName(function (loggedUserName) {
         if (getAccessUserByName(loggedUserName) === "ADMIN") { //identify by role "admin"
             $("#infoPanel").show();
 
-            $("#totalHoursInfoTxt").text(obj.TotalHours);
-            $("#dayWorkedInfoTxt").text(obj.WorkedDays);
-            $("#chargeableHoursInfoTxt").text(obj.ChargeableHours);
-            $("#nonchargeableHoursInfoTxt").text(obj.NonChargeableHours);
+            //$("#totalHoursInfoTxt").text(obj.TotalHours);
+            //$("#dayWorkedInfoTxt").text(obj.WorkedDays);
+            //$("#chargeableHoursInfoTxt").text(obj.ChargeableHours);
+            //$("#nonchargeableHoursInfoTxt").text(obj.NonChargeableHours);
             $("#vatFeeInfoTxt").text(obj.Vat_Fee + "%");
 
             var rateExcVat = getRateUserByName(getUserNameFromPage());
@@ -610,7 +613,7 @@ function Info_TESTE(obj) {
             $("#totalIncVatInfoTxt").text((obj.TotalIncludingVAT).toFixed(2));
             currencyMask('.currencyMask', '###,###,###.##');
         } else {
-            $("#infoPanel").hide();
+            $(".adminVisibleValues").hide();
         }
     });
 }
@@ -1112,7 +1115,7 @@ function closeModalCopyTask() {
 
 function closeAllTasksCurrentMonth() {
     getUserName(function (data) {
-        if (data !== getUserNameFromPage()) {
+        if (data !== getUserNameFromPage() && getAccessUserByName(data) !== "ADMIN") {
             toastrMessage("You are not authorized to close tasks from another user", "warning");
         }
         else {
@@ -1404,6 +1407,20 @@ function captureScreen() {
         data: { activeScreenOnly: true },
         success: function (data) {
             toastrMessage("Success capturing screen");
+        },
+        error: function (error) {
+            //errorCallback;
+            ajaxErrorHandler("ajaxCloseAllTasks", error);
+        }
+    });
+}
+
+function openWordDoc() {
+    $.ajax({
+        url: "/User/OpenWordDoc",
+        type: "GET",
+        success: function (data) {
+            toastrMessage("Doc opened");
         },
         error: function (error) {
             //errorCallback;

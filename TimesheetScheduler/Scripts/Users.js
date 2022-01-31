@@ -335,9 +335,7 @@ function callbackDataTablesTfsReference() {
             ]
         });
 
-        bindRowClickTfsReference(table);
-
-        hideColumnsForNonAdminRole_TFSReference();
+        hideColumnsForNonAdminRole_TFSReference(table);
 
         $("#tfsReferenceTable_wrapper").addClass("well");
     });
@@ -364,16 +362,26 @@ function hideColumnsForNonAdminRole_UserTable() {
 function hideColumnsForNonAdminRole_RolesTable() {
     var roleTable = $('#rolesTable').DataTable();
     isUserLoggedAdmin(function (_visibleColumns) {
-        roleTable.column(4).visible(_visibleColumns);
+        roleTable.column(3).visible(_visibleColumns); //RATE
+        roleTable.column(4).visible(_visibleColumns); //EDIT/DELETE BUTTONS
         $("#btnRoleItem").toggle(_visibleColumns);
     });
 }
 
-function hideColumnsForNonAdminRole_TFSReference() {
+function hideColumnsForNonAdminRole_TFSReference(table) {
     var tfsReference = $('#tfsReferenceTable').DataTable();
     isUserLoggedAdmin(function (_visibleColumns) {
         tfsReference.column(4).visible(_visibleColumns);
         $("#btnTFSReferenceItem").toggle(_visibleColumns);
+        
+        if (_visibleColumns) {
+            bindRowClickTfsReference(table);
+            $("#divMsg").show();//toggle label info 
+        } else {
+            $('#tfsReferenceTable tbody tr').off('click');//off click event
+            $("#divMsg").hide();//toggle label info 
+        }
+
     });
 }
 

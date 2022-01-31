@@ -1,0 +1,110 @@
+﻿
+@{
+    ViewBag.Title = "TFS Task Finder";
+}
+
+@Scripts.Render("~/bundles/jquery")
+@*@Styles.Render("~/Content/reportmodule")*@
+
+@section scripts{
+    @*<script src="~/Scripts/jquery.multi-select.js"></script>*@
+    @*<script type="text/javascript" charset="utf8" src="~/Scripts/DataTables/jquery.dataTables.js"></script>*@ @*MOVE IT TO BUNDLECONFIG AND SET IN _LAYOUT*@
+    @*<script src="~/Scripts/ReportModule.js"></script>*@
+}
+
+@*<link rel="stylesheet" type="text/css" href="~/Content/multi-select.css">*@
+@*<link rel="stylesheet" type="text/css" href="~/Content/DataTables/css/jquery.dataTables.css">*@
+
+<body>
+  
+    <div class="tfstaskfinderbox well">
+        <div class="form-group">
+            <label for="tfstasknumber">TFS Task Number</label>
+            <input class="form-control onEnterTFSTaskFinder" id="tfstasknumber" />
+            <button id="btnFindTaskByNumber" class="btn btn-success btn-block" onclick="findTaskByNumber()" disabled>Find Task</button>
+            <a id="link_tfstask" target="_blank" href="#">TFS Link</a>
+        </div>
+    </div>
+    @*<div class="well">
+        <iframe id="TFSTaskviewer" src="" frameborder="1" style="width:400px; height:600px"></iframe>
+    </div>*@
+</body>
+
+<style>
+
+    .tfstaskfinderbox * {
+        margin: 5px !important;
+    }
+
+    .tfstaskfinderbox{
+        margin-top: 40px;
+        width: 200px;
+        height: 180px;
+    }
+
+    .disabledHiperlink {
+        pointer-events: none;
+        color: grey;
+        display:none;
+    }
+
+</style>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        maskWorkItem("tfstasknumber");
+        $("#link_tfstask").attr("href", "");
+        
+        $("#link_tfstask").addClass("disabledHiperlink");
+
+        //enable find button
+        $("#tfstasknumber").on("keyup", function () {
+            if ($(this).val().length === 6) {
+                $("#btnFindTaskByNumber").attr("disabled", false);
+            } else{
+                $("#btnFindTaskByNumber").attr("disabled", true);
+            }
+        });
+
+        $("#link_tfstask").on("click", function () {
+            $(this).addClass("disabledHiperlink");
+        });
+
+        $(".onEnterTFSTaskFinder").keypress(function (e) {
+            var key = e.which;
+            if (key === 13)  // the enter key code
+            {
+                $("#btnFindTaskByNumber").click();
+                return false;
+            }
+        });
+
+    });
+
+    function findTaskByNumber() {
+
+        $.ajax({
+            url: "/Home/FindTFSTask",
+            type: "GET",
+            data: {
+                workItemId: $("#tfstasknumber").val()
+            },
+            dataType: "text",
+            success: function (data) {
+                $("#link_tfstask").attr("href", data);
+                $("#link_tfstask").removeClass("disabledHiperlink");
+                $("#tfstasknumber").val("");
+                $("#btnFindTaskByNumber").attr("disabled", true);
+            },
+            //error: function (error) {
+            //    console.log(error);
+            //    ajaxErrorHandler(error);
+            //}
+            function(error) {
+                ajaxErrorHandler(error);
+            }
+        });
+    }
+
+</script>
