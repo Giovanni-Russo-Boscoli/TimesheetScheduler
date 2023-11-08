@@ -741,14 +741,8 @@
     <Content Include="fonts\fontawesome-webfont.eot" />
     <Content Include="Content\User.less" />
     <Content Include="Content\bootstrap-toggle.less" />
-    <Content Include="JsonData\Holidays\jsonHolidays2020.json" />
-    <Content Include="JsonData\Holidays\jsonHolidays2021.json" />
     <Content Include="Content\ReportModule.less" />
     <Content Include="JsonData\jsonVAT.json" />
-    <Content Include="JsonData\Holidays\jsonHolidays2022.json" />
-    <Content Include="JsonData\Holidays\jsonHolidays2023.json" />
-    <Content Include="JsonData\jsonUser.json" />
-    <Content Include="JsonData\ratesAndRoles.json" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.min.js" />
