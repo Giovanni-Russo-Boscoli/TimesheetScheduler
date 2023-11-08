@@ -163,3 +163,7 @@ https://docs.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/commo
 - allow user connected to create task with their own user (currently using my user to create tasks)
 
 - Create a new panel to show tasks created by you and not assisgned to anyone (similar to 'Start Date Not Defined' feature)
+
+- Show Bank Holidays for the year
+
+- Consider the "Chargeable" flag when creating the monthly report (currently month reports isnt using the Chargeable flag and adding figures for the member that are not chargeable)

@@ -18,20 +18,22 @@
 <body>
     <div class="container reportsContent">
 
-        <div class="col-lg-6 well half-top-left">
-            <fieldset>
-                <legend>Report Filters</legend>
-                <div class="col-lg-8">
-                    <script id="selectTeamsTemplate" type="x-tmpl-mustache">
+        <div style="display:flex;">
+
+            <div class="col-lg-6 well half-top-left">
+                <fieldset>
+                    <legend>Report Filters</legend>
+                    <div class="col-lg-8">
+                        <script id="selectTeamsTemplate" type="x-tmpl-mustache">
                         <select id="selectTeamsElement" class="form-control" onchange="loadMembersByTeam();">
                             <option value="" disabled selected>Please select a team</option>
                             {{#teams}}
                             <option value={{Id}}>{{TeamName}}</option>
                             {{/teams}}
                         </select>
-                    </script>
-                    <div id="targetSelectTeams"></div>
-                    <script id="teamMembersTemplate" type="x-tmpl-mustache">
+                        </script>
+                        <div id="targetSelectTeams"></div>
+                        <script id="teamMembersTemplate" type="x-tmpl-mustache">
                         <select id='boxUserSelection' multiple='multiple' class="form-control">
                             {{#TeamDivisionList}}
                             <optgroup label={{TeamDivision}}>
@@ -45,40 +47,40 @@
                             {{/TeamDivisionList}}
                         </select>
                         <button id="btnSelectAllBoxSelection" class="form-control btn btn-default selectAll" disabled>Select All</button>
-                    </script>
-                    <div id="targetTeamMembers"></div>                   
-                </div>
-                <div class="col-lg-4">
-                    <div class="form-group">
-                        <label for="monthTimesheet">Month</label>
-                        <div class="monthSelection">
-                            <button id="btnPrevMonth" title="Previous Month" class="btn btn-primary" onclick="prevNextMonthBtn2(0);"><</button>
-                            <select class="form-control" id="monthTimesheet"></select>
-                            <button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="prevNextMonthBtn2(1);">></button>
+                        </script>
+                        <div id="targetTeamMembers"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label for="monthTimesheet">Month</label>
+                            <div class="monthSelection">
+                                <button id="btnPrevMonth" title="Previous Month" class="btn btn-primary" onclick="prevNextMonthBtn2(0);"><</button>
+                                <select class="form-control" id="monthTimesheet"></select>
+                                <button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="prevNextMonthBtn2(1);">></button>
+                            </div>
                         </div>
+                        <div class="form-group">
+                            <label for="yearTimesheet">Year</label>
+                            <select class="form-control" id="yearTimesheet"></select>
+                        </div>
+                        <button id="btnExportExcelBulk" class="btn btn-success btn-block" disabled>Export Timesheets</button> @*onclick="confirmationSavePath();"*@
+                        <button id="btnGetConsolidatedReportMonthly" class="btn btn-success btn-block" onclick="getConsolidatedReportMonthly();" disabled>Monthly Rate Report</button>
                     </div>
-                    <div class="form-group">
-                        <label for="yearTimesheet">Year</label>
-                        <select class="form-control" id="yearTimesheet"></select>
-                    </div>
-                    <button id="btnExportExcelBulk" class="btn btn-success btn-block" onclick="confirmationSavePath();" disabled>Export Timesheets</button>
-                    <button id="btnGetConsolidatedReportMonthly" class="btn btn-success btn-block" onclick="getConsolidatedReportMonthly();" disabled>Monthly Rate Report</button>
-                </div>
-            </fieldset>
-        </div>
+                </fieldset>
+            </div>
 
-        <div class="col-lg-6 well dataRateMonthlyHidden figuresPanel half-top-right">
-            <script id="figuresTemplate" type="x-tmpl-mustache">
+            <div class="col-lg-6 well dataRateMonthlyHidden figuresPanel half-top-right">
+                <script id="figuresTemplate" type="x-tmpl-mustache">
                 <div class="col-lg-12 figureCell mainFigure">
                     <fieldset>
                         <legend>Figures - {{TeamName}}</legend>
                         <div class="col-lg-6 figureCell">
-                            <label class="col-sm-8">VAT Applied</label>
-                            <span class="col-sm-4">{{VatApplied}}</span>
+                            <label class="col-sm-6">Period</label>
+                            <span class="col-sm-6">{{PeriodSearched}}</span>
                         </div>
                         <div class="col-lg-6 figureCell">
-                            <label class="col-sm-8">Period</label>
-                            <span class="col-sm-4">{{PeriodSearched}}</span>
+                            <label class="col-sm-8">VAT Applied</label>
+                            <span class="col-sm-4">{{VatApplied}}</span>
                         </div>
                         <div class="col-lg-6 figureCell figureExcVat">
                             <label class="col-sm-8">Total Excl VAT</label>
@@ -94,18 +96,28 @@
                 <div class="col-lg-6 figureCell figuresByTeamDivision">
                     <fieldset>
                         <legend>{{TeamDivision}}</legend>
-                        {{#FiguresIndexes}}
+                            <div class="col-lg-12 div-wrap-figure figureCell figureExcVat">
+                                <label class="col-sm-8">Total Excl VAT:</label>
+                                <span class="col-sm-4 currencyFigures">{{TotalExclVAT}}</span>
+                            </div>
+                            <div class="col-lg-12 div-wrap-figure figureCell figureIncVat">
+                                <label class="col-sm-8">Total Incl VAT:</label>
+                                <span class="col-sm-4 currencyFigures">{{TotalInclVAT}}</span>
+                            </div>
+                        @*{{#FiguresIndexes}}
                         <div class="col-lg-12 div-wrap-figure figureCell">
                             <label class="col-sm-8">{{Label}}</label>
                             <span class="col-sm-4 currencyFigures">{{Value}}</span>
                         </div>
-                        {{/FiguresIndexes}}
+                        {{/FiguresIndexes}}*@
                     </fieldset>
                 </div>
                 {{/FiguresByTeamDivision}}
 
-            </script>
-            <div id="targetFigures"></div>
+                </script>
+                <div id="targetFigures"></div>
+            </div>
+
         </div>
 
         <div class="col-lg-12 well dataRateMonthlyHidden">
@@ -121,11 +133,11 @@
                         @*<th>Id</th>*@
                         @*<th>Period</th>*@
                         <th>Name</th>
-                        <th>Rate(Exc.VAT)</th>
-                        <th>Rate(Inc.VAT)</th>
-                        <th>Days worked</th>
                         <th>Day Rate(Exc.VAT)</th>
                         <th>Day Rate(Inc.VAT)</th>
+                        <th>Days worked</th>
+                        <th>Rate(Exc.VAT)</th>
+                        <th>Rate(Inc.VAT)</th>
                         <th>Team Division</th>
                     </tr>
                 </thead>
@@ -133,4 +145,35 @@
         </div>
 
     </div>
+
+
+    <!-- Modal Path Save Excel File -->
+    <div class="modal fade" id="saveExcelFilePathModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Folder Path - Save Excel File</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-inline">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
+                            <label class="form-check-label" for="flexRadioDefault1" id="lblDefaultPathToSaveExcelFile"></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" disabled>
+                            <input class="form-check-label" for="flexRadioDefault2" id="txtDefault2PathToSaveExcelFile" type="text" placeholder="\\10.1.53.8\\MySharedFolder\\ExcelTemp\\" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnSaveExcelFileFromFolderPath" type="button" class="btn btn-success" onclick="confirmationSavePath()">Save File</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>

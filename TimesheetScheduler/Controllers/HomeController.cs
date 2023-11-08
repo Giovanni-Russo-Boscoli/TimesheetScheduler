@@ -1,13 +1,18 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using ClosedXML.Excel;
+//using DocumentFormat.OpenXml.Bibliography;
+//using DocumentFormat.OpenXml.Drawing.Charts;
+//using DocumentFormat.OpenXml.Spreadsheet;
+//using Microsoft.Office.Interop.Excel;
 using Microsoft.TeamFoundation.Client;
-//
-using Microsoft.TeamFoundation.Framework.Client;
 using Microsoft.TeamFoundation.Framework.Common;
 using Microsoft.TeamFoundation.Server;
 using Microsoft.TeamFoundation.VersionControl.Client;
+//using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
 using Microsoft.VisualStudio.Services.Common;
-using Newtonsoft.Json;
+using Spire.Doc;
+using Spire.Doc.Documents;
+using Spire.Doc.Fields;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -17,19 +22,21 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Mail;
-using System.Runtime.InteropServices;
+//using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
 using TimesheetScheduler.Interface;
 using TimesheetScheduler.Models;
 using TimesheetScheduler.Services;
 using TimesheetScheduler.ViewModel;
-using Application = Microsoft.Office.Interop.Excel.Application;
+//using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+//using Application = Microsoft.Office.Interop.Excel.Application;
+//using Color = System.Drawing.Color;
 //
 using ProjectInfo = Microsoft.TeamFoundation.Server.ProjectInfo;
+//using Workbook = Microsoft.Office.Interop.Excel.Workbook;
+//using Worksheet = Microsoft.Office.Interop.Excel.Worksheet;
 
 namespace TimesheetScheduler.Controllers
 {
@@ -115,24 +122,9 @@ namespace TimesheetScheduler.Controllers
             return ConfigurationManager.AppSettings["iterationPathTFS"].ToString();
         }
 
-        //public JsonResult ConnectTFS(string userName, int _month, int _year)
-        //{
-        //    IList<IList<WorkItemSerialized>> joinWorkItemsList = new List<IList<WorkItemSerialized>>();
-        //    userName = userName.Replace("'", "''");
-        //    joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItems(userName, _month, _year));
-        //    joinWorkItemsList.Add(ReturnTFSEvents_ListWorkItemsWithoutStartDate(userName));
-
-        //    return Json(joinWorkItemsList, JsonRequestBehavior.AllowGet);
-        //}
-
         [HttpPost]
         public JsonResult ConnectTFS(UserDataSearchTFS userData)//, int _month, int _year)
         {
-            //var _userController = new UserController();
-            //var _isUserLoggedAdmin = _userController.IsUserLoggedAdmin();
-            //var _userLoggedName = _userController.GetUserNameLogged();
-            //if (_isUserLoggedAdmin || userData.UserName.Equals(_userLoggedName))
-            //{
             IList<object> joinWorkitems = new List<object>();
             userData.UserName = userData.UserName.Replace("'", "''");
             joinWorkitems.Add(ReturnTFSEvents_ListWorkItems(userData));
@@ -140,45 +132,7 @@ namespace TimesheetScheduler.Controllers
             //FormatTasksForEmailConfirmation(userData);
             //ConsolidatedReportData(userData);
             return Json(joinWorkitems, JsonRequestBehavior.AllowGet);
-            //}
-            //else
-            //{
-            //    throw new Exception("Only admin user can see other members' timesheet data");
-            //}
         }
-
-        //public void printMemberList()
-        //{
-        //    List<string> users = new List<string>();
-        //    string teamProject = "BOM_MOD24";
-        //    var _uri = new Uri("http://vssdmlivetfs:8080/tfs/BOMiLiveTFS/");
-        //    TfsTeamProjectCollection tpc = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(_uri);
-        //    tpc.EnsureAuthenticated();
-        //    var vcs = tpc.GetService<VersionControlServer>();
-
-        //    Microsoft.TeamFoundation.VersionControl.Client.TeamProject tp = vcs.GetTeamProject(teamProject);
-        //    TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(_uri);
-        //    IGroupSecurityService sec = (IGroupSecurityService)projCollection.GetService(typeof(IGroupSecurityService));
-        //    Identity[] appGroups = sec.ListApplicationGroups(tp.ArtifactUri.AbsoluteUri);
-        //    var membersBOM = appGroups.Where(x => x.AccountName.Contains("BOM_MOD24"));
-        //    foreach (Identity group in membersBOM)//appGroups)
-        //    {
-        //        Identity[] groupMembers = sec.ReadIdentities(SearchFactor.Sid, new string[] { group.Sid }, QueryMembership.Expanded);
-        //        foreach (Identity member in groupMembers)
-        //        {
-        //            //Console.WriteLine(member.DisplayName);
-        //            if (member.Members != null)
-        //            {
-        //                foreach (string memberSid in member.Members)
-        //                {
-        //                    Identity memberInfo = sec.ReadIdentity(SearchFactor.Sid, memberSid, QueryMembership.None);
-        //                    users.Add(memberInfo.DisplayName);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    users = users.OrderBy(x => x).Distinct().ToList();
-        //}
 
         [HttpGet]
         public JsonResult ListUserByProject(string projectName)
@@ -225,25 +179,15 @@ namespace TimesheetScheduler.Controllers
             wiSerialized.RemainingWork = wi["Remaining Work"] != null ? (double)wi["Remaining Work"] : 0;
             wiSerialized.CreationDate = wi.CreatedDate;
 
-            ////        Id = wi["Id"].ToString(),
-            //        Title = wi["Title"].ToString(),
-            //        Description = wi["Description"].ToString(),
-            //        CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-            //        WorkItemsLinked = _workItemsLinked,
-            //        State = wi.State,
-            //        CreationDate = wi.CreatedDate
-
             if (withoutStartDate)
             {
                 wiSerialized.Description = wi["Description"].ToString();
-                //wiSerialized.CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null;
             }
             else
             {
                 wiSerialized.StartDate = wi["Start Date"] != null ? (DateTime)wi["Start Date"] : (DateTime?)null;
                 wiSerialized.Description = WebUtility.HtmlDecode(wi["Description"].ToString());
                 wiSerialized.IsWeekend = wi["Start Date"] != null ? IsWeekend((DateTime)wi["Start Date"]) : (bool?)null;
-                //wiSerialized.CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : 0;
             }
 
             return wiSerialized;
@@ -262,7 +206,7 @@ namespace TimesheetScheduler.Controllers
                     listWorkItems.Add(convertTFSObjectToWorkItemSerialized(wi, userData.ProjectNameTFS, false));
                 }
 
-                return formatTFSResult(ref listWorkItems, userData.UserName, new DateTime(userData.Year,userData.Month,1));
+                return formatTFSResult(ref listWorkItems, userData.UserName, new DateTime(userData.Year, userData.Month, 1));
             }
             catch (Exception ex)
             {
@@ -277,27 +221,7 @@ namespace TimesheetScheduler.Controllers
 
             foreach (WorkItem wi in GetTFSTaskByMonth(userData, true))
             {
-                //if (wi["Start Date"] == null)
-                //{
-                //var _workItemsLinked = "";
-                //for (int i = 0; i < wi.WorkItemLinks.Count; i++)
-                //{
-                //    _workItemsLinked += "#" + wi.WorkItemLinks[i].TargetId + " ";
-                //}
-
-                //listWorkItemsWithoutStartDate.Add(new WorkItemSerialized()
-                //{
-                //    Id = wi["Id"].ToString(),
-                //    Title = wi["Title"].ToString(),
-                //    Description = wi["Description"].ToString(),
-                //    CompletedHours = wi["Completed Work"] != null ? (double)wi["Completed Work"] : (double?)null,
-                //    WorkItemsLinked = _workItemsLinked,
-                //    State = wi.State,
-                //    CreationDate = wi.CreatedDate
-                //});
                 listWorkItemsWithoutStartDate.Add(convertTFSObjectToWorkItemSerialized(wi, userData.ProjectNameTFS, true));
-
-                //}
             }
 
             return listWorkItemsWithoutStartDate.OrderByDescending(x => x.CreationDate).ToList();
@@ -393,7 +317,7 @@ namespace TimesheetScheduler.Controllers
                 consolidatedMonthUserData.UserName = userName;
                 consolidatedMonthUserData.Period = period;
                 consolidatedMonthUserData.TotalExcludingVAT = consolidatedMonthUserData.RateExcludingVAT * (decimal)consolidatedMonthUserData.WorkedDays;
-                consolidatedMonthUserData.TotalIncludingVAT = consolidatedMonthUserData.TotalExcludingVAT + (consolidatedMonthUserData.TotalExcludingVAT * (_utilService.FetchVatByDate(period)/ 100));
+                consolidatedMonthUserData.TotalIncludingVAT = consolidatedMonthUserData.TotalExcludingVAT + (consolidatedMonthUserData.TotalExcludingVAT * (_utilService.FetchVatByDate(period) / 100));
 
                 return consolidatedMonthUserData;
             }
@@ -411,8 +335,8 @@ namespace TimesheetScheduler.Controllers
                 TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
                 WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
-                var projectName = GetProjectNameTFS();
-                var _iterationPath = GetIterationPathTFS();
+                var projectName = userData.ProjectNameTFS;//GetProjectNameTFS();
+                var _iterationPath = userData.IterationPathTFS;// GetIterationPathTFS();
 
                 string filterByDate = startDateNull ? " AND [Microsoft.VSTS.Scheduling.StartDate] = ''" :
                     (" AND [Microsoft.VSTS.Scheduling.StartDate] >= '" + $"{userData.Year}/{userData.Month}/01'" +
@@ -448,41 +372,49 @@ namespace TimesheetScheduler.Controllers
             var _iterationPath = GetIterationPathTFS();
 
             Uri tfsUri = new Uri(GetUrlTfs());
-
-            NetworkCredential networkCredentials = new NetworkCredential(@"welfare\" + GetUserLogged(), GetUserLoggedPass());
-            Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
-            VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
-            TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
-            WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
-            tfsColl.Authenticate(); // make sure it is authenticate
-
-            Project teamProject = WIS.Projects.GetById(3192); //3192 = BOM_MOD24 [35]
-            WorkItemType workItemType = teamProject.WorkItemTypes["Task"];
-
-            WorkItem newWI = new WorkItem(workItemType);
-            newWI.Title = title;
-            newWI.Fields["System.CreatedBy"].Value = GetUserLogged();
-            newWI.Fields["System.AssignedTo"].Value = userName;
-            newWI.Fields["System.TeamProject"].Value = projectName;
-            newWI.Fields["Iteration Path"].Value = _iterationPath;
-            newWI.Fields["Completed Work"].Value = chargeableHours;
-            newWI.Fields["Remaining Work"].Value = nonchargeableHours;
-            newWI.Fields["Description"].Value = description;
-            newWI.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
-            newWI.State = state;
-
-            LinkWorkItem(ref newWI, workItemLink);
-
-            var _valid = newWI.Validate();
-
-            if (_valid.Count > 0)
+            try
             {
-                throw new Exception("Errors when validating object [CreateTaskOnTFS]");
+                NetworkCredential networkCredentials = new NetworkCredential(@"welfare\" + GetUserLogged(), GetUserLoggedPass());
+                Microsoft.VisualStudio.Services.Common.WindowsCredential windowsCredentials = new Microsoft.VisualStudio.Services.Common.WindowsCredential(networkCredentials);
+                VssCredentials basicCredentials = new VssCredentials(windowsCredentials);
+                TfsTeamProjectCollection tfsColl = new TfsTeamProjectCollection(tfsUri, basicCredentials);
+                WorkItemStore WIS = (WorkItemStore)tfsColl.GetService(typeof(WorkItemStore));
+                tfsColl.Authenticate(); // make sure it is authenticate
+
+                Project teamProject = WIS.Projects.GetById(3192); //3192 = BOM_MOD24 [35]
+                WorkItemType workItemType = teamProject.WorkItemTypes["Task"];
+
+
+
+                WorkItem newWI = new WorkItem(workItemType);
+                newWI.Title = title;
+                newWI.Fields["System.CreatedBy"].Value = GetUserLogged();
+                newWI.Fields["System.AssignedTo"].Value = userName;
+                newWI.Fields["System.TeamProject"].Value = projectName;
+                newWI.Fields["Iteration Path"].Value = _iterationPath;
+                newWI.Fields["Completed Work"].Value = chargeableHours;
+                newWI.Fields["Remaining Work"].Value = nonchargeableHours;
+                newWI.Fields["Description"].Value = description;
+                newWI.Fields["Start Date"].Value = Convert.ToDateTime(startDate);
+                newWI.State = state;
+
+                LinkWorkItem(ref newWI, workItemLink);
+
+                var _valid = newWI.Validate();
+
+                if (_valid.Count > 0)
+                {
+                    throw new Exception("Errors when validating object [CreateTaskOnTFS]");
+                }
+
+                newWI.Save();
+
+                return newWI.Fields["ID"].Value.ToString();
             }
-
-            newWI.Save();
-
-            return newWI.Fields["ID"].Value.ToString();
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public int EditTaskOnTFS(int workItemNumber, string startDate, string title, float chargeableHours, float nonchargeableHours, string state, string description, string workItemLink)
@@ -659,7 +591,7 @@ namespace TimesheetScheduler.Controllers
             WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
 
             var projectName = GetProjectNameTFS();
-            var _iterationPath = GetIterationPathTFS();
+            //var _iterationPath = GetIterationPathTFS();
 
             WorkItem workItem;
 
@@ -894,42 +826,6 @@ namespace TimesheetScheduler.Controllers
             }
         }
 
-
-        //private WorkItemCollection GetMonthlyRatesByTeam(UserDataSearchTFS userData)
-        //{//GetTFSUserData
-        //    try
-        //    {
-        //        Uri tfsUri = new Uri(GetUrlTfs());
-        //        TfsTeamProjectCollection projCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(tfsUri);
-        //        WorkItemStore WIS = (WorkItemStore)projCollection.GetService(typeof(WorkItemStore));
-
-        //        var projectName = GetProjectNameTFS();
-        //        var _iterationPath = GetIterationPathTFS();
-
-        //        userData.UserName = userData.UserName.Replace("'", "''");
-
-        //        WorkItemCollection WIC = WIS.Query(
-        //            " SELECT  [System.Id]," + 
-        //            " [Microsoft.VSTS.Scheduling.CompletedWork], " +
-        //            " [System.AssignedTo] " +
-        //            " FROM WorkItems " +
-        //            " WHERE [System.TeamProject] = '" + userData.ProjectNameTFS + "'" +
-        //            " AND [Iteration Path] = '" + userData.IterationPathTFS + "'" +
-        //            " AND [Assigned To]  in ('Giovanni Boscoli','Kevin Shortall')" +
-        //            //" AND [Assigned To] ='" + userData.UserName + "'" +
-        //            " AND [Work Item Type] = 'Task'" +  //only Task -> Test Case doesn't have the same fields, causing query errors
-        //            " AND [Microsoft.VSTS.Scheduling.StartDate] >= '" + $"{userData.Year}/{userData.Month}/01'" +
-        //            " AND [Microsoft.VSTS.Scheduling.StartDate] <= '" + $"{userData.Year}/{userData.Month}/{DateTime.DaysInMonth(userData.Year, userData.Month)}'" +
-        //            " ORDER BY [Assigned To] ");
-
-        //        return WIC;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-
         private WorkItemCollection GetMonthlyRatesByTeam(JsonUser userData, int Month, int Year)
         {
             try
@@ -967,70 +863,80 @@ namespace TimesheetScheduler.Controllers
         {
             try
             {
-                IList<WorkItemSerialized> listWorkItems;
-                IList<ConsolidatedRateMonthly> listConsolidatedRateMonthly = new List<ConsolidatedRateMonthly>();
-
-                foreach (var member in selectedMembers.SelectedMembers)
-                {
-                    listWorkItems = new List<WorkItemSerialized>();
-
-                    var userWorkItemList = GetMonthlyRatesByTeam(member, selectedMembers.Month, selectedMembers.Year);
-
-                    foreach (WorkItem wi in userWorkItemList)
-                    {
-                        listWorkItems.Add(convertTFSObjectToWorkItemSerialized(wi, member.ProjectNameTFS, false));
-                    }
-
-                    var period = new DateTime(selectedMembers.Year, selectedMembers.Month, 1);
-                    var _item = formatTFSResult(ref listWorkItems, member.Name, period);
-
-                    listConsolidatedRateMonthly.Add(new ConsolidatedRateMonthly()
-                    {
-                        MemberName = member.Name,
-                        DaysWorked = _item.WorkedDays,
-                        RateExcVat = _item.RateExcludingVAT,
-                        RateIncVat = _item.RateIncludingVAT,
-                        DayRateExcVat = _item.TotalExcludingVAT,
-                        DayRateIncVat = _item.TotalIncludingVAT,
-                        TeamDivision = member.TeamDivision,
-                        ProjectNameTFS = _readJsonFilesService.GetTeamNameByProjectId(member.ProjectId) //member.ProjectNameTFS
-                    });
-                }
-
-                var _period = new DateTime(selectedMembers.Year, selectedMembers.Month, 1);
-                FiguresDTO _figures = new FiguresDTO();
-                _figures.Members = listConsolidatedRateMonthly;
-                _figures.TeamName = listConsolidatedRateMonthly.FirstOrDefault().ProjectNameTFS;
-                _figures.VatApplied = _utilService.FetchVatTextByDate(_period);
-                _figures.PeriodSearched = _period.ToString("MMMM yyyy");
-
-                foreach (var item in listConsolidatedRateMonthly.GroupBy(x=>x.TeamDivision))
-                {
-                    var _currentFigure = new FiguresByTeamDivisionDTO() { TeamDivision = item.Key };
-
-                    _currentFigure.FiguresIndexes.Add(new FiguresIndexesDTO()
-                    {
-                        Label = "Total Excl VAT:",//it has to be refactor (not need anymore to have labels being set here)
-                        Value = item.Sum(x => x.DayRateExcVat).ToString()
-                    });
-                    _currentFigure.FiguresIndexes.Add(new FiguresIndexesDTO()
-                    {
-                        Label = "Total Incl VAT:",
-                        Value = item.Sum(x => x.DayRateIncVat).ToString()
-                    });
-
-                    _figures.FiguresByTeamDivision.Add(_currentFigure);
-                }
-
-                _figures.TotalExclVat = listConsolidatedRateMonthly.Sum(x => x.DayRateExcVat).ToString();
-                _figures.TotalInclVat = listConsolidatedRateMonthly.Sum(x => x.DayRateIncVat).ToString();
-                return Json(_figures, JsonRequestBehavior.AllowGet);
+                return Json(consolidatedReportDataFiguresDTO(selectedMembers), JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
                 throw ex;
             }
 
+        }
+
+        private FiguresDTO consolidatedReportDataFiguresDTO(ReportRequestByUsersDTO selectedMembers)
+        {
+            IList<WorkItemSerialized> listWorkItems;
+            IList<ConsolidatedRateMonthly> listConsolidatedRateMonthly = new List<ConsolidatedRateMonthly>();
+
+            foreach (var member in selectedMembers.SelectedMembers)
+            {
+                listWorkItems = new List<WorkItemSerialized>();
+
+                var userWorkItemList = GetMonthlyRatesByTeam(member, selectedMembers.Month, selectedMembers.Year);
+
+                foreach (WorkItem wi in userWorkItemList)
+                {
+                    listWorkItems.Add(convertTFSObjectToWorkItemSerialized(wi, member.ProjectNameTFS, false));
+                }
+
+                var period = new DateTime(selectedMembers.Year, selectedMembers.Month, 1);
+                var _item = formatTFSResult(ref listWorkItems, member.Name, period);
+
+                listConsolidatedRateMonthly.Add(new ConsolidatedRateMonthly()
+                {
+                    MemberName = member.Name,
+                    DaysWorked = _item.WorkedDays,
+                    RateExcVat = _item.RateExcludingVAT,
+                    RateIncVat = _item.RateIncludingVAT,
+                    DayRateExcVat = member.Chargeable ? _item.TotalExcludingVAT : 0,
+                    DayRateIncVat = member.Chargeable ? _item.TotalIncludingVAT : 0,
+                    TeamDivision = member.TeamDivision,
+                    Chargeable = member.Chargeable,
+                    Role = member.Role,
+                    ProjectNameTFS = _readJsonFilesService.GetTeamNameByProjectId(member.ProjectId) //member.ProjectNameTFS
+                });
+            }
+
+            var _period = new DateTime(selectedMembers.Year, selectedMembers.Month, 1);
+            FiguresDTO _figures = new FiguresDTO();
+            _figures.Members = listConsolidatedRateMonthly;
+            _figures.TeamName = listConsolidatedRateMonthly.FirstOrDefault().ProjectNameTFS;
+            _figures.VatApplied = _utilService.FetchVatTextByDate(_period);
+            _figures.PeriodSearched = _period;
+
+            foreach (var item in listConsolidatedRateMonthly.GroupBy(x => x.TeamDivision))
+            {
+                var _currentFigure = new FiguresByTeamDivisionDTO() { TeamDivision = item.Key };
+
+                _currentFigure.TotalExclVAT = item.Where(x => x.Chargeable).Sum(x => x.DayRateExcVat).ToString();
+                _currentFigure.TotalInclVAT = item.Where(x => x.Chargeable).Sum(x => x.DayRateIncVat).ToString();
+
+                //_currentFigure.FiguresIndexes.Add(new FiguresIndexesDTO()
+                //{
+                //    //Label = "Total Excl VAT:",//it has to be refactor (not need anymore to have labels being set here)
+                //    Value = item.Where(x=>x.Chargeable).Sum(x => x.DayRateExcVat).ToString()
+                //});
+                //_currentFigure.FiguresIndexes.Add(new FiguresIndexesDTO()
+                //{
+                //    //Label = "Total Incl VAT:",
+                //    Value = item.Where(x => x.Chargeable).Sum(x => x.DayRateIncVat).ToString()
+                //});
+
+                _figures.FiguresByTeamDivision.Add(_currentFigure);
+            }
+
+            _figures.TotalExclVat = listConsolidatedRateMonthly.Where(x => x.Chargeable).Sum(x => x.DayRateExcVat).ToString();
+            _figures.TotalInclVat = listConsolidatedRateMonthly.Where(x => x.Chargeable).Sum(x => x.DayRateIncVat).ToString();
+            return _figures;
         }
 
         [HttpGet]
@@ -1053,7 +959,7 @@ namespace TimesheetScheduler.Controllers
             catch (Exception ex)
             {
                 //throw new Exception("The work item does not exist, or you do not have permission to access it. (" + workItemId + ")");
-                throw new Exception(ex.Message  + " - (" + workItemId + ")");
+                throw new Exception(ex.Message + " - (" + workItemId + ")");
             }
 
             return _urlTFS + workItem.Project.Name + "/_queries?id=" + workItem["Id"].ToString();
@@ -1070,10 +976,28 @@ namespace TimesheetScheduler.Controllers
             return name.Replace(" ", separator);
         }
 
+        [HttpGet]
         public string TimesheetFileName(string userName, char separator, int _month, int _year)
         {
             var _monthFormatted = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
-            return "Timesheet" + separator + NameSplittedByUnderscore(userName, separator.ToString()) + separator + _monthFormatted + separator + _year;
+            var _fileName = "Timesheet" + separator + NameSplittedByUnderscore(userName, separator.ToString()) + separator + _monthFormatted + separator + _year;
+            return _fileName;
+        }
+
+        [HttpGet]
+        public bool PathExists(string path)
+        {
+            return Directory.Exists(path.ToString());
+        }
+
+        [HttpGet]
+        public string GetPathAndFTimesheetFileName(string path, string userName, int _month, int _year)
+        {
+            if (PathExists(path))
+            {
+                return path + TimesheetFileName(userName.Replace("'", ""), '_', _month, _year);
+            }
+            throw new Exception("Path doesn't exist or you don't have access");
         }
 
         [HttpGet]
@@ -1081,7 +1005,7 @@ namespace TimesheetScheduler.Controllers
         {
             var _desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\";
             var _path = ConfigurationManager.AppSettings["pathTimesheet"];
-            return _path == null ? _desktop : (Directory.Exists(_path.ToString()) ? _path.ToString() : _desktop);
+            return _path == null ? _desktop : (PathExists(_path.ToString()) ? _path.ToString() : _desktop);
         }
 
         [HttpGet]
@@ -1090,20 +1014,41 @@ namespace TimesheetScheduler.Controllers
             return TimesheetSaveLocation() + TimesheetFileName(userName.Replace("'", ""), '_', _month, _year);
         }
 
-        public void SetCellValue(Worksheet worksheet, CellObject cellObj)
+        //public void SetCellValue(Worksheet worksheet, CellObject cellObj)
+        //{
+        //    worksheet.get_Range(cellObj.CellPosition).Value = cellObj.CellValue;
+        //}
+
+        public void SetCellValueClosedXML(IXLWorksheet ws, CellObjectClosedXML cellObj)
         {
-            worksheet.get_Range(cellObj.CellPosition).Value = cellObj.CellValue;
+            ws.Cell(cellObj.CellPosition).Value = cellObj.CellValue;
         }
 
-        public void FormatCell(Worksheet worksheet, CellObject cellObj)
+        //public void FormatCell(Worksheet worksheet, CellObject cellObj)
+        //{
+        //    worksheet.get_Range(cellObj.CellPosition).Font.Size = cellObj.FormatParams.fontSize;
+        //    worksheet.get_Range(cellObj.CellPosition).Font.Bold = cellObj.FormatParams.fontBold;
+        //    worksheet.get_Range(cellObj.CellPosition).Font.Italic = cellObj.FormatParams.fontItalic;
+        //    worksheet.get_Range(cellObj.CellPosition).Font.Color = cellObj.FormatParams.fontColor;
+        //    worksheet.get_Range(cellObj.CellPosition).HorizontalAlignment = cellObj.FormatParams.aligment;
+        //    worksheet.get_Range(cellObj.CellPosition).Locked = cellObj.FormatParams.lockCell;
+        //    //worksheet.get_Range(cellObj.CellPosition).Interior.Color = cellObj.FormatParams.cellBackgroundColor;
+        //}
+
+        public void FormatCellClosedXML(IXLWorksheet ws, CellObjectClosedXML cellObj)
         {
-            worksheet.get_Range(cellObj.CellPosition).Font.Size = cellObj.FormatParams.fontSize;
-            worksheet.get_Range(cellObj.CellPosition).Font.Bold = cellObj.FormatParams.fontBold;
-            worksheet.get_Range(cellObj.CellPosition).Font.Italic = cellObj.FormatParams.fontItalic;
-            worksheet.get_Range(cellObj.CellPosition).Font.Color = cellObj.FormatParams.fontColor;
-            worksheet.get_Range(cellObj.CellPosition).HorizontalAlignment = cellObj.FormatParams.aligment;
-            worksheet.get_Range(cellObj.CellPosition).Locked = cellObj.FormatParams.lockCell;
-            //worksheet.get_Range(cellObj.CellPosition).Interior.Color = cellObj.FormatParams.cellBackgroundColor;
+            var cellKey = cellObj.CellPosition;
+            ws.Cell(cellKey).Value = cellObj.CellValue;
+            ws.Cell(cellKey).FormulaA1 = cellObj.CellFormula;
+            ws.Cell(cellKey).Style.Font.FontSize = cellObj.FormatParams.fontSize;
+            ws.Cell(cellKey).Style.Font.Bold = cellObj.FormatParams.fontBold;
+            ws.Cell(cellKey).Style.Font.Italic = cellObj.FormatParams.fontItalic;
+            ws.Cell(cellKey).Style.Font.FontColor = cellObj.FormatParams.fontColor;
+            //ws.Cell(cellKey).Style.Fill.SetBackgroundColor(cellObj.FormatParams.cellBackgroundColor);
+            ws.Cell(cellKey).Style.Alignment.SetVertical(cellObj.FormatParams.aligmentVertical);// XLAlignmentVerticalValues.Center);
+            ws.Cell(cellKey).Style.Alignment.SetHorizontal(cellObj.FormatParams.aligmentHorizontal);//XLAlignmentHorizontalValues.Left);
+            ws.Cell(cellKey).Style.Protection.SetLocked(cellObj.FormatParams.lockCell);
+            //workSheet.Range(startRow, startColumn, endRow, endColumn).Style.Protection.SetLocked(true);
         }
 
         public string GetUserLogged()
@@ -1232,431 +1177,798 @@ namespace TimesheetScheduler.Controllers
         public CellObject CellHeaderTableComments { get; set; }
         #endregion CellNames
 
+        #region CellNames
+        public CellObjectClosedXML CellProjectNameLabelClosedXML { get; set; }
+        public CellObjectClosedXML CellProjectNameInputClosedXML { get; set; }
+
+        //Period
+        public CellObjectClosedXML CellPeriodLabelClosedXML { get; set; }
+        public CellObjectClosedXML CellPeriodInputClosedXML { get; set; }
+
+        //NAME
+        public CellObjectClosedXML CellNameLabelClosedXML { get; set; }
+        public CellObjectClosedXML CellNameInputClosedXML { get; set; }
+
+        //Total working days in month
+        public CellObjectClosedXML CellTotalWorkingDaysInMonthLabelClosedXML { get; set; }
+        public CellObjectClosedXML CellTotalWorkingDaysInMonthInputClosedXML { get; set; }
+
+        //Total hours
+        public CellObjectClosedXML CellTotalHoursLabelClosedXML { get; set; }
+        public CellObjectClosedXML CellTotalHoursInputClosedXML { get; set; }
+
+        //Total Chargeable hours
+        public CellObjectClosedXML CellTotalChargeableHoursLabelClosedXML { get; set; }
+        public CellObjectClosedXML CellTotalChargeableHoursInputClosedXML { get; set; }
+
+        //Total Non-Chargeable hours
+        public CellObjectClosedXML CellTotalNonChargeableHoursLabelClosedXML { get; set; }
+        public CellObjectClosedXML CellTotalNonChargeableHoursInputClosedXML { get; set; }
+
+        // --------------------------------------- END HEADER TIMESHEET -----------------------------------------
+
+        //---------------------------------------- INIT HEADER TABLE---------------------------------------------
+
+        //Header Table Id
+        public CellObjectClosedXML CellHeaderTableIdClosedXML { get; set; }
+
+        //Header Table Date
+        public CellObjectClosedXML CellHeaderTableDateClosedXML { get; set; }
+
+        //Header Table WorkItem
+        public CellObjectClosedXML CellHeaderTableWorkItemClosedXML { get; set; }
+
+        //Header Table Description
+        public CellObjectClosedXML CellHeaderTableDescriptionClosedXML { get; set; }
+
+        //Header Table Chargeable Hours
+        public CellObjectClosedXML CellHeaderTableChargeableHoursClosedXML { get; set; }
+
+        //Header Table Non-Chargeable Hours
+        public CellObjectClosedXML CellHeaderTableNonChargeableHoursClosedXML { get; set; }
+
+        //Header Table Comments
+        public CellObjectClosedXML CellHeaderTableCommentsClosedXML { get; set; }
+        #endregion CellNames
+
         //---------------------------------------- END HEADER TABLE---------------------------------------------
 
         #endregion Const Cell Range and Labels
 
-        public void InitExcelVariables(string userName, int _month, int _year)
+        //public void InitExcelVariables(string userName, int _month, int _year)
+        //{
+        //    UserName = userName;
+        //    MonthTimesheet = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
+        //    YearTimesheet = _year.ToString();
+
+        //    CellProjectNameLabel = new CellObject
+        //    {
+        //        CellPosition = "B1",
+        //        CellValue = "Project Name",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignLeft,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellProjectNameInput = new CellObject
+        //    {
+        //        CellPosition = "C1",
+        //        CellValue = "BOMi Modelling Team", //TODO DYNAMIC
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = false,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignLeft,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellPeriodLabel = new CellObject
+        //    {
+        //        CellPosition = "B2",
+        //        CellValue = "Period",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignLeft,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellPeriodInput = new CellObject
+        //    {
+        //        CellPosition = "C2",
+        //        CellValue = "'" + new DateTime(_year, _month, 1).ToString("MMM/yyyy", CultureInfo.CreateSpecificCulture("en")), //TODO DYNAMIC
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = false,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignLeft,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellNameLabel = new CellObject
+        //    {
+        //        CellPosition = "B3",
+        //        CellValue = "Name",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignLeft,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellNameInput = new CellObject
+        //    {
+        //        CellPosition = "C3",
+        //        CellValue = UserName, //TODO DYNAMIC
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = false,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignLeft,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellTotalWorkingDaysInMonthLabel = new CellObject
+        //    {
+        //        CellPosition = "D1",
+        //        CellValue = "Total Working Days In Month",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignRight,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellTotalWorkingDaysInMonthInput = new CellObject
+        //    {
+        //        CellPosition = "E1",
+        //        CellValue = "=E3/7.5", //TODO: apply formula
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignRight,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellTotalHoursLabel = new CellObject
+        //    {
+        //        CellPosition = "D2",
+        //        CellValue = "Total Hours",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignRight,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellTotalHoursInput = new CellObject
+        //    {
+        //        CellPosition = "E2",
+        //        CellValue = "=SUM(E3:E4)", //TODO: apply formula
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignRight,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellTotalChargeableHoursLabel = new CellObject
+        //    {
+        //        CellPosition = "D3",
+        //        CellValue = "Total Chargeable Hours",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignRight,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellTotalChargeableHoursInput = new CellObject
+        //    {
+        //        CellPosition = "E3",
+        //        //CellValue = "=SUM(E6:E50)", //TODO: apply formula // it gets set in CreateTable method (868)
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignRight,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellTotalNonChargeableHoursLabel = new CellObject
+        //    {
+        //        CellPosition = "D4",
+        //        CellValue = "Total Non-Chargeable Hours",
+        //        //(Hours worked in excess of agreed daily working hours or non chargeable days as agreed)
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignRight,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellTotalNonChargeableHoursInput = new CellObject
+        //    {
+        //        CellPosition = "E4",
+        //        //CellValue = "=SUM(F6:F50)", //TODO: apply formula // it gets set in CreateTable method (868)
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 11,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignRight,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellHeaderTableId = new CellObject
+        //    {
+        //        CellPosition = "A5",
+        //        CellValue = "Id",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 12,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignCenter,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellHeaderTableDate = new CellObject
+        //    {
+        //        CellPosition = "B5",
+        //        CellValue = "Date",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 12,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignCenter,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellHeaderTableWorkItem = new CellObject
+        //    {
+        //        CellPosition = "C5",
+        //        CellValue = "Work Item",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 12,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignCenter,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellHeaderTableDescription = new CellObject
+        //    {
+        //        CellPosition = "D5",
+        //        CellValue = "Title",//"Description",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 12,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignCenter,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellHeaderTableChargeableHours = new CellObject
+        //    {
+        //        CellPosition = "E5",
+        //        CellValue = "Chargeable Hours",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 12,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignCenter,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellHeaderTableNonChargeableHours = new CellObject
+        //    {
+        //        CellPosition = "F5",
+        //        CellValue = "Non-Charg. Hours", //"Non-Chargeable Hours",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 12,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignCenter,
+        //            lockCell = true
+        //        }
+        //    };
+
+        //    CellHeaderTableComments = new CellObject
+        //    {
+        //        CellPosition = "G5",
+        //        CellValue = "Work Items Linked", //"Comments",
+        //        FormatParams = new ParamsFormatCell()
+        //        {
+        //            fontSize = 12,
+        //            fontBold = true,
+        //            fontItalic = false,
+        //            fontColor = Color.Black,
+        //            cellBackgroundColor = Color.Transparent,
+        //            aligment = XlHAlign.xlHAlignCenter,
+        //            lockCell = true
+        //        }
+        //    };
+        //}
+
+        public void InitExcelVariablesClosedXML(string userName, int _month, int _year)
         {
             UserName = userName;
             MonthTimesheet = new DateTime(_year, _month, 1).ToString("MMMM", CultureInfo.CreateSpecificCulture("en"));
             YearTimesheet = _year.ToString();
 
-            CellProjectNameLabel = new CellObject
+            CellProjectNameLabelClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "B1",
                 CellValue = "Project Name",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
-                    fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignLeft,
-                    lockCell = true
+                    fontBold = true
                 }
             };
 
-            CellProjectNameInput = new CellObject
+            CellProjectNameInputClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "C1",
                 CellValue = "BOMi Modelling Team", //TODO DYNAMIC
-                FormatParams = new ParamsFormatCell()
-                {
-                    fontSize = 11,
-                    fontBold = false,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignLeft,
-                    lockCell = true
-                }
+                FormatParams = new ParamsFormatCellClosedXML()
             };
 
-            CellPeriodLabel = new CellObject
+            CellPeriodLabelClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "B2",
                 CellValue = "Period",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
-                    fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignLeft,
-                    lockCell = true
+                    fontBold = true
                 }
             };
 
-            CellPeriodInput = new CellObject
+            CellPeriodInputClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "C2",
                 CellValue = "'" + new DateTime(_year, _month, 1).ToString("MMM/yyyy", CultureInfo.CreateSpecificCulture("en")), //TODO DYNAMIC
-                FormatParams = new ParamsFormatCell()
-                {
-                    fontSize = 11,
-                    fontBold = false,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignLeft,
-                    lockCell = true
-                }
+                FormatParams = new ParamsFormatCellClosedXML()
             };
 
-            CellNameLabel = new CellObject
+            CellNameLabelClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "B3",
                 CellValue = "Name",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
-                    fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignLeft,
-                    lockCell = true
+                    fontBold = true
                 }
             };
 
-            CellNameInput = new CellObject
+            CellNameInputClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "C3",
                 CellValue = UserName, //TODO DYNAMIC
-                FormatParams = new ParamsFormatCell()
-                {
-                    fontSize = 11,
-                    fontBold = false,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignLeft,
-                    lockCell = true
-                }
+                FormatParams = new ParamsFormatCellClosedXML()
             };
 
-            CellTotalWorkingDaysInMonthLabel = new CellObject
+            CellTotalWorkingDaysInMonthLabelClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "D1",
                 CellValue = "Total Working Days In Month",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignRight,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Right
                 }
             };
 
-            CellTotalWorkingDaysInMonthInput = new CellObject
+            CellTotalWorkingDaysInMonthInputClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "E1",
-                CellValue = "=E3/7.5", //TODO: apply formula
-                FormatParams = new ParamsFormatCell()
+                //CellValue = "=E3/7.5", //TODO: apply formula
+                CellFormula = "=E3/7.5", //TODO: apply formula
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignRight,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Right
                 }
             };
 
-            CellTotalHoursLabel = new CellObject
+            CellTotalHoursLabelClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "D2",
                 CellValue = "Total Hours",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignRight,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Right
                 }
             };
 
-            CellTotalHoursInput = new CellObject
+            CellTotalHoursInputClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "E2",
-                CellValue = "=SUM(E3:E4)", //TODO: apply formula
-                FormatParams = new ParamsFormatCell()
+                //CellValue = "=SUM(E3:E4)", //TODO: apply formula
+                CellFormula = "=SUM(E3:E4)", //TODO: apply formula
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignRight,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Right
                 }
             };
 
-            CellTotalChargeableHoursLabel = new CellObject
+            CellTotalChargeableHoursLabelClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "D3",
                 CellValue = "Total Chargeable Hours",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignRight,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Right
                 }
             };
 
-            CellTotalChargeableHoursInput = new CellObject
+            CellTotalChargeableHoursInputClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "E3",
                 //CellValue = "=SUM(E6:E50)", //TODO: apply formula // it gets set in CreateTable method (868)
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignRight,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Right
                 }
             };
 
-            CellTotalNonChargeableHoursLabel = new CellObject
+            CellTotalNonChargeableHoursLabelClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "D4",
                 CellValue = "Total Non-Chargeable Hours",
                 //(Hours worked in excess of agreed daily working hours or non chargeable days as agreed)
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignRight,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Right
                 }
             };
 
-            CellTotalNonChargeableHoursInput = new CellObject
+            CellTotalNonChargeableHoursInputClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "E4",
                 //CellValue = "=SUM(F6:F50)", //TODO: apply formula // it gets set in CreateTable method (868)
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
-                    fontSize = 11,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignRight,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Right
                 }
             };
 
-            CellHeaderTableId = new CellObject
+            CellHeaderTableIdClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "A5",
                 CellValue = "Id",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
                     fontSize = 12,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignCenter,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Center
                 }
             };
 
-            CellHeaderTableDate = new CellObject
+            CellHeaderTableDateClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "B5",
                 CellValue = "Date",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
                     fontSize = 12,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignCenter,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Center
                 }
             };
 
-            CellHeaderTableWorkItem = new CellObject
+            CellHeaderTableWorkItemClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "C5",
                 CellValue = "Work Item",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
                     fontSize = 12,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignCenter,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Center
                 }
             };
 
-            CellHeaderTableDescription = new CellObject
+            CellHeaderTableDescriptionClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "D5",
                 CellValue = "Title",//"Description",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
                     fontSize = 12,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignCenter,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Center
                 }
             };
 
-            CellHeaderTableChargeableHours = new CellObject
+            CellHeaderTableChargeableHoursClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "E5",
                 CellValue = "Chargeable Hours",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
                     fontSize = 12,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignCenter,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Center
                 }
             };
 
-            CellHeaderTableNonChargeableHours = new CellObject
+            CellHeaderTableNonChargeableHoursClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "F5",
                 CellValue = "Non-Charg. Hours", //"Non-Chargeable Hours",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
                     fontSize = 12,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignCenter,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Center
                 }
             };
 
-            CellHeaderTableComments = new CellObject
+            CellHeaderTableCommentsClosedXML = new CellObjectClosedXML
             {
                 CellPosition = "G5",
                 CellValue = "Work Items Linked", //"Comments",
-                FormatParams = new ParamsFormatCell()
+                FormatParams = new ParamsFormatCellClosedXML()
                 {
                     fontSize = 12,
                     fontBold = true,
-                    fontItalic = false,
-                    fontColor = Color.Black,
-                    cellBackgroundColor = Color.Transparent,
-                    aligment = XlHAlign.xlHAlignCenter,
-                    lockCell = true
+                    aligmentHorizontal = XLAlignmentHorizontalValues.Center
                 }
             };
         }
 
-        private void CreateHeader(Worksheet worksheet)
+        //private void CreateHeader(Worksheet worksheet)
+        //{
+        //    //-------------------------------- INIT TIMESHEET HEADER -----------------------------------------------
+        //    SetValAndFormatCell(worksheet, CellProjectNameLabel);//B1 - Project Name
+        //    SetValAndFormatCell(worksheet, CellProjectNameInput);//C1 - Project Name
+        //    SetValAndFormatCell(worksheet, CellPeriodLabel);//B2 - Month
+        //    SetValAndFormatCell(worksheet, CellPeriodInput);//C2 - Month
+        //    SetValAndFormatCell(worksheet, CellNameLabel);//B3 - Name
+        //    SetValAndFormatCell(worksheet, CellNameInput);//C3 - Name
+        //    //----------------------------------------------------------------------------------------------
+        //    SetValAndFormatCell(worksheet, CellTotalWorkingDaysInMonthLabel);//D1 - Total working days in month
+        //    SetValAndFormatCell(worksheet, CellTotalWorkingDaysInMonthInput);//E1 - Total working days in month
+        //    SetValAndFormatCell(worksheet, CellTotalHoursLabel);//D2 - Total Hours
+        //    SetValAndFormatCell(worksheet, CellTotalHoursInput);//E2 - Total Hours
+        //    SetValAndFormatCell(worksheet, CellTotalChargeableHoursLabel);//D3 - Total Chargeable Hours
+        //    SetValAndFormatCell(worksheet, CellTotalChargeableHoursInput);//E3 - Total Chargeable Hours
+        //    SetValAndFormatCell(worksheet, CellTotalNonChargeableHoursLabel);//D4 - Total Non-Chargeable Hours
+        //    SetValAndFormatCell(worksheet, CellTotalNonChargeableHoursInput);//E4 - Total Non-Chargeable Hours
+        //    //-------------------------------- END TIMESHEET HEADER -----------------------------------------------
+
+        //    //---------------------------------------- INIT HEADER TABLE---------------------------------------------
+        //    SetValAndFormatCell(worksheet, CellHeaderTableId);
+        //    SetValAndFormatCell(worksheet, CellHeaderTableDate);
+        //    SetValAndFormatCell(worksheet, CellHeaderTableWorkItem);
+        //    SetValAndFormatCell(worksheet, CellHeaderTableDescription);
+        //    SetValAndFormatCell(worksheet, CellHeaderTableChargeableHours);
+        //    SetValAndFormatCell(worksheet, CellHeaderTableNonChargeableHours);
+        //    SetValAndFormatCell(worksheet, CellHeaderTableComments);
+        //    //---------------------------------------- END HEADER TABLE---------------------------------------------
+        //}
+
+        private void CreateHeaderClosedXML(IXLWorksheet ws)
         {
             //-------------------------------- INIT TIMESHEET HEADER -----------------------------------------------
-            SetValAndFormatCell(worksheet, CellProjectNameLabel);//B1 - Project Name
-            SetValAndFormatCell(worksheet, CellProjectNameInput);//C1 - Project Name
-            SetValAndFormatCell(worksheet, CellPeriodLabel);//B2 - Month
-            SetValAndFormatCell(worksheet, CellPeriodInput);//C2 - Month
-            SetValAndFormatCell(worksheet, CellNameLabel);//B3 - Name
-            SetValAndFormatCell(worksheet, CellNameInput);//C3 - Name
+            SetValAndFormatCellClosedXML(ws, CellProjectNameLabelClosedXML);//B1 - Project Name
+            SetValAndFormatCellClosedXML(ws, CellProjectNameInputClosedXML);//C1 - Project Name
+            SetValAndFormatCellClosedXML(ws, CellPeriodLabelClosedXML);//B2 - Month
+            SetValAndFormatCellClosedXML(ws, CellPeriodInputClosedXML);//C2 - Month
+            SetValAndFormatCellClosedXML(ws, CellNameLabelClosedXML);//B3 - Name
+            SetValAndFormatCellClosedXML(ws, CellNameInputClosedXML);//C3 - Name
             //----------------------------------------------------------------------------------------------
-            SetValAndFormatCell(worksheet, CellTotalWorkingDaysInMonthLabel);//D1 - Total working days in month
-            SetValAndFormatCell(worksheet, CellTotalWorkingDaysInMonthInput);//E1 - Total working days in month
-            SetValAndFormatCell(worksheet, CellTotalHoursLabel);//D2 - Total Hours
-            SetValAndFormatCell(worksheet, CellTotalHoursInput);//E2 - Total Hours
-            SetValAndFormatCell(worksheet, CellTotalChargeableHoursLabel);//D3 - Total Chargeable Hours
-            SetValAndFormatCell(worksheet, CellTotalChargeableHoursInput);//E3 - Total Chargeable Hours
-            SetValAndFormatCell(worksheet, CellTotalNonChargeableHoursLabel);//D4 - Total Non-Chargeable Hours
-            SetValAndFormatCell(worksheet, CellTotalNonChargeableHoursInput);//E4 - Total Non-Chargeable Hours
+            SetValAndFormatCellClosedXML(ws, CellTotalWorkingDaysInMonthLabelClosedXML);//D1 - Total working days in month
+            SetValAndFormatCellClosedXML(ws, CellTotalWorkingDaysInMonthInputClosedXML);//E1 - Total working days in month
+            SetValAndFormatCellClosedXML(ws, CellTotalHoursLabelClosedXML);//D2 - Total Hours
+            SetValAndFormatCellClosedXML(ws, CellTotalHoursInputClosedXML);//E2 - Total Hours
+            SetValAndFormatCellClosedXML(ws, CellTotalChargeableHoursLabelClosedXML);//D3 - Total Chargeable Hours
+            SetValAndFormatCellClosedXML(ws, CellTotalChargeableHoursInputClosedXML);//E3 - Total Chargeable Hours
+            SetValAndFormatCellClosedXML(ws, CellTotalNonChargeableHoursLabelClosedXML);//D4 - Total Non-Chargeable Hours
+            SetValAndFormatCellClosedXML(ws, CellTotalNonChargeableHoursInputClosedXML);//E4 - Total Non-Chargeable Hours
             //-------------------------------- END TIMESHEET HEADER -----------------------------------------------
 
             //---------------------------------------- INIT HEADER TABLE---------------------------------------------
-            SetValAndFormatCell(worksheet, CellHeaderTableId);
-            SetValAndFormatCell(worksheet, CellHeaderTableDate);
-            SetValAndFormatCell(worksheet, CellHeaderTableWorkItem);
-            SetValAndFormatCell(worksheet, CellHeaderTableDescription);
-            SetValAndFormatCell(worksheet, CellHeaderTableChargeableHours);
-            SetValAndFormatCell(worksheet, CellHeaderTableNonChargeableHours);
-            SetValAndFormatCell(worksheet, CellHeaderTableComments);
+            SetValAndFormatCellClosedXML(ws, CellHeaderTableIdClosedXML);
+            SetValAndFormatCellClosedXML(ws, CellHeaderTableDateClosedXML);
+            SetValAndFormatCellClosedXML(ws, CellHeaderTableWorkItemClosedXML);
+            SetValAndFormatCellClosedXML(ws, CellHeaderTableDescriptionClosedXML);
+            SetValAndFormatCellClosedXML(ws, CellHeaderTableChargeableHoursClosedXML);
+            SetValAndFormatCellClosedXML(ws, CellHeaderTableNonChargeableHoursClosedXML);
+            SetValAndFormatCellClosedXML(ws, CellHeaderTableCommentsClosedXML);
             //---------------------------------------- END HEADER TABLE---------------------------------------------
         }
 
-        private int CreateTable(Worksheet worksheet, UserDataSearchTFS userData)
+        //private int CreateTable(Worksheet worksheet, UserDataSearchTFS userData)
+        //{
+        //    var _table = TimesheetRecords(userData);
+        //    int firstRow = 6;
+        //    int lastRow = _table.Count + firstRow;
+        //    int j;
+
+        //    worksheet.get_Range(CellTotalChargeableHoursInput.CellPosition).Value = "=SUM(E" + firstRow + ":E" + lastRow + ")";
+        //    worksheet.get_Range(CellTotalNonChargeableHoursInput.CellPosition).Value = "=SUM(F" + firstRow + ":F" + lastRow + ")";
+
+        //    for (int i = firstRow; i < lastRow; i++) //ROW
+        //    {
+        //        j = i - firstRow;
+        //        worksheet.Cells[i, 1] = _table[j].Id;
+        //        worksheet.Cells[i, 2] = _table[j].Date.ToShortDateString();
+        //        worksheet.Cells[i, 3] = _table[j].WorkItemNumber;
+        //        worksheet.Cells[i, 4] = _table[j].Description;
+        //        worksheet.Cells[i, 5] = _table[j].ChargeableHours;
+        //        worksheet.Cells[i, 6] = _table[j].NonChargeableHours;
+        //        worksheet.Cells[i, 7] = _table[j].Comments;
+
+        //        worksheet.Cells[i, 2].NumberFormat = "MM/DD/YYYY"; //date in american format
+        //        worksheet.Cells[i, 3].NumberFormat = "0"; //workitem formatted as number
+
+        //        if (_table[j].IsWeekend)
+        //        {
+        //            //worksheet.Cells[i, 3] = ""; //WorkItemNumber
+        //            //worksheet.Cells[i, 5] = ""; //ChargeableHours
+        //            //worksheet.Cells[i, 6] = ""; //NonChargeableHours
+        //            worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Interior.Color = Color.DarkGray; //TODO
+        //            worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = true;
+        //        }
+        //        else
+        //        {
+        //            worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Interior.Color = Color.White; //TODO
+        //            worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = false;
+        //        }
+        //    }
+
+        //    worksheet.Range[worksheet.Cells[firstRow, 1], worksheet.Cells[lastRow, 7]].HorizontalAlignment = XlHAlign.xlHAlignCenter;
+        //    worksheet.Range[worksheet.Cells[firstRow, 1], worksheet.Cells[lastRow, 7]].VerticalAlignment = XlHAlign.xlHAlignCenter;
+
+        //    worksheet.Cells[1, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Working Days In Month)
+        //    worksheet.Cells[2, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Hours)
+        //    worksheet.Cells[3, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Chargeable Hours)
+        //    worksheet.Cells[4, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Non-Chargeable Hours)
+
+        //    return _table.Count;
+        //}
+
+        private int CreateTableClosedXML(IXLWorksheet ws, UserDataSearchTFS userData)
         {
             var _table = TimesheetRecords(userData);
             int firstRow = 6;
             int lastRow = _table.Count + firstRow;
             int j;
 
-            worksheet.get_Range(CellTotalChargeableHoursInput.CellPosition).Value = "=SUM(E" + firstRow + ":E" + lastRow + ")";
-            worksheet.get_Range(CellTotalNonChargeableHoursInput.CellPosition).Value = "=SUM(F" + firstRow + ":F" + lastRow + ")";
+            ws.Cell(CellTotalChargeableHoursInputClosedXML.CellPosition).FormulaA1 = "=SUM(E" + firstRow + ":E" + lastRow + ")";
+            ws.Cell(CellTotalNonChargeableHoursInputClosedXML.CellPosition).FormulaA1 = "=SUM(F" + firstRow + ":F" + lastRow + ")";
 
             for (int i = firstRow; i < lastRow; i++) //ROW
             {
                 j = i - firstRow;
-                worksheet.Cells[i, 1] = _table[j].Id;
-                worksheet.Cells[i, 2] = _table[j].Date.ToShortDateString();
-                worksheet.Cells[i, 3] = _table[j].WorkItemNumber;
-                worksheet.Cells[i, 4] = _table[j].Description;
-                worksheet.Cells[i, 5] = _table[j].ChargeableHours;
-                worksheet.Cells[i, 6] = _table[j].NonChargeableHours;
-                worksheet.Cells[i, 7] = _table[j].Comments;
 
-                worksheet.Cells[i, 2].NumberFormat = "MM/DD/YYYY"; //date in american format
-                worksheet.Cells[i, 3].NumberFormat = "0"; //workitem formatted as number
+                ws.Cell(i, 1).Value = _table[j].Id;
+                ws.Cell(i, 2).Value = _table[j].Date.ToShortDateString();
+                ws.Cell(i, 3).Value = _table[j].WorkItemNumber;
+                ws.Cell(i, 4).Value = _table[j].Description;
+                ws.Cell(i, 5).Value = _table[j].ChargeableHours;
+                ws.Cell(i, 6).Value = _table[j].NonChargeableHours;
+                ws.Cell(i, 7).Value = _table[j].Comments;
+
+                ws.Cell(i, 2).Style.NumberFormat.Format = "MM/DD/YYYY"; //date in american format;
+                ws.Cell(i, 3).Style.NumberFormat.Format = "0"; //date in american format;
 
                 if (_table[j].IsWeekend)
                 {
-                    //worksheet.Cells[i, 3] = ""; //WorkItemNumber
-                    //worksheet.Cells[i, 5] = ""; //ChargeableHours
-                    //worksheet.Cells[i, 6] = ""; //NonChargeableHours
-                    worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Interior.Color = Color.DarkGray; //TODO
-                    worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = true;
+                    ws.Range(ws.Cell(i, 1), ws.Cell(i, 7)).Style.Fill.SetBackgroundColor(XLColor.DarkGray);
+                    ws.Range(ws.Cell(i, 1), ws.Cell(i, 7)).Style.Protection.SetLocked(true);
                 }
                 else
                 {
-                    worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Interior.Color = Color.White; //TODO
-                    worksheet.Range[worksheet.Cells[i, 1], worksheet.Cells[i, 7]].Locked = false;
+                    ws.Range(ws.Cell(i, 1), ws.Cell(i, 7)).Style.Fill.SetBackgroundColor(XLColor.White);
                 }
+
+                ws.Range(ws.Cell(i, 1), ws.Cell(i, 7)).Style.Protection.SetLocked(true);
             }
 
-            worksheet.Range[worksheet.Cells[firstRow, 1], worksheet.Cells[lastRow, 7]].HorizontalAlignment = XlHAlign.xlHAlignCenter;
-            worksheet.Range[worksheet.Cells[firstRow, 1], worksheet.Cells[lastRow, 7]].VerticalAlignment = XlHAlign.xlHAlignCenter;
+            ws.Range(ws.Cell(firstRow, 1), ws.Cell(lastRow, 7)).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            ws.Range(ws.Cell(firstRow, 1), ws.Cell(lastRow, 7)).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
-            worksheet.Cells[1, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Working Days In Month)
-            worksheet.Cells[2, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Hours)
-            worksheet.Cells[3, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Chargeable Hours)
-            worksheet.Cells[4, 5].NumberFormat = "#,##0.00"; //header formula with 2 decimal places (Total Non-Chargeable Hours)
+            ws.Cell(1, 5).Style.NumberFormat.Format = "#,##0.00"; //header formula with 2 decimal places (Total Working Days In Month)
+            ws.Cell(2, 5).Style.NumberFormat.Format = "#,##0.00"; //header formula with 2 decimal places (Total Hours)
+            ws.Cell(3, 5).Style.NumberFormat.Format = "#,##0.00"; //header formula with 2 decimal places (Total Chargeable Hours)
+            ws.Cell(4, 5).Style.NumberFormat.Format = "#,##0.00"; //header formula with 2 decimal places (Total Non-Chargeable Hours)
 
             return _table.Count;
         }
@@ -1779,10 +2091,16 @@ namespace TimesheetScheduler.Controllers
             return timesheetRecords;
         }
 
-        public void SetValAndFormatCell(Worksheet worksheet, CellObject cellObj)
+        //public void SetValAndFormatCell(Worksheet worksheet, CellObject cellObj)
+        //{
+        //    SetCellValue(worksheet, cellObj);
+        //    FormatCell(worksheet, cellObj);
+        //}
+
+        public void SetValAndFormatCellClosedXML(IXLWorksheet worksheet, CellObjectClosedXML cellObj)
         {
-            SetCellValue(worksheet, cellObj);
-            FormatCell(worksheet, cellObj);
+            SetCellValueClosedXML(worksheet, cellObj);
+            FormatCellClosedXML(worksheet, cellObj);
         }
 
         //[HttpPost]
@@ -1909,132 +2227,8 @@ namespace TimesheetScheduler.Controllers
         //    return result.ToString();
         //}
 
-        [HttpPost]
-        public string SaveExcelFile(UserDataSearchTFS userData)
-        {
-            Application excel;
-            Workbook worKbooK;
-            Worksheet worksheet;
-            Range celLrangE;
-
-            try
-            {
-                userData.UserName = userData.UserName.Replace("'", "''");
-
-                excel = new Application();
-                excel.Visible = false;
-                excel.DisplayAlerts = false;
-                worKbooK = excel.Workbooks.Add(Type.Missing);
-                var tableEventCount = 0;
-
-                InitExcelVariables(userData.UserName, userData.Month, userData.Year);
-
-                worksheet = (Worksheet)worKbooK.ActiveSheet;
-                //worksheet.Name = "Timesheet_" + userData.UserName;//.Replace(" ", "_");
-
-                CreateHeader(worksheet);
-                tableEventCount = CreateTable(worksheet, userData);
-                resizeColumns(worksheet);
-
-                var borderStartsRow = 5;
-                var borderEndsRow = borderStartsRow + tableEventCount;
-                celLrangE = worksheet.Range[worksheet.Cells[borderStartsRow, 1], worksheet.Cells[borderEndsRow, 7]]; //TODO
-                Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
-                border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
-                border.Weight = 2d;
-
-                protectSheet(worksheet);
-                var saveParams = TimesheetSaveLocationAndFileName(userData.UserName, userData.Month, userData.Year);
-                worKbooK.SaveAs(saveParams);
-
-                worKbooK.Close();
-                excel.Workbooks.Close();
-                excel.Quit();
-                Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
-                Marshal.ReleaseComObject(worKbooK);
-                return "File saved sucessfully!"; // - Path: " + saveParams;
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex.Message);
-                return "Internal Code (1) - " + ex.Message;
-            }
-            finally
-            {
-                worksheet = null;
-                celLrangE = null;
-                worKbooK = null;
-
-            }
-        }
-
-        [HttpPost]
-        public string BulkSaveExcelFile(IList<UserDataSearchTFS> userData)
-        {
-            Application excel;
-            Workbook worKbooK;
-            Worksheet worksheet;
-            Range celLrangE;
-            StringBuilder result = new StringBuilder();
-            foreach (var item in userData)
-            {
-                try
-                {
-                    item.UserName = item.UserName.Replace("'", "''");
-
-                    excel = new Application();
-                    excel.Visible = false;
-                    excel.DisplayAlerts = false;
-                    worKbooK = excel.Workbooks.Add(Type.Missing);
-                    var tableEventCount = 0;
-
-                    InitExcelVariables(item.UserName, item.Month, item.Year);
-
-                    worksheet = (Worksheet)worKbooK.ActiveSheet;
-                    worksheet.Name = "Timesheet_" + item.UserName;//.Replace(" ", "_");
-
-                    CreateHeader(worksheet);
-                    tableEventCount = CreateTable(worksheet, item);
-                    resizeColumns(worksheet);
-
-                    var borderStartsRow = 5;
-                    var borderEndsRow = borderStartsRow + tableEventCount;
-                    celLrangE = worksheet.Range[worksheet.Cells[borderStartsRow, 1], worksheet.Cells[borderEndsRow, 7]]; //TODO
-                    Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
-                    border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
-                    border.Weight = 2d;
-
-                    protectSheet(worksheet);
-                    var saveParams = TimesheetSaveLocationAndFileName(item.UserName, item.Month, item.Year);
-                    worKbooK.SaveAs(saveParams);
-
-                    result.Append($"File saved sucessfully!({worksheet.Name})"); // - Path: " + saveParams;
-                    result.Append("<br />");
-                    worKbooK.Close();
-                    excel.Workbooks.Close();
-                    excel.Quit();
-                    Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
-                    Marshal.ReleaseComObject(worKbooK);
-                }
-                catch (Exception ex)
-                {
-                    Console.Write(ex.Message);
-                    result.AppendLine($"Interal Code (1) - {ex.Message}");
-                    result.Append("<br />");
-                }
-                finally
-                {
-                    worksheet = null;
-                    celLrangE = null;
-                    worKbooK = null;
-
-                }
-            }
-            return result.ToString();
-        }
-
         //[HttpPost]
-        //public FileResult SaveExcelFile(UserDataSearchTFS userData)
+        //public string SaveExcelFile_Old(UserDataSearchTFS userData)
         //{
         //    Application excel;
         //    Workbook worKbooK;
@@ -2054,7 +2248,7 @@ namespace TimesheetScheduler.Controllers
         //        InitExcelVariables(userData.UserName, userData.Month, userData.Year);
 
         //        worksheet = (Worksheet)worKbooK.ActiveSheet;
-        //        worksheet.Name = "Timesheet_" + userData.UserName;//.Replace(" ", "_");
+        //        //worksheet.Name = "Timesheet_" + userData.UserName;//.Replace(" ", "_");
 
         //        CreateHeader(worksheet);
         //        tableEventCount = CreateTable(worksheet, userData);
@@ -2069,43 +2263,19 @@ namespace TimesheetScheduler.Controllers
 
         //        protectSheet(worksheet);
         //        var saveParams = TimesheetSaveLocationAndFileName(userData.UserName, userData.Month, userData.Year);
-        //        //worKbooK.SaveAs(saveParams);
-
-        //        MemoryStream ms = new MemoryStream();
-        //        worKbooK.SaveAs(ms);//, saveParams);
-        //        ms.Seek(0, SeekOrigin.Begin);
-
-        //        byte[] buffer = new byte[(int)ms.Length];
-        //        buffer = ms.ToArray();
+        //        worKbooK.SaveAs(saveParams);
 
         //        worKbooK.Close();
         //        excel.Workbooks.Close();
         //        excel.Quit();
         //        Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
         //        Marshal.ReleaseComObject(worKbooK);
-        //        //return "File saved sucessfully!"; // - Path: " + saveParams;
-
-        //        using (MemoryStream stream = new MemoryStream())
-        //        {
-        //            string fileName = TimesheetFileName(userData.UserName.Replace("'", ""), '_', userData.Month, userData.Year);// "myfile.ext";
-        //            return File(buffer, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
-        //            //return File(stream, "application/vnd.ms-excel");
-        //        }
-
-        //        //MemoryStream m = new MemoryStream();
-        //        ////worKbooK.SaveToStream(m);
-        //        //using (MemoryStream stream = new MemoryStream())
-        //        //{
-        //        //    worKbooK.SaveAs(stream);
-        //        //    return File(stream, "application/vnd.ms-excel");
-        //        //}
-
-        //        //return File(m, "application/vnd.ms-excel");
+        //        return "File saved sucessfully!"; // - Path: " + saveParams;
         //    }
         //    catch (Exception ex)
         //    {
         //        Console.Write(ex.Message);
-        //        return null;// "Interal Code (1) - " + ex.Message;
+        //        return "Internal Code (1) - " + ex.Message;
         //    }
         //    finally
         //    {
@@ -2116,52 +2286,243 @@ namespace TimesheetScheduler.Controllers
         //    }
         //}
 
+        [HttpPost]
+        public string SaveExcelFile(UserDataSearchTFS userData, string folderPath = null)
+        {
+            try
+            {
+                StringBuilder result = new StringBuilder();
+
+                userData.UserName = userData.UserName.Replace("'", "''");
+
+                var workBookClosedXML = new XLWorkbook();
+                var _worksheet = workBookClosedXML.Worksheets.Add("Timesheet");
+                InitExcelVariablesClosedXML(userData.UserName, userData.Month, userData.Year);
+
+                CreateHeaderClosedXML(_worksheet);
+
+                var tableEventCount = 0;
+                tableEventCount = CreateTableClosedXML(_worksheet, userData);
+
+                resizeColumnsClosedXML(_worksheet);
+
+                formatBordersClosedXML(_worksheet, tableEventCount);
+
+                protectSheetClosedXML(_worksheet);
+
+                if (string.IsNullOrEmpty(folderPath))
+                {
+                    folderPath = TimesheetSaveLocationAndFileName(userData.UserName, userData.Month, userData.Year);
+                }
+                //else
+                //{
+                //    folderPath += TimesheetFileName(userData.UserName, '_', userData.Month, userData.Year);
+                //}
+
+                workBookClosedXML.SaveAs(folderPath + ".xlsx");
+
+                var timesheetFileName = folderPath.Split(new string[] { "\\\\" }, StringSplitOptions.None).LastOrDefault();
+
+                result.Append($"File saved sucessfully!({timesheetFileName})");
+                result.Append("<br />");
+                return result.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.Message);
+                return "Internal Code (1) - " + ex.Message;
+            }
+        }
+
+        //[HttpPost]
+        //public string BulkSaveExcelFile_Old(IList<UserDataSearchTFS> userData)
+        //{
+        //    Application excel = null;
+        //    Workbook worKbooK = null;
+        //    Worksheet worksheet = null;
+        //    Range celLrangE = null;
+        //    StringBuilder result = new StringBuilder();
+        //    foreach (var item in userData)
+        //    {
+        //        try
+        //        {
+
+        //            item.UserName = item.UserName.Replace("'", "''");
+
+        //            excel = new Application();
+        //            excel.Visible = true;
+        //            excel.DisplayAlerts = true;
+        //            worKbooK = excel.Workbooks.Add(Type.Missing);
+
+        //            var tableEventCount = 0;
+
+        //            InitExcelVariables(item.UserName, item.Month, item.Year);
+
+
+        //            Microsoft.Office.Interop.Excel._Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excel.ActiveSheet;
+        //            worksheet = (Worksheet)worKbooK.ActiveSheet;
+        //            //worksheet.Name = "Timesheet_" + item.UserName;//.Replace(" ", "_");
+        //            //RPC Failed - The remote procedure call failed
+        //            //https://copyprogramming.com/howto/remote-procedure-call-rpc-errors-only-thrown-when-a-user-is-connected-via-remote-desktop
+
+        //            CreateHeader(worksheet);
+        //            tableEventCount = CreateTable(worksheet, item);
+        //            resizeColumns(worksheet);
+
+        //            var borderStartsRow = 5;
+        //            var borderEndsRow = borderStartsRow + tableEventCount;
+        //            celLrangE = worksheet.Range[worksheet.Cells[borderStartsRow, 1], worksheet.Cells[borderEndsRow, 7]]; //TODO
+        //            Microsoft.Office.Interop.Excel.Borders border = celLrangE.Borders;
+        //            border.LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+        //            border.Weight = 2d;
+
+        //            protectSheet(worksheet);
+        //            var saveParams = TimesheetSaveLocationAndFileName(item.UserName, item.Month, item.Year);
+        //            worKbooK.SaveAs(saveParams);
+
+        //            var timesheetFileName = saveParams.Split(new string[] { "\\\\" }, StringSplitOptions.None).LastOrDefault();
+
+        //            result.Append($"File saved sucessfully!({timesheetFileName})"); // - Path: " + saveParams;
+        //            result.Append("<br />");
+        //            worKbooK.Close();
+        //            excel.Workbooks.Close();
+        //            excel.Quit();
+        //            Marshal.ReleaseComObject(worksheet);//avoid opening excel windows with previously generated files by the program when system restarts
+        //            Marshal.ReleaseComObject(worKbooK);
+
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Console.Write(ex.Message);
+        //            result.AppendLine($"Internal Code (1) - {ex.Message}");
+        //            result.Append("<br />");
+        //        }
+        //        finally
+        //        {
+        //            worksheet = null;
+        //            celLrangE = null;
+        //            worKbooK = null;
+
+        //        }
+        //    }
+        //    return result.ToString();
+        //}
+
+        [HttpPost]
+        public string BulkSaveExcelFile(IList<UserDataSearchTFS> userData, string folderPath = null)
+        {
+            StringBuilder result = new StringBuilder();
+            foreach (var item in userData)
+            {
+                try
+                {
+                    var fullFolderAndFilename = folderPath + TimesheetFileName(item.UserName, '_', item.Month, item.Year);
+                    result.Append(SaveExcelFile(item, fullFolderAndFilename));
+                }
+                catch (Exception ex)
+                {
+                    Console.Write(ex.Message);
+                    result.AppendLine($"Internal Code (1) - {ex.Message}");
+                    result.Append("<br />");
+                }
+            }
+            return result.ToString();
+        }
+
         //--------------------------------------------------------------------------------------------------------
 
-        private void WorkbookSheetChange(Workbook workbook)
-        {
-            workbook.SheetChange += new
-                WorkbookEvents_SheetChangeEventHandler(
-                ThisWorkbook_SheetChange);
-        }
+        //private void WorkbookSheetChange(Workbook workbook)
+        //{
+        //    workbook.SheetChange += new
+        //        WorkbookEvents_SheetChangeEventHandler(
+        //        ThisWorkbook_SheetChange);
+        //}
 
-        void ThisWorkbook_SheetChange(object Sh, Range Target)
-        {
-            Worksheet sheet = (Worksheet)Sh;
+        //void ThisWorkbook_SheetChange(object Sh, Range Target)
+        //{
+        //    Worksheet sheet = (Worksheet)Sh;
 
-            string changedRange = Target.get_Address(
-                XlReferenceStyle.xlA1);
-        }
+        //    string changedRange = Target.get_Address(
+        //        XlReferenceStyle.xlA1);
+        //}
 
         //--------------------------------------------------------------------------------------------------------
 
-        private void protectSheet(Worksheet worksheet)
+        //private void protectSheet(Worksheet worksheet)
+        //{
+        //    var missing = Type.Missing;
+        //    //worksheet.Columns[1].Locked = true;
+        //    //worksheet.Columns[2].Locked = true;
+        //    worksheet.Columns.Locked = true;
+        //    worksheet.Protect("bom", missing, missing, missing, true, missing, missing,
+        //            missing, missing, missing, missing, missing, missing, missing, missing, missing);
+        //    //UserInterfaceOnly: true
+        //}
+
+        private void formatBordersClosedXML(IXLWorksheet _worksheet, int tableCountRow)
         {
-            var missing = Type.Missing;
-            //worksheet.Columns[1].Locked = true;
-            //worksheet.Columns[2].Locked = true;
-            worksheet.Columns.Locked = true;
-            worksheet.Protect("bom", missing, missing, missing, true, missing, missing,
-                    missing, missing, missing, missing, missing, missing, missing, missing, missing);
-            //UserInterfaceOnly: true
+            var borderStartsRow = 5; //first 4 rows = header
+            var borderEndsRow = borderStartsRow + tableCountRow;
+            var borderRange = _worksheet.Range(_worksheet.Cell(borderStartsRow, 1), _worksheet.Cell(borderEndsRow, 7));
+
+            borderRange.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+            borderRange.Style.Border.BottomBorderColor = XLColor.Black;
+
+            borderRange.Style.Border.TopBorder = XLBorderStyleValues.Thin;
+            borderRange.Style.Border.TopBorderColor = XLColor.Black;
+
+            borderRange.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
+            borderRange.Style.Border.LeftBorderColor = XLColor.Black;
+
+            borderRange.Style.Border.RightBorder = XLBorderStyleValues.Thin;
+            borderRange.Style.Border.RightBorderColor = XLColor.Black;
         }
 
-        public void resizeColumns(Worksheet worksheet)
+
+        private void protectSheetClosedXML(IXLWorksheet worksheet)
         {
-            worksheet.Cells.EntireColumn.AutoFit();
+            foreach (var item in worksheet.CellsUsed())
+            {
+                item.Style.Protection.SetLocked(true);
+            }
+            worksheet.Protect("bom");
+        }
 
-            worksheet.Columns[4].ColumnWidth =
-                worksheet.Columns[4].ColumnWidth > 80 ?
-                    worksheet.Columns[4].ColumnWidth = 80 :
-                    worksheet.Columns[4].ColumnWidth;
-            worksheet.Cells[8, 4].Style.WrapText = true;//does not work
-            worksheet.get_Range("D8").WrapText = true;
+        //public void resizeColumns(Worksheet worksheet)
+        //{
+        //    worksheet.Cells.EntireColumn.AutoFit();
 
-            worksheet.Columns[7].ColumnWidth =
-                worksheet.Columns[7].ColumnWidth > 50 ?
-                    worksheet.Columns[7].ColumnWidth = 50 :
-                    worksheet.Columns[7].ColumnWidth;
-            worksheet.get_Range("G11").WrapText = true;
+        //    worksheet.Columns[4].ColumnWidth =
+        //        worksheet.Columns[4].ColumnWidth > 80 ?
+        //            worksheet.Columns[4].ColumnWidth = 80 :
+        //            worksheet.Columns[4].ColumnWidth;
+        //    worksheet.Cells[8, 4].Style.WrapText = true;//does not work
+        //    worksheet.get_Range("D8").WrapText = true;
+
+        //    worksheet.Columns[7].ColumnWidth =
+        //        worksheet.Columns[7].ColumnWidth > 50 ?
+        //            worksheet.Columns[7].ColumnWidth = 50 :
+        //            worksheet.Columns[7].ColumnWidth;
+        //    worksheet.get_Range("G11").WrapText = true;
+        //}
+
+        public void resizeColumnsClosedXML(IXLWorksheet ws)
+        {
+            //worksheet.Cells.EntireColumn.AutoFit();
+            ws.Columns().AdjustToContents();
+
+            //worksheet.Columns[4].ColumnWidth =
+            //    worksheet.Columns[4].ColumnWidth > 80 ?
+            //        worksheet.Columns[4].ColumnWidth = 80 :
+            //        worksheet.Columns[4].ColumnWidth;
+            //worksheet.Cells[8, 4].Style.WrapText = true;//does not work
+            //worksheet.get_Range("D8").WrapText = true;
+
+            //worksheet.Columns[7].ColumnWidth =
+            //    worksheet.Columns[7].ColumnWidth > 50 ?
+            //        worksheet.Columns[7].ColumnWidth = 50 :
+            //        worksheet.Columns[7].ColumnWidth;
+            //worksheet.get_Range("G11").WrapText = true;
         }
 
         public IList<WorkItemRecord> TimesheetRecords(UserDataSearchTFS userData)
@@ -2214,7 +2575,348 @@ namespace TimesheetScheduler.Controllers
         //    }
         //}
 
-       
+        #region Create Word Doc 
+        [HttpPost]
+        public JsonResult CreateWordDoc(ReportRequestByUsersDTO selectedMembers)
+        {
+
+            var _data = consolidatedReportDataFiguresDTO(selectedMembers);
+            var coreTeam = _data.Members.Where(x => x.TeamDivision.Equals("Core")).ToList();
+            var drawdownTeam = _data.Members.Where(x => x.TeamDivision.Equals("Drawdown")).ToList();
+            IList<string> headerMemberTable = new List<string>() { "Team Member", "Days", "Rate", "Role", "Excl.VAT" };
+           
+
+            Document doc = new Document();
+            Section section = doc.AddSection();
+
+            #region VAT Label
+            var vatLabel = section.AddParagraph().AppendText($"\nVAT Applied [{_data.VatApplied}]\n");
+            ApplyStyleText(ref vatLabel, Color.Red);
+            #endregion VAT Label
+
+            #region Core Summary Table
+            Table tableCoreSummary = section.AddTable(true);
+            tableCoreSummary.Title = "Core Summary Table";
+            var _excVAT = _data.FiguresByTeamDivision.FirstOrDefault(x => x.TeamDivision.Equals("Core")).TotalExclVAT;
+            var _incVAT = _data.FiguresByTeamDivision.FirstOrDefault(x => x.TeamDivision.Equals("Core")).TotalInclVAT;
+            CreateSummaryTable(ref doc, ref tableCoreSummary, _data.PeriodSearched.ToString("yyyy MMMM"), _excVAT, _incVAT, true);
+            #endregion Core Summary Table
+
+            section.AddParagraph().AppendText("\n");
+
+            #region Drawdown Summary Table
+            Table tableDradownSummary = section.AddTable(true);
+            tableDradownSummary.Title = "Drawdown Summary Table";
+            _excVAT = _data.FiguresByTeamDivision.FirstOrDefault(x => x.TeamDivision.Equals("Drawdown")).TotalExclVAT;
+            _incVAT = _data.FiguresByTeamDivision.FirstOrDefault(x => x.TeamDivision.Equals("Drawdown")).TotalInclVAT;
+            CreateSummaryTable(ref doc, ref tableDradownSummary, _data.PeriodSearched.ToString("yyyy MMMM"), _excVAT, _incVAT, false);
+            #endregion Drawdown Summary Table
+
+            #region Core Member Table
+            var tableCoreTitle = section.AddParagraph().AppendText($"\nCore Team {_data.PeriodSearchedFullDate()}:\n");
+            ApplyStyleText(ref tableCoreTitle, null);
+            Table tableCoreTeam = section.AddTable(true);
+            tableCoreTeam.Title = "Core Team";
+            CreateMemberTable(ref doc, ref tableCoreTeam, headerMemberTable, coreTeam);
+            #endregion Core Member Table
+
+            #region Drawdown Member Table
+            var tableDrawdownTitle = section.AddParagraph().AppendText($"\nDrawdown Team billed separately from {_data.PeriodSearchedFullDate()}:\n");
+            ApplyStyleText(ref tableDrawdownTitle, null);
+            Table dradownTeam = section.AddTable(true);
+            dradownTeam.Title = "Drawdown Team";
+            CreateMemberTable(ref doc, ref dradownTeam, headerMemberTable, drawdownTeam);
+            #endregion Drawdown Member Table
+
+            #region VAT Label
+            if (_data.Members.Any(x => !x.Chargeable))
+            {
+                var _notChargeable = section.AddParagraph().AppendText($"\n*** Not Chargeable");
+                ApplyStyleText(ref _notChargeable, Color.Red);
+            }
+            #endregion VAT Label
+
+            var _filePath = $"{TimesheetSaveLocation()} {_data.TeamName} Report {_data.PeriodSearched.ToString("MMMM yyyy")}";
+
+            doc.SaveToFile(_filePath + ".docx", FileFormat.Docx2013);
+
+            return Json(_data, JsonRequestBehavior.AllowGet);
+
+        }
+
+        private void ApplyStyleText(ref TextRange text, Color? textColor, string fontName = "Verdana", int fontSize = 10, bool bold = true)
+        {
+            text.CharacterFormat.FontName = fontName;
+            text.CharacterFormat.FontSize = fontSize;
+            text.CharacterFormat.Bold = bold;
+            text.CharacterFormat.TextColor = textColor ?? Color.DarkBlue;
+        }
+
+        private void CreateSummaryTable(ref Document doc, ref Table _table, string periodSearched, string excVAT, string incVAT, bool coreTeam)
+        {
+
+            IList<string> headerSummaryTable = new List<string>();
+            IList<string> bodySummaryTable = new List<string>();
+
+            //HEADER
+            headerSummaryTable.Add($"{(coreTeam == true ? "Core" : "Drawdown")} Team Billing\n{periodSearched}");
+            headerSummaryTable.Add("Total");
+
+            //BODY
+            bodySummaryTable.Add($"{(coreTeam == true ? "Core" : "Drawdown")} Team");
+            if (coreTeam) bodySummaryTable.Add("Core Team Substitutes");
+            bodySummaryTable.Add("Expenses");
+            if (coreTeam) bodySummaryTable.Add("Less Warranty");
+            bodySummaryTable.Add("Total (Excl.VAT)");
+            bodySummaryTable.Add("Total (Incl.VAT)");
+
+            _table.ResetCells((bodySummaryTable.Count + 1), 2);
+
+            _table.TableFormat.HorizontalAlignment = RowAlignment.Center;
+            _table.TableFormat.IsAutoResized = true;
+            _table.TableFormat.IsBreakAcrossPages = false;
+
+            TableRow headerRow = _table.Rows[0];
+            headerRow.IsHeader = true;
+            headerRow.Height = 16;
+            headerRow.RowFormat.BackColor = Color.DarkBlue;
+
+            #region Header
+
+            ParagraphStyle headerStyle = new ParagraphStyle(doc);
+            headerStyle.Name = "Header " + _table.Title;
+            headerStyle.CharacterFormat.FontName = "Verdana";
+            headerStyle.CharacterFormat.FontSize = 9;
+            headerStyle.CharacterFormat.Bold = false;
+            headerStyle.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Center;
+            headerStyle.ParagraphFormat.TextAlignment = TextAlignment.Center;
+            headerStyle.ParagraphFormat.WordWrap = false;
+            doc.Styles.Add(headerStyle);
+
+            foreach (var item in headerSummaryTable.Select((value, i) => new { i, value }))
+            {
+                _table[0, item.i].AddParagraph().AppendText(item.value); ;
+            }
+
+            //APPLY STYLE TO THE HEADER
+            for (int i = 0; i < _table.Rows[0].Cells.Count; i++)
+            {
+                TableCell cell = _table.Rows[0].Cells[i];
+                cell.CellFormat.VerticalAlignment = VerticalAlignment.Middle;
+                cell.CellFormat.TextWrap = false;
+
+                foreach (Paragraph para in cell.Paragraphs)
+                {
+                    //apply style
+                    para.ApplyStyle(headerStyle.Name);
+                }
+            }
+            #endregion Header
+
+            #region Table Body
+
+            ParagraphStyle bodyStyle = new ParagraphStyle(doc);
+            bodyStyle.Name = "Body " + _table.Title;
+            bodyStyle.CharacterFormat.FontName = "Verdana";
+            bodyStyle.CharacterFormat.FontSize = 9;
+            bodyStyle.CharacterFormat.Bold = false;
+            bodyStyle.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Center;
+            bodyStyle.ParagraphFormat.TextAlignment = TextAlignment.Center;
+            bodyStyle.ParagraphFormat.WordWrap = false;
+            doc.Styles.Add(bodyStyle);
+
+            if (coreTeam)
+            {
+                //FIRST BODY ROW
+                _table[1, 0].AddParagraph().AppendText(bodySummaryTable[0]);
+                _table[1, 1].AddParagraph().AppendText($"€{decimal.Parse(excVAT):n}");
+
+                _table[2, 0].AddParagraph().AppendText(bodySummaryTable[1]);
+                _table[2, 1].AddParagraph().AppendText($"€0");
+
+                _table[3, 0].AddParagraph().AppendText(bodySummaryTable[2]);
+                _table[3, 1].AddParagraph().AppendText($"€0");
+
+                _table[4, 0].AddParagraph().AppendText(bodySummaryTable[3]);
+                _table[4, 1].AddParagraph().AppendText($"€0");
+
+                TextRange _text;
+                _text = _table[5, 0].AddParagraph().AppendText(bodySummaryTable[4]);
+                _text.CharacterFormat.Bold = true;
+                _text = _table[5, 1].AddParagraph().AppendText($"€{decimal.Parse(excVAT):n}");
+                _text.CharacterFormat.Bold = true;
+
+                _text = _table[6, 0].AddParagraph().AppendText(bodySummaryTable[5]);
+                _text.CharacterFormat.Bold = true;
+                _text = _table[6, 1].AddParagraph().AppendText($"€{decimal.Parse(incVAT):n}");
+                _text.CharacterFormat.Bold = true;
+            }
+            else
+            {
+                //FIRST BODY ROW
+                _table[1, 0].AddParagraph().AppendText(bodySummaryTable[0]);
+                _table[1, 1].AddParagraph().AppendText($"€{decimal.Parse(excVAT):n}");
+
+                _table[2, 0].AddParagraph().AppendText(bodySummaryTable[1]);
+                _table[2, 1].AddParagraph().AppendText($"€0");
+
+                TextRange _text;
+                _text = _table[3, 0].AddParagraph().AppendText(bodySummaryTable[2]);
+                _text.CharacterFormat.Bold = true;
+                _text = _table[3, 1].AddParagraph().AppendText($"€{decimal.Parse(excVAT):n}");
+                _text.CharacterFormat.Bold = true;
+
+                _text = _table[4, 0].AddParagraph().AppendText(bodySummaryTable[3]);
+                _text.CharacterFormat.Bold = true;
+                _text = _table[4, 1].AddParagraph().AppendText($"€{decimal.Parse(incVAT):n}");
+                _text.CharacterFormat.Bold = true;
+            }
+            
+
+            //APPLY STYLE TO THE BODY TABLE
+            for (int i = 1; i < _table.Rows.Count; i++) //starting from row 1 (avoiding Header)
+            {
+                for (int j = 0; j < _table.Rows[i].Cells.Count; j++)
+                {
+                    TableCell cell = _table.Rows[i].Cells[j];
+                    cell.CellFormat.VerticalAlignment = VerticalAlignment.Middle;
+                    cell.CellFormat.TextWrap = false;
+
+                    foreach (Paragraph para in cell.Paragraphs)
+                    {
+                        //apply style
+                        para.ApplyStyle(bodyStyle.Name);
+                    }
+                }
+            }
+
+            _table.TableFormat.Paddings.All = 3f;
+            _table.AutoFit(AutoFitBehaviorType.AutoFitToContents);
+
+            #endregion Table Body
+        }
+
+        private void CreateMemberTable(ref Document doc, ref Table _table, IList<string> Header, IList<ConsolidatedRateMonthly> Body)
+        {
+
+            _table.ResetCells((Body.Count + 2), Header.Count);
+
+            _table.TableFormat.HorizontalAlignment = RowAlignment.Center;
+            _table.TableFormat.IsAutoResized = true;
+            _table.TableFormat.IsBreakAcrossPages = false;
+            
+            TableRow headerRow = _table.Rows[0];
+            headerRow.IsHeader = true;
+            headerRow.Height = 16;
+            headerRow.RowFormat.BackColor = Color.DarkBlue;
+
+            #region Header
+
+            ParagraphStyle headerStyle = new ParagraphStyle(doc);
+            headerStyle.Name = "Header " + _table.Title;
+            headerStyle.CharacterFormat.FontName = "Verdana";
+            headerStyle.CharacterFormat.FontSize = 9;
+            headerStyle.CharacterFormat.Bold = false;
+            headerStyle.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Center;
+            headerStyle.ParagraphFormat.TextAlignment = TextAlignment.Center;
+            headerStyle.ParagraphFormat.WordWrap = false;
+            doc.Styles.Add(headerStyle);
+
+            foreach (var item in Header.Select((value, i) => new { i, value }))
+            {
+                _table[0, item.i].AddParagraph().AppendText(item.value); ;
+            }
+
+            //APPLY STYLE TO THE BODY TABLE
+            for (int i = 0; i < _table.Rows[0].Cells.Count; i++)
+            {
+                TableCell cell = _table.Rows[0].Cells[i];
+                cell.CellFormat.VerticalAlignment = VerticalAlignment.Middle;
+                cell.CellFormat.TextWrap = false;
+
+                foreach (Paragraph para in cell.Paragraphs)
+                {
+                    //apply style
+                    para.ApplyStyle(headerStyle.Name);
+                }
+            }
+
+            #endregion Header
+
+            #region Table Body
+
+            ParagraphStyle bodyStyle = new ParagraphStyle(doc);
+            bodyStyle.Name = "Body " + _table.Title;
+            bodyStyle.CharacterFormat.FontName = "Verdana";
+            bodyStyle.CharacterFormat.FontSize = 9;
+            bodyStyle.CharacterFormat.Bold = false;
+            bodyStyle.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Center;
+            bodyStyle.ParagraphFormat.TextAlignment = TextAlignment.Center;
+            bodyStyle.ParagraphFormat.WordWrap = false;
+            doc.Styles.Add(bodyStyle);
+
+            var rowIndex = 0;
+            IList<TextRange> notChargeableMembers = new List<TextRange>();
+            foreach (var item in Body.Select((value, i) => new { i, value }))
+            {
+                rowIndex = item.i + 1;
+                
+                _table[rowIndex, 1].AddParagraph().AppendText(item.value.DaysWorked.ToString());
+                _table[rowIndex, 2].AddParagraph().AppendText($"€{item.value.RateExcVat:n}");
+                _table[rowIndex, 3].AddParagraph().AppendText(item.value.Role);
+                if (item.value.Chargeable)
+                {
+                    _table[rowIndex, 0].AddParagraph().AppendText(item.value.MemberName);
+                    _table[rowIndex, 4].AddParagraph().AppendText($"€{item.value.DayRateExcVat:n}");
+                }
+                else
+                {
+                    notChargeableMembers.Add(_table[rowIndex, 0].AddParagraph().AppendText($"*** {item.value.MemberName}"));
+                    _table[rowIndex, 4].AddParagraph().AppendText($"€0");
+                }
+            }
+
+            //APPLY STYLE TO THE HEADER
+            for (int i = 1; i < _table.Rows.Count; i++) //starting from row 1 (avoiding Header)
+            {
+                for (int j = 0; j < _table.Rows[i].Cells.Count; j++)
+                {
+                    TableCell cell = _table.Rows[i].Cells[j];
+                    cell.CellFormat.VerticalAlignment = VerticalAlignment.Middle;
+                    cell.CellFormat.TextWrap = false;
+
+                    foreach (Paragraph para in cell.Paragraphs)
+                    {
+                        //apply style
+                        para.ApplyStyle(bodyStyle.Name);
+                    }
+                }
+            }
+
+            //highlight color (red) for non-chargeable members
+            foreach (var item in notChargeableMembers)
+            {
+                item.CharacterFormat.TextColor = Color.Red;
+            }
+
+            var lastRow = _table.LastRow.Cells[0].AddParagraph();
+            var lastRowText = lastRow.AppendText("Total (excl. VAT)");
+            lastRow.ApplyStyle(headerStyle);
+            lastRowText.CharacterFormat.Bold = true;
+
+            var totalAmountExclVAT = _table.LastRow.Cells[_table.LastRow.Cells.Count - 1].AddParagraph();
+            var totalAmountExclVATText = totalAmountExclVAT.AppendText($"€{Body.Sum(x=>x.DayRateExcVat):n}");
+            totalAmountExclVAT.ApplyStyle(headerStyle);
+            totalAmountExclVATText.CharacterFormat.Bold = true;
+
+            _table.TableFormat.Paddings.All = 3f;
+            _table.AutoFit(AutoFitBehaviorType.AutoFitToContents);
+
+            #endregion Table Body
+
+        }
+
+        #endregion Create Word Doc
 
     }
 

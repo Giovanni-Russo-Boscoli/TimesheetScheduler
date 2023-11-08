@@ -1,0 +1,38 @@
+[
+  {
+    "Date": "1 Jan 2020",
+    "Description": "New Year&#146;s Day"
+  },
+  {
+    "Date": "17 Mar 2020",
+    "Description": "St Patrick&#146;s Day"
+  },
+  {
+    "Date": "13 Apr 2020",
+    "Description": "Easter"
+  },
+  {
+    "Date": "4 May 2020",
+    "Description": "Public Holiday"
+  },
+  {
+    "Date": "1 Jun 2020",
+    "Description": "Public Holliday"
+  },
+  {
+    "Date": "3 Aug 2020",
+    "Description": "Public Holliday"
+  },
+  {
+    "Date": "26 Oct 2020",
+    "Description": "Public Holliday"
+  },
+  {
+    "Date": "25 Dec 2020",
+    "Description": "Christmas Day"
+  },
+  {
+    "Date": "28 Dec 2020",
+    "Description": "St Stephen&#146;s Day (Originally on the 28th)"
+  }
+]

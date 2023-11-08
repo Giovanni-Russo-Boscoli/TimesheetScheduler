@@ -15,31 +15,42 @@
 
                 @*<button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="openWordDoc();">WORD DOC</button>*@
 
-                <label for="userNameTimesheet">User</label>
-                <div class="userSelection">
-                    <select class="form-control" id="userNameTimesheet" title="Only admin user can see other members' timesheet data" disabled></select>
-                    <button id="btnMe" class="btn btn-primary" onclick="bindBtnMe();">ME</button>
+                <div class="userSelectionWrapper">
+                    <label for="userNameTimesheet">User</label>
+                    <div class="userSelection">
+                        <select class="form-control" id="userNameTimesheet" title="Only admin user can see other members' timesheet data" disabled></select>
+                        <button id="btnMe" class="btn btn-primary" onclick="bindBtnMe();">ME</button>
+                    </div>
                 </div>
 
                 <br />
                 @*<p>Date: <input type="text" id="datepicker"></p>*@
 
-                <label for="monthTimesheet">Month</label>
-                <div class="monthSelection">
-                    <button id="btnPrevMonth" title="Previous Month" class="btn btn-primary" onclick="prevNextMonthBtn(0);"><</button>
-                    <select class="form-control" id="monthTimesheet"></select>
-                    <button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="prevNextMonthBtn(1);">></button>
+                <div class="monthSelectionWrapper">
+                    <label for="monthTimesheet">Month</label>
+                    <div class="monthSelection">
+                        <button id="btnPrevMonth" title="Previous Month" class="btn btn-primary" onclick="prevNextMonthBtn(0);"><</button>
+                        <select class="form-control" id="monthTimesheet"></select>
+                        <button id="btnNextMonth" title="Next Month" class="btn btn-primary" onclick="prevNextMonthBtn(1);">></button>
+                    </div>
                 </div>
 
                 <br />
 
-                <label for="yearTimesheet">Year</label>
-                <select class="form-control" id="yearTimesheet"></select>
+                <div class="yearSelectionWrapper">
+                    <label for="yearTimesheet">Year</label>
+                    <select class="form-control" id="yearTimesheet"></select>
+                </div>
 
                 <br />
                 <div id="divActionsBtns">
-                    <button id="btnSaveExcelFile" class="btnActions" title="Export to an Excel File" onclick="confirmationSavePath();"></button>
+                    @*<button id="btnSaveExcelFile" class="btnActions" title="Export to an Excel File" onclick="confirmationSavePath();"></button>*@
+                    <button id="btnSaveExcelFile" class="btnActions" title="Export to an Excel File"></button>
                     <button id="btnCloseAllTasks" class="btnActions" onclick="closeAllTasksCurrentMonth();"></button>
+
+                    @*<div class="picker"><input type="file" id="picker" name="fileList" webkitdirectory directory></div>
+                        <ul id="listing"></ul>*@
+
                     @*<button id="btnCaptureScreen" class="btnActions" onclick="captureScreen();">Capture Screen</button>*@
                     @*<button id="btnSendEmail" class="btnActions" onclick="sendEmail();">SEND EMAIL</button>*@
                 </div>
@@ -62,39 +73,39 @@
                         <div id="infoPanelContent">
                             <div>
                                 <label id="dayWorkedInfoLbl" class="modalLbl" for="dayWorkedInfoTxt">Days Worked: </label>
-                                <label id="dayWorkedInfoTxt"></label>
+                                <label id="dayWorkedInfoTxt" class="modalLbl"></label>
                             </div>
                             <div>
                                 <label id="totalHoursInfoLbl" class="modalLbl" for="totalHoursInfoTxt">Total Hours: </label>
-                                <label id="totalHoursInfoTxt"></label>
+                                <label id="totalHoursInfoTxt" class="modalLbl"></label>
                             </div>
                             <div>
                                 <label id="chargeableHoursInfoLbl" class="modalLbl" for="chargeableHoursInfoTxt">Chargeable Hours: </label>
-                                <label id="chargeableHoursInfoTxt"></label>
+                                <label id="chargeableHoursInfoTxt" class="modalLbl"></label>
                             </div>
                             <div>
                                 <label id="nonchargeableHoursInfoLbl" class="modalLbl" for="nonchargeableHoursInfoTxt">Non-Chargeable Hours: </label>
-                                <label id="nonchargeableHoursInfoTxt"></label>
+                                <label id="nonchargeableHoursInfoTxt" class="modalLbl"></label>
                             </div>
                             <div class="adminVisibleValues">
                                 <label id="vatFeeInfoLbl" class="modalLbl" for="vatFeeInfoTxt">VAT Applied: </label>
-                                <label id="vatFeeInfoTxt"></label>
+                                <label id="vatFeeInfoTxt" class="modalLbl"></label>
                             </div>
                             <div class="adminVisibleValues">
                                 <label id="rateExcVatInfoLbl" class="modalLbl" for="rateExlVatInfoTxt">Rate (exc. VAT): </label>
-                                <label id="rateExlVatInfoTxt" class="currencyMask"></label>
+                                <label id="rateExlVatInfoTxt" class="currencyMask modalLbl"></label>
                             </div>
                             <div class="adminVisibleValues">
                                 <label id="rateIncVatInfoLbl" class="modalLbl" for="rateIncVatInfoTxt">Rate (inc. VAT): </label>
-                                <label id="rateIncVatInfoTxt" class="currencyMask"></label>
+                                <label id="rateIncVatInfoTxt" class="currencyMask modalLbl"></label>
                             </div>
                             <div class="adminVisibleValues">
                                 <label id="totalExcVatInfoLbl" class="modalLbl" for="totalExlVatInfoTxt">Total (exc. VAT): </label>
-                                <label id="totalExlVatInfoTxt" class="currencyMask"></label>
+                                <label id="totalExlVatInfoTxt" class="currencyMask modalLbl"></label>
                             </div>
                             <div class="adminVisibleValues">
                                 <label id="totalIncVatInfoLbl" class="modalLbl" for="totalIncVatInfoTxt">Total (inc. VAT): </label>
-                                <label id="totalIncVatInfoTxt" class="currencyMask"></label>
+                                <label id="totalIncVatInfoTxt" class="currencyMask modalLbl"></label>
                             </div>
                         </div>
                     </fieldset>
@@ -168,7 +179,7 @@
                 </form>
                 <form class="form-inline">
                     <div class="form-group">
-                        <label for="closeTaskTimesheet">Close Task</label>
+                        <label for="closeTaskTimesheet">Status</label>
                         <select class="form-control watchChange" id="closeTaskTimesheet"></select>
                     </div>
                 </form>
@@ -278,6 +289,35 @@
             </div>
             <div class="modal-footer">
                 <button id="btnSaveLinkWorkItem" type="button" class="btn btn-success" disabled>Add Link</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Path Save Excel File -->
+<div class="modal fade" id="saveExcelFilePathModal" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Folder Path - Save Excel File</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-inline">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
+                        <label class="form-check-label" for="flexRadioDefault1" id="lblDefaultPathToSaveExcelFile"></label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" disabled>
+                        <input class="form-check-label" for="flexRadioDefault2" id="txtDefault2PathToSaveExcelFile" type="text" placeholder="\\10.1.53.8\\MySharedFolder\\ExcelTemp\\" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="btnSaveExcelFileFromFolderPath" type="button" class="btn btn-success" onclick="confirmationSavePath()">Save File</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>

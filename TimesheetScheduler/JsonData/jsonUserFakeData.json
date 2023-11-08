@@ -1,0 +1,206 @@
+[
+  {
+    "Id": 1,
+    "Active": true,
+    "Name": "John Murray",
+    "Rate": 40.00,
+    "Chargeable": true,
+    "Role": "Senior Software Developer",
+    "Email": "john.murray@gmail.com",
+    "Access": "Admin",
+    "TeamDivision": "Core",
+    "ProjectNameTFS": "BOM_MOD24",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets",
+    "ProjectId": 1,
+    "Project": {
+      "Id": 1,
+      "ProjectNameTFS": "BOM_MOD24",
+      "IterationPathTFS": "BOM_MOD24\\Timesheets",
+      "TeamName": "BOM Modelling",
+      "TeamDivision": [
+        {
+          "Id": 1,
+          "Division": "Core"
+        },
+        {
+          "Id": 2,
+          "Division": "CoreCreditDays"
+        },
+        {
+          "Id": 3,
+          "Division": "Drawdown"
+        }
+      ]
+    }
+  },
+  {
+    "Id": 2,
+    "Active": true,
+    "Name": "Lisa Jackson",
+    "Rate": 40.00,
+    "Chargeable": true,
+    "Role": "Business Analyst",
+    "Email": "lisa.jackson@gmail.com",
+    "Access": "User",
+    "TeamDivision": "Core",
+    "ProjectNameTFS": "BOM_MOD24",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets",
+    "ProjectId": 1,
+    "Project": {
+      "Id": 1,
+      "ProjectNameTFS": "BOM_MOD24",
+      "IterationPathTFS": "BOM_MOD24\\Timesheets",
+      "TeamName": "BOM Modelling",
+      "TeamDivision": [
+        {
+          "Id": 1,
+          "Division": "Core"
+        },
+        {
+          "Id": 2,
+          "Division": "CoreCreditDays"
+        },
+        {
+          "Id": 3,
+          "Division": "Drawdown"
+        }
+      ]
+    }
+  },
+  {
+    "Id": 3,
+    "Active": true,
+    "Name": "Mike O'Brien",
+    "Rate": 50.00,
+    "Chargeable": true,
+    "Role": "Senior Business Object Modeller",
+    "Email": "mike.obrien@gmail.com",
+    "Access": "Admin",
+    "TeamDivision": "Drawdown",
+    "ProjectNameTFS": "BOM_MOD24",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets",
+    "ProjectId": 1,
+    "Project": {
+      "Id": 1,
+      "ProjectNameTFS": "BOM_MOD24",
+      "IterationPathTFS": "BOM_MOD24\\Timesheets",
+      "TeamName": "BOM Modelling",
+      "TeamDivision": [
+        {
+          "Id": 1,
+          "Division": "Core"
+        },
+        {
+          "Id": 2,
+          "Division": "CoreCreditDays"
+        },
+        {
+          "Id": 3,
+          "Division": "Drawdown"
+        }
+      ]
+    }
+  },
+  {
+    "Id": 4,
+    "Active": false,
+    "Name": "Eddie Murphy",
+    "Rate": 50.0,
+    "Chargeable": true,
+    "Role": "Senior Business Object Modeller",
+    "Email": "eddie.murphy@gmail.com",
+    "Access": "User",
+    "TeamDivision": "Core",
+    "ProjectNameTFS": "BOM_MOD24",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets",
+    "ProjectId": 1,
+    "Project": {
+      "Id": 1,
+      "ProjectNameTFS": "BOM_MOD24",
+      "IterationPathTFS": "BOM_MOD24\\Timesheets",
+      "TeamName": "BOM Modelling",
+      "TeamDivision": [
+        {
+          "Id": 1,
+          "Division": "Core"
+        },
+        {
+          "Id": 2,
+          "Division": "CoreCreditDays"
+        },
+        {
+          "Id": 3,
+          "Division": "Drawdown"
+        }
+      ]
+    }
+  },
+  {
+    "Id": 5,
+    "Active": false,
+    "Name": "John Lennon",
+    "Rate": 35.00,
+    "Chargeable": true,
+    "Role": "Junior Full Stack Software Developer",
+    "Email": "john.lennon@gmail.com",
+    "Access": "User",
+    "TeamDivision": "Core",
+    "ProjectNameTFS": "BOM_MOD24",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets",
+    "ProjectId": 1,
+    "Project": {
+      "Id": 1,
+      "ProjectNameTFS": "BOM_MOD24",
+      "IterationPathTFS": "BOM_MOD24\\Timesheets",
+      "TeamName": "BOM Modelling",
+      "TeamDivision": [
+        {
+          "Id": 1,
+          "Division": "Core"
+        },
+        {
+          "Id": 2,
+          "Division": "CoreCreditDays"
+        },
+        {
+          "Id": 3,
+          "Division": "Drawdown"
+        }
+      ]
+    }
+  },
+  {
+    "Id": 6,
+    "Active": false,
+    "Name": "Bruce Dickinson",
+    "Rate": 40.00,
+    "Chargeable": true,
+    "Role": "Senior Software Developer",
+    "Email": "bruce.dickinson@gmail.com",
+    "Access": "User",
+    "TeamDivision": "Core",
+    "ProjectNameTFS": "BOM_MOD24",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets",
+    "ProjectId": 1,
+    "Project": {
+      "Id": 1,
+      "ProjectNameTFS": "BOM_MOD24",
+      "IterationPathTFS": "BOM_MOD24\\Timesheets",
+      "TeamName": "BOM Modelling",
+      "TeamDivision": [
+        {
+          "Id": 1,
+          "Division": "Core"
+        },
+        {
+          "Id": 2,
+          "Division": "CoreCreditDays"
+        },
+        {
+          "Id": 3,
+          "Division": "Drawdown"
+        }
+      ]
+    }
+  }
+]

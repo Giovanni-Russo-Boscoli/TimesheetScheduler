@@ -49,11 +49,11 @@
 
         label {
             margin-bottom: 0;
-            width: 50% !important;
+            //width: 80% !important;
         }
 
         span {
-            width: 50% !important;
+            //width: 80% !important;
             text-align:right !important;
         }
     }
@@ -246,4 +246,32 @@
     border-radius: 3px;
     background-color: #d2d2d2;
     display: flex;
+}
+
+
+
+
+//media query
+@media screen and (max-width: 1300px) {
+
+    .dataRateMonthlyHidden *,
+    .half-top-right *,
+    .half-top-left * {
+        font-size: 1.0vw !important;
+        //color: red !important;
+    }
+    
+    .figureCell,
+    .figureIncVat,
+    .figureExcVat {
+        //background-color: transparent !important;
+        border: none !important;
+        border-radius: unset;
+        //padding: 0 !important;
+    }
+
+    .ms-container{
+        width: 307px !important;
+    }
+
 }

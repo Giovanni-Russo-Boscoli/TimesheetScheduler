@@ -43,10 +43,8 @@
 }
 .dataRateMonthlyHidden.displayTable .figureCell label {
   margin-bottom: 0;
-  width: 50% !important;
 }
 .dataRateMonthlyHidden.displayTable .figureCell span {
-  width: 50% !important;
   text-align: right !important;
 }
 .dataRateMonthlyHidden.displayTable .mainFigure .figureCell {
@@ -207,4 +205,20 @@
   border-radius: 3px;
   background-color: #d2d2d2;
   display: flex;
+}
+@media screen and (max-width: 1300px) {
+  .dataRateMonthlyHidden *,
+  .half-top-right *,
+  .half-top-left * {
+    font-size: 1vw !important;
+  }
+  .figureCell,
+  .figureIncVat,
+  .figureExcVat {
+    border: none !important;
+    border-radius: unset;
+  }
+  .ms-container {
+    width: 307px !important;
+  }
 }

@@ -1,0 +1,46 @@
+[
+  {
+    "Date": "1 Jan 2022",
+    "Description": "New Year&#146;s Day"
+  },
+  {
+    "Date": "3 Jan 2022",
+    "Description": "Public Holliday"
+  },
+  {
+    "Date": "17 Mar 2022",
+    "Description": "St Patrick&#146;s Day"
+  },
+  {
+    "Date": "18 Mar 2022",
+    "Description": "Day of Remembrance and Recognition"
+  },
+  {
+    "Date": "18 Apr 2022",
+    "Description": "Easter"
+  },
+  {
+    "Date": "2 May 2022",
+    "Description": "May Day / Public Holiday"
+  },
+  {
+    "Date": "6 Jun 2022",
+    "Description": "June Public Holliday" 
+  },
+  {
+    "Date": "1 Aug 2022",
+    "Description": "August Public Holliday"
+  },
+  {
+    "Date": "31 Oct 2022",
+    "Description": "October Public Holliday"
+  },
+  {
+    "Date": "25 Dec 2022",
+    "Description": "Christmas Day / Public Holliday"
+  },
+  {
+    "Date": "26 Dec 2022",
+    "Description": "St Stephen&#146;s Day"
+  }
+]

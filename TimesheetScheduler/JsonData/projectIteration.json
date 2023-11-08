@@ -1,0 +1,70 @@
+[
+  {
+    "Id": 1,
+    "ProjectNameTFS": "BOM_MOD24",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets",
+    "TeamName": "BOM Modelling",
+    "TeamDivision": [
+      {
+        "Id": 1,
+        "Division": "Core"
+      },
+      {
+        "Id": 2,
+        "Division": "CoreCreditDays"
+      },
+      {
+        "Id": 3,
+        "Division": "Drawdown"
+      }
+    ]
+  },
+  {
+    "Id": 2,
+    "ProjectNameTFS": "BOM_MOD24",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets",
+    "TeamName": "API Team",
+    "TeamDivision": [
+      {
+        "Id": 1,
+        "Division": "CoreAPI"
+      },
+      {
+        "Id": 2,
+        "Division": "CoreCreditDaysAPI"
+      },
+      {
+        "Id": 3,
+        "Division": "DrawdownAPI"
+      }
+    ]
+  },
+  {
+    "Id": 3,
+    "ProjectNameTFS": "BOM_MOD24_TEST",
+    "IterationPathTFS": "BOM_MOD24\\Timesheets_TEST",
+    "TeamName": "MY TEAM2",
+    "TeamDivision": [
+      {
+        "Id": 1,
+        "Division": "CoreCreditDaysAPI222"
+      }
+    ]
+  },
+  {
+    "Id": 4,
+    "ProjectNameTFS": "ISTechnicalArchitecture",
+    "IterationPathTFS": "ISTechnicalArchitecture\\ServiceDesignTeam\\16. February 2023",
+    "TeamName": "ASD",
+    "TeamDivision": [
+      {
+        "Id": 1,
+        "Division": "Core"
+      },
+      {
+        "Id": 2,
+        "Division": "Drawdown"
+      }
+    ]
+  }
+]

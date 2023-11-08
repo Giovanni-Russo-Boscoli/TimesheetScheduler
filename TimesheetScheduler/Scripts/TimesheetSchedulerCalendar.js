@@ -21,6 +21,19 @@ $(document).ready(function ($) {
         copyTask();
         linkWorkItem();
         bindToggleInfoPanel();
+        loadDefaultPathToSaveExcelFile();
+        //let picker = document.getElementById('picker');
+        //let listing = document.getElementById('listing');
+
+        //picker.addEventListener('change', e => {
+        //    for (let file of Array.from(e.target.files)) {
+        //        let item = document.createElement('li');
+        //        item.textContent = file.webkitRelativePath;
+        //        listing.appendChild(item);
+        //        console.log(e);
+        //    };
+        //});
+
     });
 });
 
@@ -43,7 +56,7 @@ function readJsonHolidaysFile(callback, year) {
         url: "/Home/ReadJsonHolidaysFile",
         type: "GET",
         dataType: "json",
-        data: { "year": year},
+        data: { "year": year },
         success: function (data) {
             holidays = data;
             callback(data);
@@ -921,13 +934,13 @@ function connectToTFS() {
         dataType: "json",
         data: JSON.stringify(jsonObject),
         success: function (data) {
-            console.log(data);
+            //console.log(data);
             var eventsTFSFormatted = formatTFSEventsForCalendar_TESTE(data[0].ListWorkItem);
             eventsCalendar(eventsTFSFormatted, dateCalendar);
             Info_TESTE(data[0]);
             eventsCalendarStartDateNotDefined(data[1]);
             listViewActive(eventsTFSFormatted);
-            tooltipDaysListView();
+            //tooltipDaysListView();
         },
         error: function (error) {
             ajaxErrorHandler("ConnectTFS", error);
@@ -940,27 +953,29 @@ function eventsCalendarStartDateNotDefined(eventsStartDateNotDefined) {
     $("#divStartDateNotDefined").empty();
 
     doSomethingIfIsTheSameUser(function (data) {
-        if (data && eventsStartDateNotDefined.length > 0) {
+        if (true) {
+            //if (data && eventsStartDateNotDefined.length > 0) {
             //only the own user can see this button
             $("#divStartDateNotDefined").append("<button id='btnApplyStartDate' class='btn btn-primary' title='Apply the \"Creation Date\" to the \"Start Date\" for all events'> Apply Start Date</button>");
             bind_btnApplyStartDate();
-        } else {
-            $(eventsStartDateNotDefined).each(function (index, value) {
-                var _creationDate = fromJsonDateToDateStringFormatted(value.CreationDate);
-                var _item = "<div class='eventStartDateNofDefined'>" +
-                    "<label class='mainLbl'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
-                    "<label class='lblTooltip lblStartDateNotDefinedTitle'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
-                    "<label class='lblTooltip lblStartDateNotDefinedState'>" + value.State + "</label>" +
-                    "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" +
-                    "<label class='lblTooltip lblStartDateNotDefinedWorkItem'>" + value.Id + "</label>" +
-                    "</div>";
-                $("#divStartDateNotDefined").append(_item);
-            });
-            $(".spanCountStartDateNotDefined").empty().append("(" + eventsStartDateNotDefined.length + ")");
-            tooltipStartDateNotDefined();
-            onClickEventsStartDateNotDefined();
-            collapseDivStartDateNotDefined(eventsStartDateNotDefined.length);
         }
+        //else {
+        $(eventsStartDateNotDefined).each(function (index, value) {
+            var _creationDate = fromJsonDateToDateStringFormatted(value.CreationDate);
+            var _item = "<div class='eventStartDateNofDefined'>" +
+                "<label class='mainLbl'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
+                "<label class='lblTooltip lblStartDateNotDefinedTitle'>" + "[" + value.Id + "] - " + value.Title + "</label>" +
+                "<label class='lblTooltip lblStartDateNotDefinedState'>" + value.State + "</label>" +
+                "<label class='lblTooltip lblStartDateNotDefinedDateCreated'>" + _creationDate + "</label>" +
+                "<label class='lblTooltip lblStartDateNotDefinedWorkItem'>" + value.Id + "</label>" +
+                "</div>";
+            $("#divStartDateNotDefined").append(_item);
+        });
+        $(".spanCountStartDateNotDefined").empty().append("(" + eventsStartDateNotDefined.length + ")");
+        tooltipStartDateNotDefined();
+        onClickEventsStartDateNotDefined();
+        collapseDivStartDateNotDefined(eventsStartDateNotDefined.length);
+        // }
     });
 }
 
@@ -1048,7 +1063,7 @@ function removeHTMLTagsFromString(str) {
     return $($.parseHTML(str)).text();
 }
 
-function confirmationSavePath() {
+function confirmationSavePath_Old() {
     $.when(
         $.ajax({
             url: "/Home/TimesheetSaveLocationAndFileName",
@@ -1065,7 +1080,57 @@ function confirmationSavePath() {
     });
 }
 
-function SaveExcelFile(strPath) {
+function confirmationSavePath() {
+
+    var strPath = $("#txtDefault2PathToSaveExcelFile").val();
+
+    if ($('#flexRadioDefault2').is(':checked'))
+    {
+        if (!strPath) {
+            toastrMessage("Please add the folder path or select the default path above", "warning");
+            return;
+        }
+
+        if (strPath.substr(strPath.length - 2) != "\\")
+        {
+            strPath += "\\";
+        }
+
+        $.when(
+            $.ajax({
+                url: "/Home/GetPathAndFTimesheetFileName",
+                type: "GET",
+                async: false,
+                data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage(), path: strPath },
+                error: function (error) {
+                    ajaxErrorHandler("Not saved. (confirmationSavePath function) \n", error);
+                    return false;
+                }
+            })
+        ).then(function (data, textStatus, jqXHR) {
+            SaveExcelFile(data);
+        });
+    }
+    else if ($('#flexRadioDefault1').is(':checked')) {
+
+        $.when(
+            $.ajax({
+                url: "/Home/TimesheetSaveLocationAndFileName",
+                type: "GET",
+                async: false,
+                data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+                error: function (error) {
+                    ajaxErrorHandler("Not saved. (confirmationSavePath function) \n", error);
+                    return false;
+                }
+            })
+        ).then(function (data, textStatus, jqXHR) {
+            SaveExcelFile(data);
+        });
+    }
+}
+
+function SaveExcelFile_Old(strPath) {
     var msgPath = "The Excel file will be saved in the following directory: \n" + strPath + ".xls";
 
     if (confirm(msgPath)) {
@@ -1098,6 +1163,98 @@ function SaveExcelFile(strPath) {
     else {
         toastrMessage("Not saved.", "warning");
     }
+}
+
+function loadDefaultPathToSaveExcelFile() {
+    $("#btnSaveExcelFile").on("click", function () {
+        $.when(
+            $.ajax({
+                url: "/Home/TimesheetSaveLocationAndFileName",
+                type: "GET",
+                async: false,
+                data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+                error: function (error) {
+                    ajaxErrorHandler("Not saved. (confirmationSavePath function) \n", error);
+                    return false;
+                }
+            })
+        ).then(function (data, textStatus, jqXHR) {
+
+            $("#lblDefaultPathToSaveExcelFile").text(data + ".xls");
+
+            $("#txtDefault2PathToSaveExcelFile").on("input", function () {
+                if (!$(this).val()) {//EMPTY
+                    $("#flexRadioDefault2").attr("disabled", true);
+                    $("#flexRadioDefault1").prop("checked", true);
+                }
+                else { //WITH VALUE
+                    $("#flexRadioDefault2").attr("disabled", false);
+                    $("#flexRadioDefault2").prop("checked", true);
+                }
+            });
+
+            $("input[type=radio][name=flexRadioDefault]").on("change", function () {
+                if (this.id == "flexRadioDefault1") {
+                    $("#txtDefault2PathToSaveExcelFile").val("");
+                    $("#flexRadioDefault2").attr("disabled", true);
+                }
+            });
+
+            $("#saveExcelFilePathModal").modal();
+
+            //to resolve problems when trying to do stuff when the modal is loading
+            //$("#saveExcelFilePathModal").on('shown.bs.modal', function () {
+            //    //$('#pathFolderExcelFileId').focus();
+            //});
+
+            //$("#saveExcelFilePathModal").on('hide.bs.modal', function () {
+            //    //$("#eventModal").css("display", "block");
+            //});
+
+            return false;
+        });
+    });
+}
+
+function SaveExcelFile(strPath) {
+
+    var msgPath = "The Excel file will be saved in the following directory: \n" + strPath + ".xls";
+
+    if (confirm(msgPath)) {
+
+        var userData = getUserDataByName(getUserNameFromPage());
+
+        var jsonObject = {
+            "UserName": userData.Name,
+            "ProjectNameTFS": userData.ProjectNameTFS,
+            "IterationPathTFS": userData.IterationPathTFS,
+            "Month": getMonthFromPage() + 1,
+            "Year": getYearFromPage()
+        };
+
+        
+        $.ajax({
+            url: "/Home/SaveExcelFile",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            //data: JSON.stringify(jsonObject),
+            data: JSON.stringify({ userData: jsonObject, folderPath: strPath }),
+            cache: false,
+            success: function (data) {
+                toastrMessage(data, "success");
+                $("#saveExcelFilePathModal").modal("hide");
+            },
+            error: function (error) {
+                //alert(JSON.stringify(error));
+                ajaxErrorHandler("SaveExcelFile", error);
+                //$("#saveExcelFilePathModal").modal("hide");
+            }
+        });
+    }
+    else {
+        toastrMessage("Not saved.", "warning");
+    }
+
 }
 
 function doSomethingIfIsTheSameUser(callback) {
@@ -1394,7 +1551,7 @@ function prevNextMonthBtn(prevNext) {
 
 function bindToggleInfoPanel() {
     $("#infoPanel").on("click", function () {
-        $("#infoPanelContent").toggleClass("hideInfoPanel");    
+        $("#infoPanelContent").toggleClass("hideInfoPanel");
         $(this).toggleClass("toggleChevron");
     });
 }

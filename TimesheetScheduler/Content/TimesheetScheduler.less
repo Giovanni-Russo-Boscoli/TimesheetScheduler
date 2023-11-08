@@ -1,6 +1,7 @@
 ﻿
 .body-content {
-    min-width: 1250px !important;
+    /*min-width: 1250px !important;*/
+    min-width: 90vw !important;
 }
 
 .monthSelection,.userSelection {
@@ -166,8 +167,8 @@
     width: auto;
     /*float: right;*/
     margin: auto;
-    bottom: 0;
-    position: absolute;
+    bottom: 0 !important;
+    position: fixed; //absolute;
     padding: 0 10px 10px 10px;
     border: 1px solid #d2d2d2;
 
@@ -315,7 +316,9 @@
 }
 
 .modalLbl {
-    min-width: 200px !important;
+    //min-width: 200px !important;
+    //font-size: 14px !important;
+    //font-size: 1.3vw !important;
 }
 
 .modal-footer {
@@ -611,4 +614,29 @@ a.bg-dark {
     padding-top: 12px !important;
     width: 32px;
     height: 32px;
+}
+
+//media query
+@media screen and (max-width: 1300px) {
+
+    #eventModal *,
+    .fc-view-container *,
+    .fc-left,
+    .userSelectionWrapper *,
+    .monthSelectionWrapper *,
+    .yearSelectionWrapper *,
+    .modalLbl {
+        font-size: 1.0vw !important;
+        //color: red !important;
+    }
+
+    .modal{
+        height: 95vh !important;
+    }
+}
+
+#lblDefaultPathToSaveExcelFile,
+#txtDefault2PathToSaveExcelFile {
+    width:95%;
+    word-break:break-word;
 }

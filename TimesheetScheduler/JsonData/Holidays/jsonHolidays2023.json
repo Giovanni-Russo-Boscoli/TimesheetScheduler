@@ -1,0 +1,46 @@
+[
+  {
+    "Date": "2 Jan 2023",
+    "Description": "New Year&#146;s Day"
+  },
+  {
+    "Date": "6 Feb 2023",
+    "Description": "St Bridgets Day"
+  },
+  {
+    "Date": "17 Mar 2023",
+    "Description": "St Patrick&#146;s Day"
+  },
+  {
+    "Date": "18 Mar 2023",
+    "Description": "Day of Remembrance and Recognition"
+  },
+  {
+    "Date": "10 Apr 2023",
+    "Description": "Easter"
+  },
+  {
+    "Date": "1 May 2023",
+    "Description": "May Day / Public Holiday"
+  },
+  {
+    "Date": "5 Jun 2023",
+    "Description": "June Public Holliday" 
+  },
+  {
+    "Date": "7 Aug 2023",
+    "Description": "August Public Holliday"
+  },
+  {
+    "Date": "30 Oct 2023",
+    "Description": "October Public Holliday"
+  },
+  {
+    "Date": "25 Dec 2023",
+    "Description": "Christmas Day / Public Holliday"
+  },
+  {
+    "Date": "26 Dec 2023",
+    "Description": "St Stephen&#146;s Day"
+  }
+]

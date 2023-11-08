@@ -15,5 +15,8 @@ namespace TimesheetScheduler.Models
         public decimal DayRateIncVat { get; set; }
         public string TeamDivision { get; set; }
         public string ProjectNameTFS { get; set; }
+        public string Role { get; set; }
+        public bool Chargeable { get; set; }
+
     }
 }

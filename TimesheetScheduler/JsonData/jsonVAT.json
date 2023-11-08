@@ -1,0 +1,28 @@
+[
+
+  {
+    "Id": 1,
+    "VAT": 23,
+    "VATText": "23%",
+    "StartPeriod": "01/01/2000",
+    "EndPeriod": "07/01/2020",
+    "Active": false
+  },
+  {
+    "Id": 2,
+    "VAT": 21,
+    "VATText": "21%",
+    "StartPeriod": "08/01/2020",
+    "EndPeriod": "01/31/2021",
+    "Active": false
+  },
+  {
+    "Id": 3,
+    "VAT": 23,
+    "VATText": "23%",
+    "StartPeriod": "02/01/2021",
+    "EndPeriod": "",
+    "Active": true
+  }
+]
+

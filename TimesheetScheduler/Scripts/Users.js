@@ -179,10 +179,11 @@ function readJsonProjectNameTFSFile(callback) {
 
 function callbackDataTablesUsers() {
     readJsonUserFile(function (jsonData) {
-        console.log(jsonData);
+        //console.log(jsonData);
         $('#userTable').DataTable({
             data: jsonData,
-            "order": [[1, "desc"], [2, "desc"], [3, "asc"], [4, "asc"], [5,"asc"]], //ordered first by Active and then by Name
+            //"order": [[1, "desc"], [2, "desc"], [3, "asc"], [4, "asc"], [5,"asc"]], //ordered first by Active and then by Name
+            "order": [[1, "desc"], [2, "desc"], [3, "asc"], [4, "asc"], [9,"desc"], [5, "asc"]], //ordered first by Active and then by Name
             "columns": [
                 {
                     data: "Id",
@@ -224,8 +225,11 @@ function callbackDataTablesUsers() {
                 },
                 {
                     data: function (data, type, row, meta) {
-                        return "<i class='fa fa-pencil-square-o editUser' title='Edit User' onclick='return confirm(" + "\"Do you want to edit: " + data.Name + " ?\") ? openEditUserModal(" + meta.row + "," + false + ") : \"\"'></i> " +
-                            "<i class='fa fa-trash-o deleteUser' title='Delete User' onclick='return confirm(" + "\"Delete " + data.Name + " ?\") ? deleteUser(" + data.Id + ") : \"\"'></i>";
+                        //var _name = data.Name.replaceAll("'", "''");
+                        var _name = data.Name.replace(/'/g, '');
+                        console.log(_name);
+                        return "<i class='fa fa-pencil-square-o editUser' title='Edit User' onclick='return confirm(" + "\"Do you want to edit: " + _name + " ?\") ? openEditUserModal(" + meta.row + "," + false + ") : \"\"'></i> " +
+                            "<i class='fa fa-trash-o deleteUser' title='Delete User' onclick='return confirm(" + "\"Delete " + _name + " ?\") ? deleteUser(" + data.Id + ") : \"\"'></i>";
                     }
                 }
             ],

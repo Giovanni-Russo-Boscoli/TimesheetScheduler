@@ -1,0 +1,44 @@
+[
+  {
+    "Id": 1,
+    "ShortName": "SBOM",
+    "Role": "Senior Business Object Modeller",
+    "Rate": 50.0
+  },
+  {
+    "Id": 2,
+    "ShortName": "TA",
+    "Role": "Technical Architect",
+    "Rate": 45.00
+  },
+  {
+    "Id": 3,
+    "ShortName": "SSD",
+    "Role": "Senior Software Developer",
+    "Rate": 40.00
+  },
+  {
+    "Id": 4,
+    "ShortName": "BA",
+    "Role": "Business Analyst",
+    "Rate": 40.00
+  },
+  {
+    "Id": 5,
+    "ShortName": "JFSSD",
+    "Role": "Junior Full Stack Software Developer",
+    "Rate": 35.00
+  },
+  {
+    "Id": 6,
+    "ShortName": "TL",
+    "Role": "Test Lead",
+    "Rate": 35.00
+  },
+  {
+    "Id": 7,
+    "ShortName": "AP",
+    "Role": "Assistant Principal",
+    "Rate": 0.0
+  }
+]

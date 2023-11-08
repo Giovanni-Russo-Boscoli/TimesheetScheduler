@@ -16,6 +16,8 @@ function init() {
     readJsonUserFile(function (data) {
         users = data;
     });
+
+    loadDefaultPathToSaveExcelFile();
 }
 
 function readJsonUserFile(callback) {
@@ -48,9 +50,27 @@ function getConsolidatedReportMonthly() {
         "Year": parseInt(_year)
     };
 
+    //if (jsonObject) {
+    //    $.ajax({
+    //        url: "/Home/ConsolidatedReportData",
+    //        type: "POST",
+    //        //contentType: "application/json; charset=utf-8",
+    //        data: jsonObject,
+    //        dataType: 'json',
+    //        success: function (data) {
+    //            loadConsolidatedReport(data.Members);
+    //            deselectAll();
+    //            loadFigures(data);
+    //        },
+    //        function(error) {
+    //            ajaxErrorHandler("ConsolidatedReportData", error);
+    //        }
+    //    });
+    //}
+
     if (jsonObject) {
         $.ajax({
-            url: "/Home/ConsolidatedReportData",
+            url: "/Home/CreateWordDoc",
             type: "POST",
             //contentType: "application/json; charset=utf-8",
             data: jsonObject,
@@ -60,12 +80,17 @@ function getConsolidatedReportMonthly() {
                 deselectAll();
                 loadFigures(data);
             },
-            function(error) {
-                ajaxErrorHandler("ConsolidatedReportData", error);
+            error: function (error) {
+                //alert(JSON.stringify(error));
+                ajaxErrorHandler("SaveExcelFile", error);
+                //$("#saveExcelFilePathModal").modal("hide");
             }
         });
     }
+
 }
+
+
 
 function loadUsers(teamId) {
     $.ajax({
@@ -197,7 +222,7 @@ function readSelected() {
     }
 }
 
-function confirmationSavePath() {
+function confirmationSavePath_Old() {
     $.when(
         $.ajax({
             url: "/Home/TimesheetSaveLocation",
@@ -212,6 +237,59 @@ function confirmationSavePath() {
     ).then(function (data, textStatus, jqXHR) {
         BulkSaveExcelFile(data);
     });
+}
+
+function confirmationSavePath() {
+
+    var strPath = $("#txtDefault2PathToSaveExcelFile").val();
+
+    if ($('#flexRadioDefault2').is(':checked')) {
+        if (!strPath) {
+            toastrMessage("Please add the folder path or select the default path above", "warning");
+            return;
+        }
+
+        //console.log(strPath.substr(strPath.length - 2) + "------" + strPath.substr(strPath.length - 2).replace('\\\\', ''));
+
+        if (strPath.substr(strPath.length - 2).replace('\\\\', '').length > 0) {
+            strPath += "\\\\";
+        }
+
+        $.when(
+            $.ajax({
+                url: "/Home/PathExists",
+                type: "GET",
+                async: false,
+                //data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage(), path: strPath },
+                data: { path: strPath },
+                error: function (error) {
+                    ajaxErrorHandler("Not saved. (confirmationSavePath function) \n", error);
+                    return false;
+                }
+            })
+        ).then(function (data, textStatus, jqXHR) {
+            if (data) {
+                BulkSaveExcelFile(strPath);
+            }
+        });
+    }
+    else if ($('#flexRadioDefault1').is(':checked')) {
+
+        $.when(
+            $.ajax({
+                url: "/Home/TimesheetSaveLocation",
+                type: "GET",
+                async: false,
+                //data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+                error: function (error) {
+                    ajaxErrorHandler("Not saved. (confirmationSavePath function) \n", error);
+                    return false;
+                }
+            })
+        ).then(function (data, textStatus, jqXHR) {
+            BulkSaveExcelFile(data);
+        });
+    }
 }
 
 function BulkSaveExcelFile(strPath) {
@@ -243,16 +321,20 @@ function BulkSaveExcelFile(strPath) {
                 url: "/Home/BulkSaveExcelFile",
                 type: "POST",
                 contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(jsonObject),
+                //data: JSON.stringify(jsonObject),
+                data: JSON.stringify({ userData: jsonObject, folderPath: strPath }),
                 cache: false,
                 success: function (data) {
                     toastrMessage(data, "success");
                     $('#boxUserSelection').multiSelect('deselect_all');
                     $("#btnExportExcelBulk").attr('disabled', 'disabled');
                     $("#btnExportExcelBulk").prop("title", emptyBoxUSerSelection);
+                    //$("#saveExcelFilePathModal").hide();
+                    $("#saveExcelFilePathModal").modal("hide");
                 },
                 error: function (error) {
                     ajaxErrorHandler("BulkSaveExcelFile", error);
+                    //$("#saveExcelFilePathModal").modal("hide");
                 }
             });
         }
@@ -397,14 +479,12 @@ function hideTableRateMonthly() {
 
 function loadFigures(_data) {
 
-    console.log(_data);
-
     var data = {
         "FiguresByTeamDivision": _data.FiguresByTeamDivision,
         "FiguresIndexes": _data.FiguresByTeamDivision,
         "TeamName": _data.TeamName,
         "VatApplied": _data.VatApplied,
-        "PeriodSearched": _data.PeriodSearched,
+        "PeriodSearched": _data.PeriodSearchedString,
         "TotalExclVat": _data.TotalExclVat,
         "TotalInclVat": _data.TotalInclVat,
     };
@@ -413,15 +493,15 @@ function loadFigures(_data) {
 
     currencyMask('.currencyFigures', "##,##0.00", "€");
 
-    $(".figuresByTeamDivision .div-wrap-figure").each(function (index, value) {
-        var lblText = $(value).find("label");
-        if (lblText && $(lblText).text().indexOf("Total Incl VAT:") > -1) {
-            $(this).addClass("figureIncVat");
-        }
-        if (lblText && $(lblText).text().indexOf("Total Excl VAT:") > -1) {
-            $(this).addClass("figureExcVat");
-        }
-    });
+    //$(".figuresByTeamDivision .div-wrap-figure").each(function (index, value) {
+    //    var lblText = $(value).find("label");
+    //    if (lblText && $(lblText).text().indexOf("Total Incl VAT:") > -1) {
+    //        $(this).addClass("figureIncVat");
+    //    }
+    //    if (lblText && $(lblText).text().indexOf("Total Excl VAT:") > -1) {
+    //        $(this).addClass("figureExcVat");
+    //    }
+    //});
 }
 
 function resetTableBackground() {
@@ -454,4 +534,55 @@ function formatDataLoadTeams(data) {
 function loadMembersByTeam(_this) {
     console.log($("#selectTeamsElement option:selected").val());
     loadUsers($("#selectTeamsElement option:selected").val());
+}
+
+function loadDefaultPathToSaveExcelFile() {
+    $("#btnExportExcelBulk").on("click", function () {
+        $.when(
+            $.ajax({
+                url: "/Home/TimesheetSaveLocation",
+                type: "GET",
+                async: false,
+                //data: { userName: getUserNameFromPage(), _month: getMonthFromPage() + 1, _year: getYearFromPage() },
+                error: function (error) {
+                    ajaxErrorHandler("Not saved. (confirmationSavePath function) \n", error);
+                    return false;
+                }
+            })
+        ).then(function (data, textStatus, jqXHR) {
+
+            $("#lblDefaultPathToSaveExcelFile").text(data);
+
+            $("#txtDefault2PathToSaveExcelFile").on("input", function () {
+                if (!$(this).val()) {//EMPTY
+                    $("#flexRadioDefault2").attr("disabled", true);
+                    $("#flexRadioDefault1").prop("checked", true);
+                }
+                else { //WITH VALUE
+                    $("#flexRadioDefault2").attr("disabled", false);
+                    $("#flexRadioDefault2").prop("checked", true);
+                }
+            });
+
+            $("input[type=radio][name=flexRadioDefault]").on("change", function () {
+                if (this.id == "flexRadioDefault1") {
+                    $("#txtDefault2PathToSaveExcelFile").val("");
+                    $("#flexRadioDefault2").attr("disabled", true);
+                }
+            });
+
+            $("#saveExcelFilePathModal").modal();
+
+            //to resolve problems when trying to do stuff when the modal is loading
+            //$("#saveExcelFilePathModal").on('shown.bs.modal', function () {
+            //    //$('#pathFolderExcelFileId').focus();
+            //});
+
+            //$("#saveExcelFilePathModal").on('hide.bs.modal', function () {
+            //    //$("#eventModal").css("display", "block");
+            //});
+
+            return false;
+        });
+    });
 }
