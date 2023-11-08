@@ -743,6 +743,10 @@
     <Content Include="Content\bootstrap-toggle.less" />
     <Content Include="Content\ReportModule.less" />
     <Content Include="JsonData\jsonVAT.json" />
+    <Content Include="JsonData\Holidays\jsonHolidays2020.json" />
+    <Content Include="JsonData\Holidays\jsonHolidays2021.json" />
+    <Content Include="JsonData\Holidays\jsonHolidays2022.json" />
+    <Content Include="JsonData\Holidays\jsonHolidays2023.json" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.min.js" />
