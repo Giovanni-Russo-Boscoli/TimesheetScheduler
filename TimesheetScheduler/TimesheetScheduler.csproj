@@ -714,6 +714,8 @@
     <Content Include="Images\switch.png" />
     <Content Include="Images\xlsx_icon.svg.png" />
     <Content Include="Images\xsl_icon.png" />
+    <Content Include="JsonData\jsonUser.json" />
+    <Content Include="JsonData\ratesAndRoles.json" />
     <Content Include="MySnippet.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -747,6 +749,7 @@
     <Content Include="JsonData\Holidays\jsonHolidays2021.json" />
     <Content Include="JsonData\Holidays\jsonHolidays2022.json" />
     <Content Include="JsonData\Holidays\jsonHolidays2023.json" />
+    <Content Include="JsonData\Holidays\jsonHolidays2024.json" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.min.js" />

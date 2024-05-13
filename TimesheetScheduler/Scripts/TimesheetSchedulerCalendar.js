@@ -175,6 +175,20 @@ function eventsCalendar(_events, dateCalendar) {
                     var td = $('td.fc-day[data-date="' + event.start.format('YYYY-MM-DD') + '"]');
                     td.find('div:first').remove();
                 });
+
+                $(".fc-other-month").each(function () {
+                    $(this).html("");
+                });
+
+                $(".dayOutOfTheOffice").parent().css({ "background-color": "#FFF0F1", "vertical-align": "middle" }); //change the color for days without event
+                $(".weekendDay").parent().css({ "background-color": "#F2F2F2", "vertical-align": "middle" }); //change the color for days without event
+                $(".hollidayEvent").parent().css({ "background-color": "thistle", "vertical-align": "middle" }); //change the color for days without event
+
+                $(".fc-content-skeleton tbody td").each(function (index, value) {
+                    if ($(value).html().length < 1) {
+                        $(value).css("z-index", "-1");
+                    }
+                });
             },
             dayClick: function (date, jsEvent, view) {
                 prevTime = typeof currentTime === 'undefined' || currentTime === null
@@ -192,18 +206,18 @@ function eventsCalendar(_events, dateCalendar) {
             }
         });
 
-        $(".fc-other-month").each(function () {
-            $(this).html("");
-        });
-        $(".dayOutOfTheOffice").parent().css({ "background-color": "#FFF0F1", "vertical-align": "middle" }); //change the color for days without event
-        $(".weekendDay").parent().css({ "background-color": "#F2F2F2", "vertical-align": "middle" }); //change the color for days without event
-        $(".hollidayEvent").parent().css({ "background-color": "thistle", "vertical-align": "middle" }); //change the color for days without event
+        //$(".fc-other-month").each(function () {
+        //    $(this).html("");
+        //});
+        //$(".dayOutOfTheOffice").parent().css({ "background-color": "#FFF0F1", "vertical-align": "middle" }); //change the color for days without event
+        //$(".weekendDay").parent().css({ "background-color": "#F2F2F2", "vertical-align": "middle" }); //change the color for days without event
+        //$(".hollidayEvent").parent().css({ "background-color": "thistle", "vertical-align": "middle" }); //change the color for days without event
 
-        $(".fc-content-skeleton tbody td").each(function (index, value) {
-            if ($(value).html().length < 1) {
-                $(value).css("z-index", "-1");
-            }
-        });
+        //$(".fc-content-skeleton tbody td").each(function (index, value) {
+        //    if ($(value).html().length < 1) {
+        //        $(value).css("z-index", "-1");
+        //    }
+        //});
 
         //Info();
     }, dateCalendar.getFullYear().toString());
@@ -296,29 +310,46 @@ function calculateLoadBarEvents(calendarEvents) {
 
     var days = [];
     var _chargeableHours = [];
+    var _nonChargeableHours = [];
 
     $(calendarEvents).each(function (index, value) {
+        
         days.push($.format.date(new Date(value.day), "yyyy-MM-dd"));
         _chargeableHours.push(value.chargeableHours); //percentage worked (7.5 = 100%)
+        _nonChargeableHours.push(value.nonchargeableHours); //percentage worked (7.5 = 100%)
     });
 
     var countChargeableHours = 0;
+    var countNonChargeableHours = 0;
     $(".fc-day-top").each(function (index, value) {
+
         countChargeableHours = 0;
+        countNonChargeableHours = 0;
+
         $(days).each(function (_index, _value) {
             if ($(value).attr("data-date") === _value) {
                 countChargeableHours += _chargeableHours[_index] === null ? 0 : parseFloat(_chargeableHours[_index]);
+                countNonChargeableHours += _nonChargeableHours[_index] === null ? 0 : parseFloat(_nonChargeableHours[_index]);
             }
         });
 
         var _class = "";
         var _totalHours = countChargeableHours / 7.5 * 100;
+
+        if (_totalHours == 0 && countNonChargeableHours > 0)
+        {
+            _totalHours = countNonChargeableHours / 7.5 * 100;
+            _class = "nonChargeableLoadBar";
+        }
+
         if (_totalHours > 100) {
             _class = "overloadedLoadBar";
         }
-        if (_totalHours < 100) {
+
+        if (countChargeableHours > 0 && _totalHours < 100) {
             _class = "underloadedLoadBar";
         }
+
         var _loadBar = "<div class='loadBarContainer'>    " +
             "  <div class='progress progress-striped' style='--loadbar-percent:" + _totalHours + "%'>" +
             "    <div class='progress-bar " + _class + "'>" +
@@ -561,7 +592,8 @@ function IsWeekend(date) {
 function Info() {
     clearInfoValues();
     getUserName(function (loggedUserName) {
-        if (getAccessUserByName(loggedUserName) === "ADMIN") { //identify by role "admin"
+        var _accessUSer = getAccessUserByName(loggedUserName);
+        if (_accessUSer === "ADMIN" || _accessUSer === "ADMIN-NOMEMBER") { //identify by role "admin"
             $("#infoPanel").show();
 
             $("#totalHoursInfoTxt").text(totalChargeableHours + totalNonChargeableHours);

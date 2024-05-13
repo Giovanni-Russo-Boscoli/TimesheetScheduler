@@ -890,9 +890,10 @@ namespace TimesheetScheduler.Controllers
 
                 var period = new DateTime(selectedMembers.Year, selectedMembers.Month, 1);
                 var _item = formatTFSResult(ref listWorkItems, member.Name, period);
-
+                
                 listConsolidatedRateMonthly.Add(new ConsolidatedRateMonthly()
                 {
+                    ChargeableHours = _item.ChargeableHours,
                     MemberName = member.Name,
                     DaysWorked = _item.WorkedDays,
                     RateExcVat = _item.RateExcludingVAT,
@@ -2581,9 +2582,9 @@ namespace TimesheetScheduler.Controllers
         {
 
             var _data = consolidatedReportDataFiguresDTO(selectedMembers);
-            var coreTeam = _data.Members.Where(x => x.TeamDivision.Equals("Core")).ToList();
+            var coreTeam = _data.Members.Where(x => x.TeamDivision.Equals("Core")).OrderByDescending(x=>x.RateExcVat).ToList();
             var drawdownTeam = _data.Members.Where(x => x.TeamDivision.Equals("Drawdown")).ToList();
-            IList<string> headerMemberTable = new List<string>() { "Team Member", "Days", "Rate", "Role", "Excl.VAT" };
+            IList<string> headerMemberTable = new List<string>() { "Team Member", "Days", "Hours", "Rate", "Role", "Excl.VAT" };
            
 
             Document doc = new Document();
@@ -2862,17 +2863,18 @@ namespace TimesheetScheduler.Controllers
                 rowIndex = item.i + 1;
                 
                 _table[rowIndex, 1].AddParagraph().AppendText(item.value.DaysWorked.ToString());
-                _table[rowIndex, 2].AddParagraph().AppendText($"€{item.value.RateExcVat:n}");
-                _table[rowIndex, 3].AddParagraph().AppendText(item.value.Role);
+                _table[rowIndex, 2].AddParagraph().AppendText(item.value.ChargeableHours.ToString());
+                _table[rowIndex, 3].AddParagraph().AppendText($"€{item.value.RateExcVat:n}");
+                _table[rowIndex, 4].AddParagraph().AppendText(item.value.Role);
                 if (item.value.Chargeable)
                 {
                     _table[rowIndex, 0].AddParagraph().AppendText(item.value.MemberName);
-                    _table[rowIndex, 4].AddParagraph().AppendText($"€{item.value.DayRateExcVat:n}");
+                    _table[rowIndex, 5].AddParagraph().AppendText($"€{item.value.DayRateExcVat:n}");
                 }
                 else
                 {
                     notChargeableMembers.Add(_table[rowIndex, 0].AddParagraph().AppendText($"*** {item.value.MemberName}"));
-                    _table[rowIndex, 4].AddParagraph().AppendText($"€0");
+                    _table[rowIndex, 5].AddParagraph().AppendText($"€0");
                 }
             }
 

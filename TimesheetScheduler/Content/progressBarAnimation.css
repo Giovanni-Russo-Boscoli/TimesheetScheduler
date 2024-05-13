@@ -32,6 +32,9 @@
 .underloadedLoadBar {
   background-color: rgba(255, 216, 0, 0.5) !important;
 }
+.nonChargeableLoadBar {
+  background-color: #a3cce9 !important;
+}
 @keyframes progressAnimationStrike {
   from {
     width: 0;

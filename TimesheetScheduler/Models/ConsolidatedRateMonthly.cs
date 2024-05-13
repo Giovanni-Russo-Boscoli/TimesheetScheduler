@@ -17,6 +17,7 @@ namespace TimesheetScheduler.Models
         public string ProjectNameTFS { get; set; }
         public string Role { get; set; }
         public bool Chargeable { get; set; }
+        public double ChargeableHours { get; set; }
 
     }
 }

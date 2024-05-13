@@ -1,0 +1,42 @@
+[
+  {
+    "Date": "1 Jan 2024",
+    "Description": "New Year&#146;s Day"
+  },
+  {
+    "Date": "5 Feb 2024",
+    "Description": "St Bridgets Day"
+  },
+  {
+    "Date": "18 Mar 2024",
+    "Description": "St Patrick&#146;s Day"
+  },
+  {
+    "Date": "1 Apr 2024",
+    "Description": "Easter"
+  },
+  {
+    "Date": "6 May 2024",
+    "Description": "May Day / Public Holiday"
+  },
+  {
+    "Date": "3 Jun 2024",
+    "Description": "June Public Holliday"
+  },
+  {
+    "Date": "5 Aug 2024",
+    "Description": "August Public Holliday"
+  },
+  {
+    "Date": "28 Oct 2024",
+    "Description": "October Public Holliday"
+  },
+  {
+    "Date": "25 Dec 2024",
+    "Description": "Christmas Day / Public Holliday"
+  },
+  {
+    "Date": "26 Dec 2024",
+    "Description": "St Stephen&#146;s Day"
+  }
+]
